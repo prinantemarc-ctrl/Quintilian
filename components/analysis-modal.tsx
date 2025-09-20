@@ -667,7 +667,10 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                                 <div
                                   className="markdown-content"
                                   dangerouslySetInnerHTML={{
-                                    __html: result.detailed_analysis
+                                    __html: (typeof result.detailed_analysis === "string"
+                                      ? result.detailed_analysis
+                                      : String(result.detailed_analysis || "")
+                                    )
                                       .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
                                       .replace(/^# (.*$)/gm, '<h1 class="text-xl font-bold text-primary mb-4">$1</h1>')
                                       .replace(
@@ -713,7 +716,10 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                                 <div
                                   className="markdown-content"
                                   dangerouslySetInnerHTML={{
-                                    __html: result.structured_conclusion
+                                    __html: (typeof result.structured_conclusion === "string"
+                                      ? result.structured_conclusion
+                                      : String(result.structured_conclusion || "")
+                                    )
                                       .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
                                       .replace(/^# (.*$)/gm, '<h1 class="text-xl font-bold text-primary mb-4">$1</h1>')
                                       .replace(

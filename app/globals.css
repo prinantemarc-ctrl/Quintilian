@@ -3,7 +3,7 @@
 
 /* Updated to green & black color palette */
 :root {
-  /* Green & Black Theme */
+  /* Green & Black Theme with World Map colors */
   --background: #ffffff;
   --foreground: #1a1a1a;
   --card: #fafafa;
@@ -37,6 +37,15 @@
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: #e5e5e5;
   --sidebar-ring: rgba(22, 163, 74, 0.3);
+
+  /* Added world map specific colors */
+  --map-country-default: #f3f4f6;
+  --map-country-hover: #e5e7eb;
+  --map-country-selected: #16a34a;
+  --map-country-high: #22c55e;
+  --map-country-medium: #fbbf24;
+  --map-country-low: #ef4444;
+  --map-ocean: #dbeafe;
 }
 
 .dark {

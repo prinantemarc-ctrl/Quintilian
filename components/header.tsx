@@ -77,6 +77,13 @@ export function Header() {
               Duel
             </Link>
             <Link
+              href="/world-reputation"
+              className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-200 hover:scale-105 flex items-center gap-1"
+            >
+              <Globe className="w-4 h-4" />
+              GMI
+            </Link>
+            <Link
               href="/solutions"
               className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-200 hover:scale-105 flex items-center gap-1"
             >
@@ -156,6 +163,14 @@ export function Header() {
               >
                 <Swords className="w-4 h-4" />
                 {t("header.duel")}
+              </Link>
+              <Link
+                href="/world-reputation"
+                className="block px-4 py-3 text-base font-medium text-foreground/80 hover:text-primary hover:bg-primary/5 transition-all duration-200 w-full text-left rounded-lg flex items-center gap-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Globe className="w-4 h-4" />
+                GMI
               </Link>
               <Link
                 href="/solutions"
