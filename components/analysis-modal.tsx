@@ -357,146 +357,16 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
             ) : identitySelection ? (
               <div className="space-y-6">
                 {/* Show scores if available */}
-                {identitySelection.presence_score !== undefined && (
-                  <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-6 rounded-lg border">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-2">
-                        <h3 className="text-xl font-bold text-primary">{formData.brand}</h3>
-                        <p className="text-muted-foreground">{formData.message}</p>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span>Langue: {getLanguageLabel(formData.language)}</span>
-                          <span>•</span>
-                          <span>Analysé le {new Date().toLocaleDateString("fr-FR")}</span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-primary">
-                          {Math.round(
-                            (identitySelection.presence_score +
-                              (identitySelection.tone_score || 0) +
-                              (identitySelection.coherence_score || 0)) /
-                              3,
-                          )}
-                        </div>
-                        <div className="text-xs text-muted-foreground">Score global</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Show detailed scores if available */}
-                {identitySelection.presence_score !== undefined && (
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Scores détaillés</h3>
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <Card className="relative overflow-hidden">
-                        <div
-                          className={`absolute top-0 left-0 right-0 h-1 ${getProgressColor(identitySelection.presence_score)}`}
-                        ></div>
-                        <CardHeader className="pb-3">
-                          <CardTitle className="flex items-center gap-2 text-base">
-                            <Eye className="w-5 h-5 text-primary" />
-                            Présence Digitale
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <span className={`text-3xl font-bold ${getScoreColor(identitySelection.presence_score)}`}>
-                                {identitySelection.presence_score}
-                              </span>
-                              <span className="text-sm text-muted-foreground">/100</span>
-                            </div>
-                            <Progress value={identitySelection.presence_score} className="h-3" />
-                            <div className="space-y-1">
-                              <p className="text-xs font-medium text-muted-foreground">Visibilité sur :</p>
-                              <div className="flex gap-2 text-xs">
-                                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">Google</span>
-                                <span className="bg-green-100 text-green-800 px-2 py-1 rounded">ChatGPT</span>
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      <Card className="relative overflow-hidden">
-                        <div
-                          className={`absolute top-0 left-0 right-0 h-1 ${getProgressColor(identitySelection.tone_score || 0)}`}
-                        ></div>
-                        <CardHeader className="pb-3">
-                          <CardTitle className="flex items-center gap-2 text-base">
-                            <Heart className="w-5 h-5 text-primary" />
-                            Sentiment Global
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <span
-                                className={`text-3xl font-bold ${getScoreColor(identitySelection.tone_score || 0)}`}
-                              >
-                                {identitySelection.tone_score || 0}
-                              </span>
-                              <span className="text-sm text-muted-foreground">/100</span>
-                            </div>
-                            <Progress value={identitySelection.tone_score || 0} className="h-3" />
-                            <div className="space-y-1">
-                              <p className="text-xs font-medium text-muted-foreground">Tonalité détectée :</p>
-                              <span
-                                className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                                  (identitySelection.tone_label || "").toLowerCase().includes("positif")
-                                    ? "bg-green-100 text-green-800"
-                                    : (identitySelection.tone_label || "").toLowerCase().includes("négatif")
-                                      ? "bg-red-100 text-red-800"
-                                      : "bg-gray-100 text-gray-800"
-                                }`}
-                              >
-                                {identitySelection.tone_label || "neutre"}
-                              </span>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      <Card className="relative overflow-hidden">
-                        <div
-                          className={`absolute top-0 left-0 right-0 h-1 ${getProgressColor(identitySelection.coherence_score || 0)}`}
-                        ></div>
-                        <CardHeader className="pb-3">
-                          <CardTitle className="flex items-center gap-2 text-base">
-                            <Target className="w-5 h-5 text-primary" />
-                            Cohérence Message
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <span
-                                className={`text-3xl font-bold ${getScoreColor(identitySelection.coherence_score || 0)}`}
-                              >
-                                {identitySelection.coherence_score || 0}
-                              </span>
-                              <span className="text-sm text-muted-foreground">/100</span>
-                            </div>
-                            <Progress value={identitySelection.coherence_score || 0} className="h-3" />
-                            <div className="space-y-1">
-                              <p className="text-xs font-medium text-muted-foreground">Alignement :</p>
-                              <div className="text-xs text-muted-foreground">Message vs Réalité digitale</div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </div>
-                )}
 
                 <Alert>
                   <User className="h-4 w-4" />
                   <AlertDescription>{identitySelection.message}</AlertDescription>
                 </Alert>
 
+                {/* Show detailed scores if available */}
+
                 <div className="space-y-3">
-                  <h3 className="font-semibold text-lg">Identités trouvées :</h3>
+                  <h3 className="text-lg font-semibold">Identités trouvées :</h3>
                   {identitySelection.identified_entities.map((identity, index) => (
                     <Card key={index} className="cursor-pointer hover:bg-muted/50 transition-colors">
                       <CardContent className="p-4">

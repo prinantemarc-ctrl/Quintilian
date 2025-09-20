@@ -31,13 +31,14 @@ export async function GET() {
       },
       byLanguage: logs.reduce(
         (acc, log) => {
-          acc[log.language] = (acc[log.language] || 0) + 1
+          const lang = log.language || "fr"
+          acc[lang] = (acc[lang] || 0) + 1
           return acc
         },
         {} as Record<string, number>,
       ),
       avgProcessingTime:
-        logs.length > 0 ? logs.reduce((sum, log) => sum + (log.processing_time || 0), 0) / logs.length : 0,
+        logs.length > 0 ? logs.reduce((sum, log) => sum + (log.processing_time || 0), 0) / logs.length / 1000 : 0,
       errors: logs.filter((log) => log.error).length,
     }
 

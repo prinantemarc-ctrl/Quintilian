@@ -37,9 +37,10 @@ class Logger {
       const { error } = await supabase.from("search_logs").insert({
         id: log.id,
         created_at: log.timestamp.toISOString(),
-        search_type: log.type,
+        type: log.type, // Fixed: was search_type
         query: log.query,
         competitor_query: log.brand2 || null,
+        language: log.language || "fr",
         google_results: {
           count: log.results.google_results_count,
         },
@@ -56,10 +57,14 @@ class Logger {
               (log.results.coherence_score || 0)) /
             3,
         },
+        presence_score: log.results.presence_score,
+        sentiment_score: log.results.sentiment_score,
+        coherence_score: log.results.coherence_score,
         user_ip: log.ip_address,
         user_agent: log.user_agent,
         session_id: log.identity || null,
-        processing_time_ms: log.results.processing_time,
+        processing_time: log.results.processing_time, // Fixed: was processing_time_ms
+        error: log.error || null,
       })
 
       if (error) {
@@ -96,23 +101,23 @@ class Logger {
       return data.map((record) => ({
         id: record.id,
         timestamp: new Date(record.created_at),
-        type: record.search_type as "analyze" | "duel",
+        type: record.type as "analyze" | "duel", // Fixed: was search_type
         query: record.query,
         identity: record.session_id,
         brand1: record.query,
         brand2: record.competitor_query,
-        language: "fr", // Default for now
+        language: record.language || "fr",
         results: {
-          presence_score: record.scores?.presence_score,
-          sentiment_score: record.scores?.sentiment_score,
-          coherence_score: record.scores?.coherence_score,
-          processing_time: record.processing_time_ms || 0,
+          presence_score: record.presence_score || record.scores?.presence_score,
+          sentiment_score: record.sentiment_score || record.scores?.sentiment_score,
+          coherence_score: record.coherence_score || record.scores?.coherence_score,
+          processing_time: record.processing_time || 0, // Fixed: was processing_time_ms
           google_results_count: record.google_results?.count || 0,
           openai_tokens_used: record.gpt_analysis?.tokens_used,
         },
         user_agent: record.user_agent || "",
         ip_address: record.user_ip,
-        error: undefined,
+        error: record.error,
       }))
     } catch (error) {
       console.error("[LOGGER] Database error:", error)
@@ -152,27 +157,40 @@ class Logger {
         .select("*", { count: "exact", head: true })
         .gte("created_at", thisMonth.toISOString())
 
-      // Get counts by type
-      const { data: typeData } = await supabase.from("search_logs").select("search_type")
+      const { data: typeData } = await supabase.from("search_logs").select("type")
 
       const byType =
         typeData?.reduce(
           (acc, log) => {
-            acc[log.search_type] = (acc[log.search_type] || 0) + 1
+            acc[log.type] = (acc[log.type] || 0) + 1
             return acc
           },
           {} as Record<string, number>,
         ) || {}
 
-      // Get average processing time
+      const { data: languageData } = await supabase.from("search_logs").select("language")
+      const byLanguage =
+        languageData?.reduce(
+          (acc, log) => {
+            acc[log.language || "fr"] = (acc[log.language || "fr"] || 0) + 1
+            return acc
+          },
+          {} as Record<string, number>,
+        ) || {}
+
       const { data: processingData } = await supabase
         .from("search_logs")
-        .select("processing_time_ms")
-        .not("processing_time_ms", "is", null)
+        .select("processing_time")
+        .not("processing_time", "is", null)
 
       const avgProcessingTime = processingData?.length
-        ? processingData.reduce((sum, log) => sum + (log.processing_time_ms || 0), 0) / processingData.length
+        ? processingData.reduce((sum, log) => sum + (log.processing_time || 0), 0) / processingData.length
         : 0
+
+      const { count: errorCount } = await supabase
+        .from("search_logs")
+        .select("*", { count: "exact", head: true })
+        .not("error", "is", null)
 
       return {
         total: totalCount || 0,
@@ -183,11 +201,9 @@ class Logger {
           analyze: byType.analyze || 0,
           duel: byType.duel || 0,
         },
-        byLanguage: {
-          fr: totalCount || 0, // Default for now
-        },
-        avgProcessingTime,
-        errors: 0, // TODO: implement error tracking
+        byLanguage,
+        avgProcessingTime: avgProcessingTime / 1000, // Convert to seconds
+        errors: errorCount || 0,
       }
     } catch (error) {
       console.error("[LOGGER] Failed to get stats:", error)
@@ -244,14 +260,14 @@ class Logger {
           [
             row.id,
             new Date(row.created_at).toLocaleString(),
-            row.search_type,
+            row.type,
             `"${row.query.replace(/"/g, '""')}"`,
             row.competitor_query ? `"${row.competitor_query.replace(/"/g, '""')}"` : "",
             row.scores?.overall_score || "",
-            row.scores?.presence_score || "",
-            row.scores?.sentiment_score || "",
-            row.scores?.coherence_score || "",
-            row.processing_time_ms || "",
+            row.presence_score || "", // Added individual score columns
+            row.sentiment_score || "",
+            row.coherence_score || "",
+            row.processing_time || "", // Fixed: was processing_time_ms
             row.google_results?.count || "",
             row.user_ip || "",
           ].join(","),

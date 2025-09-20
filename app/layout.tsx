@@ -1,7 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { DM_Sans } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/react"
 import { Suspense } from "react"
 import { LanguageProvider } from "@/contexts/language-context"
 import "./globals.css"
