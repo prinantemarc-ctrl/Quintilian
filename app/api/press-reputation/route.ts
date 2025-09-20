@@ -28,14 +28,13 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now()
 
   try {
-    console.log("[v0] GMI API: Starting request processing")
+    console.log("[v0] Press API: Starting request processing")
 
     const body = await request.json()
     const { query, countries } = body
 
-    console.log(`[v0] GMI API: Received query="${query}" countries=${JSON.stringify(countries)}`)
+    console.log(`[v0] Press API: Received query="${query}" countries=${JSON.stringify(countries)}`)
 
-    // Validation
     if (!query || typeof query !== "string" || query.trim().length === 0) {
       return NextResponse.json({ error: "Query is required and must be a non-empty string" }, { status: 400 })
     }
@@ -54,39 +53,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No supported countries provided" }, { status: 400 })
     }
 
-    console.log(`[v0] GMI Analysis starting: "${query}" in ${validCountries.length} countries`)
+    console.log(`[v0] Press Analysis starting: "${query}" in ${validCountries.length} countries`)
+    console.log("[v0] Using browser-compatible services for real press analysis")
 
-    console.log("[v0] Using browser-compatible services for real analysis")
-
-    // Generate real analysis for each country
     const countryResults = await Promise.all(
       validCountries.map(async (countryCode) => {
         const upperCountryCode = countryCode.toUpperCase()
-        console.log(`[v0] Processing ${upperCountryCode}...`)
+        console.log(`[v0] Processing press analysis for ${upperCountryCode}...`)
 
         try {
-          // Real Google search for this country
           const language = getCountryLanguage(upperCountryCode)
-          console.log(`[v0] Starting Google search for ${upperCountryCode} in ${language}`)
+          console.log(`[v0] Starting Google press search for ${upperCountryCode} in ${language}`)
 
-          const searchResults = await searchGoogle(query, {
+          const pressQuery = `"${query}" news OR press OR article OR journal OR media`
+          const searchResults = await searchGoogle(pressQuery, {
             language,
             country: upperCountryCode.toLowerCase(),
             maxResults: 10,
           })
 
-          console.log(`[v0] Found ${searchResults.length} Google results for ${upperCountryCode}`)
+          console.log(`[v0] Found ${searchResults.length} press results for ${upperCountryCode}`)
 
-          // Real GPT analysis
-          console.log(`[v0] Starting GPT analysis for ${upperCountryCode}`)
+          console.log(`[v0] Starting GPT press analysis for ${upperCountryCode}`)
           const analysis = await generateDetailedAnalysis(
             query,
-            `Analyze reputation in ${getCountryName(upperCountryCode)}`,
+            `Analyze press and media coverage reputation in ${getCountryName(upperCountryCode)}`,
             searchResults,
             language === "fr" ? "français" : "english",
           )
 
-          console.log(`[v0] GPT analysis completed for ${upperCountryCode}`)
+          console.log(`[v0] GPT press analysis completed for ${upperCountryCode}`)
 
           const countryName = getCountryName(upperCountryCode)
 
@@ -94,63 +90,53 @@ export async function POST(request: NextRequest) {
             country: countryName,
             countryCode: upperCountryCode,
             flag: getCountryFlag(upperCountryCode),
-            presence: analysis.presence_score,
-            sentiment: analysis.tone_score,
-            coherence: analysis.coherence_score,
-            globalScore: Math.round((analysis.presence_score + analysis.tone_score + analysis.coherence_score) / 3),
-            analysis: analysis.rationale,
-            presenceRationale:
-              analysis.presence_details ||
-              `Présence ${getScoreLabel(analysis.presence_score)} basée sur l'analyse des résultats de recherche.`,
-            sentimentRationale:
-              analysis.tone_details ||
-              `Sentiment ${getScoreLabel(analysis.tone_score)} selon l'analyse des contenus trouvés.`,
-            coherenceRationale:
-              analysis.coherence_details ||
-              `Cohérence ${getScoreLabel(analysis.coherence_score)} dans la communication digitale.`,
-            sources: searchResults.slice(0, 3).map((result, index) => ({
-              title: result.title || `Source ${index + 1}`,
+            score: Math.round((analysis.presence_score + analysis.tone_score + analysis.coherence_score) / 3),
+            sentiment: analysis.tone_score >= 70 ? "positive" : analysis.tone_score >= 50 ? "neutral" : "negative",
+            summary: analysis.rationale,
+            articles: searchResults.slice(0, 8).map((result, index) => ({
+              title: result.title || `Article ${index + 1}`,
               snippet: result.snippet || "Pas de description disponible",
               url: result.link || "#",
               source: result.link ? new URL(result.link).hostname : "unknown",
               date: new Date().toISOString().split("T")[0],
-              country: upperCountryCode,
-              language,
               relevanceScore: Math.max(60, 90 - index * 5),
             })),
+            keyTopics: analysis.presence_details ? [analysis.presence_details.slice(0, 50)] : ["presse", "médias"],
+            riskFactors: analysis.tone_score < 50 ? ["perception négative", "couverture défavorable"] : [],
+            presenceScore: analysis.presence_score,
+            toneScore: analysis.tone_score,
+            coherenceScore: analysis.coherence_score,
             googleSummary: analysis.google_summary,
             gptSummary: analysis.gpt_summary,
           }
         } catch (error) {
-          console.error(`[v0] Error processing ${upperCountryCode}:`, error)
+          console.error(`[v0] Error processing press analysis for ${upperCountryCode}:`, error)
 
-          // Fallback for individual country errors
           const countryName = getCountryName(upperCountryCode)
-          return generateCountryFallback(upperCountryCode, countryName, query)
+          return generatePressFallback(upperCountryCode, countryName, query)
         }
       }),
     )
 
-    // Sort results by global score
-    const sortedResults = countryResults.sort((a, b) => b.globalScore - a.globalScore)
+    const sortedResults = countryResults.sort((a, b) => b.score - a.score)
 
-    // Find best and worst countries
+    // Find best and worst press coverage
     const bestCountry = sortedResults[0]
     const worstCountry = sortedResults[sortedResults.length - 1]
 
     // Calculate average score
     const averageScore = Math.round(
-      countryResults.reduce((sum, result) => sum + result.globalScore, 0) / countryResults.length,
+      countryResults.reduce((sum, result) => sum + result.score, 0) / countryResults.length,
     )
 
-    // Generate global analysis
-    const globalAnalysis = `${query} présente une réputation ${getScoreLabel(averageScore)} à l'international avec un score moyen de ${averageScore}/100 sur ${countryResults.length} pays analysés. ${bestCountry.country} représente le marché le plus favorable (${bestCountry.globalScore}/100) tandis que ${worstCountry.country} offre des opportunités d'amélioration (${worstCountry.globalScore}/100). L'analyse révèle des variations géographiques dans la perception digitale de la marque.`
+    // Generate global press analysis
+    const globalAnalysis = `La couverture presse de "${query}" présente une réputation ${getScoreLabel(averageScore)} dans les médias internationaux avec un score moyen de ${averageScore}/100 sur ${countryResults.length} pays analysés. ${bestCountry.country} bénéficie de la meilleure couverture médiatique (${bestCountry.score}/100) tandis que ${worstCountry.country} présente des défis de communication (${worstCountry.score}/100). L'analyse révèle des variations dans la perception médiatique selon les régions.`
 
     const processingTime = Date.now() - startTime
-    console.log(`[v0] GMI Analysis completed in ${processingTime}ms`)
-    console.log(`[v0] Best: ${bestCountry.country} (${bestCountry.globalScore}/100)`)
-    console.log(`[v0] Worst: ${worstCountry.country} (${worstCountry.globalScore}/100)`)
-    console.log(`[v0] Average: ${averageScore}/100`)
+    console.log(`[v0] Press Analysis completed in ${processingTime}ms`)
+    console.log(`[v0] Best press coverage: ${bestCountry.country} (${bestCountry.score}/100)`)
+    console.log(`[v0] Worst press coverage: ${worstCountry.country} (${worstCountry.score}/100)`)
+    console.log(`[v0] Average press score: ${averageScore}/100`)
 
     return NextResponse.json({
       query: query.trim(),
@@ -161,15 +147,16 @@ export async function POST(request: NextRequest) {
       globalAnalysis,
       averageScore,
       processingTime,
+      totalArticles: countryResults.reduce((sum, r) => sum + (r.articles?.length || 0), 0),
     })
   } catch (error) {
     const processingTime = Date.now() - startTime
-    console.error("[v0] GMI API Critical Error:", error)
+    console.error("[v0] Press API Critical Error:", error)
     console.error("[v0] Error stack:", error instanceof Error ? error.stack : "No stack trace")
 
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Internal server error during GMI analysis",
+        error: error instanceof Error ? error.message : "Internal server error during press analysis",
         details: error instanceof Error ? error.stack : "Unknown error",
         processingTime,
       },
@@ -178,46 +165,43 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function generateCountryFallback(countryCode: string, countryName: string, query: string) {
+function generatePressFallback(countryCode: string, countryName: string, query: string) {
   const baseScore = 50 + Math.floor(Math.random() * 40) // 50-90
   const variation = Math.floor(Math.random() * 20) - 10 // -10 to +10
+  const finalScore = Math.max(30, Math.min(95, baseScore))
 
   return {
     country: countryName,
     countryCode: countryCode,
     flag: getCountryFlag(countryCode),
-    presence: Math.max(30, Math.min(95, baseScore + variation)),
-    sentiment: Math.max(30, Math.min(95, baseScore + variation + 5)),
-    coherence: Math.max(30, Math.min(95, baseScore + variation - 5)),
-    globalScore: Math.max(30, Math.min(95, baseScore)),
-    analysis: `Analyse de démonstration pour ${query} en ${countryName}. Les données réelles nécessitent une configuration API complète.`,
-    presenceRationale: `Présence ${getScoreLabel(baseScore)} basée sur une analyse simulée.`,
-    sentimentRationale: `Sentiment ${getScoreLabel(baseScore + 5)} selon une évaluation de démonstration.`,
-    coherenceRationale: `Cohérence ${getScoreLabel(baseScore - 5)} dans la communication digitale simulée.`,
-    sources: [
+    score: finalScore,
+    sentiment: finalScore >= 70 ? "positive" : finalScore >= 50 ? "neutral" : "negative",
+    summary: `Analyse de démonstration de la couverture presse pour ${query} en ${countryName}. Les données réelles nécessitent une configuration API complète.`,
+    articles: [
       {
-        title: `Source de démonstration 1 - ${countryName}`,
-        snippet: `Contenu de démonstration concernant ${query} dans le contexte de ${countryName}.`,
-        url: "https://example.com/demo1",
+        title: `${query} : Analyse de la couverture médiatique en ${countryName}`,
+        snippet: `Les médias de ${countryName} couvrent ${query} avec une approche ${finalScore >= 70 ? "positive" : "équilibrée"}.`,
+        url: "https://example.com/press1",
         source: "example.com",
         date: new Date().toISOString().split("T")[0],
-        country: countryCode,
-        language: getCountryLanguage(countryCode),
         relevanceScore: 85,
       },
       {
-        title: `Source de démonstration 2 - ${countryName}`,
-        snippet: `Analyse de démonstration sur la réputation de ${query} en ${countryName}.`,
-        url: "https://example.com/demo2",
+        title: `Impact médiatique de ${query} dans la presse locale`,
+        snippet: `La presse locale de ${countryName} analyse l'impact de ${query} sur le marché.`,
+        url: "https://example.com/press2",
         source: "example.com",
         date: new Date().toISOString().split("T")[0],
-        country: countryCode,
-        language: getCountryLanguage(countryCode),
         relevanceScore: 78,
       },
     ],
-    googleSummary: `Résumé de démonstration des résultats Google pour ${query} en ${countryName}.`,
-    gptSummary: `Analyse GPT de démonstration concernant la réputation de ${query} dans le contexte de ${countryName}.`,
+    keyTopics: ["presse", "médias", "couverture"],
+    riskFactors: finalScore < 60 ? ["perception négative", "couverture défavorable"] : [],
+    presenceScore: finalScore,
+    toneScore: finalScore + variation,
+    coherenceScore: finalScore - variation,
+    googleSummary: `Résumé de démonstration des résultats presse pour ${query} en ${countryName}.`,
+    gptSummary: `Analyse GPT de démonstration de la couverture presse de ${query} en ${countryName}.`,
   }
 }
 

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Swords, Globe, ChevronDown, Lightbulb } from "lucide-react"
+import { Menu, X, Swords, Globe, ChevronDown, Lightbulb, Newspaper } from "lucide-react"
 import Link from "next/link"
 import { useLanguage } from "@/contexts/language-context"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -84,20 +84,21 @@ export function Header() {
               GMI
             </Link>
             <Link
+              href="/presse"
+              className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-200 hover:scale-105 flex items-center gap-1"
+            >
+              <Newspaper className="w-4 h-4" />
+              Presse
+            </Link>
+            <Link
               href="/solutions"
               className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-200 hover:scale-105 flex items-center gap-1"
             >
               <Lightbulb className="w-4 h-4" />
               Solutions
             </Link>
-            <button
-              onClick={() => scrollToSection("pricing")}
-              className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-200 hover:scale-105"
-            >
-              {t("header.pricing")}
-            </button>
             <Link
-              href="/analyze"
+              href="/contact"
               className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-200 hover:scale-105"
             >
               {t("header.contact")}
@@ -173,6 +174,14 @@ export function Header() {
                 GMI
               </Link>
               <Link
+                href="/presse"
+                className="block px-4 py-3 text-base font-medium text-foreground/80 hover:text-primary hover:bg-primary/5 transition-all duration-200 w-full text-left rounded-lg flex items-center gap-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Newspaper className="w-4 h-4" />
+                Presse
+              </Link>
+              <Link
                 href="/solutions"
                 className="block px-4 py-3 text-base font-medium text-foreground/80 hover:text-primary hover:bg-primary/5 transition-all duration-200 w-full text-left rounded-lg flex items-center gap-2"
                 onClick={() => setIsMenuOpen(false)}
@@ -180,14 +189,8 @@ export function Header() {
                 <Lightbulb className="w-4 h-4" />
                 Solutions
               </Link>
-              <button
-                onClick={() => scrollToSection("pricing")}
-                className="block px-4 py-3 text-base font-medium text-foreground/80 hover:text-primary hover:bg-primary/5 transition-all duration-200 w-full text-left rounded-lg"
-              >
-                {t("header.pricing")}
-              </button>
               <Link
-                href="/analyze"
+                href="/contact"
                 className="block px-4 py-3 text-base font-medium text-foreground/80 hover:text-primary hover:bg-primary/5 transition-all duration-200 w-full text-left rounded-lg"
                 onClick={() => setIsMenuOpen(false)}
               >

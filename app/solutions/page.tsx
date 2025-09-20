@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Shield, BarChart3, CheckCircle, ArrowRight, Target, TrendingUp, Globe, MessageSquare } from "lucide-react"
 import Link from "next/link"
 import { useLanguage } from "@/contexts/language-context"
-import { LanguageSelector } from "@/components/language-selector"
 
 export default function QuintilianSolutionsPage() {
   const { t } = useLanguage()
@@ -13,60 +12,6 @@ export default function QuintilianSolutionsPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center">
-              <Link href="/solutions" className="group flex items-center space-x-3">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary via-accent to-secondary rounded-xl blur-sm opacity-60 group-hover:opacity-80 transition-all duration-300"></div>
-                  <div className="relative bg-gradient-to-br from-primary via-accent to-secondary text-primary-foreground px-3 py-2 rounded-xl font-bold text-lg shadow-lg">
-                    QS
-                  </div>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-                    {t("solutions.page_title")}
-                  </span>
-                  <span className="text-xs text-muted-foreground -mt-0.5 font-medium">
-                    {t("solutions.page_subtitle")}
-                  </span>
-                </div>
-              </Link>
-            </div>
-
-            <nav className="hidden md:flex items-center space-x-8">
-              <Link
-                href="#solutions"
-                className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-200"
-              >
-                {t("solutions.nav_solutions")}
-              </Link>
-              <Link
-                href="#methode"
-                className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-200"
-              >
-                {t("solutions.nav_method")}
-              </Link>
-              <Link
-                href="#contact"
-                className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-200"
-              >
-                {t("solutions.nav_contact")}
-              </Link>
-            </nav>
-
-            <div className="hidden md:flex items-center space-x-4">
-              <LanguageSelector />
-              <Link href="/#contact">
-                <Button className="bg-gradient-to-r from-primary via-accent to-secondary text-primary-foreground hover:from-primary/90 hover:via-accent/90 hover:to-secondary/90 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 font-semibold">
-                  {t("solutions.demo_button")}
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
 
       <section className="py-20 bg-gradient-to-br from-primary/5 to-accent/5">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -407,7 +352,7 @@ export default function QuintilianSolutionsPage() {
           <div className="text-center space-y-6 max-w-3xl mx-auto">
             <h2 className="text-3xl lg:text-4xl font-bold text-white text-balance">{t("solutions.final_cta_title")}</h2>
             <p className="text-xl text-white/90 text-pretty">{t("solutions.final_cta_desc")}</p>
-            <Link href="/analyze">
+            <Link href="/contact">
               <Button
                 size="lg"
                 variant="secondary"
@@ -442,7 +387,7 @@ export default function QuintilianSolutionsPage() {
               <Link href="/legal/privacy" className="hover:text-primary transition-colors">
                 {t("solutions.footer_privacy")}
               </Link>
-              <Link href="#contact" className="hover:text-primary transition-colors">
+              <Link href="/contact" className="hover:text-primary transition-colors">
                 {t("solutions.footer_contact")}
               </Link>
             </nav>

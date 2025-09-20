@@ -1,9 +1,9 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { DM_Sans } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { LanguageProvider } from "@/contexts/language-context"
+import { Header } from "@/components/header"
 import "./globals.css"
 
 const dmSans = DM_Sans({
@@ -28,9 +28,9 @@ export default function RootLayout({
     <html lang="fr">
       <body className={`font-sans ${dmSans.variable} antialiased`}>
         <LanguageProvider>
+          <Header />
           <Suspense fallback={null}>{children}</Suspense>
         </LanguageProvider>
-        <Analytics />
       </body>
     </html>
   )

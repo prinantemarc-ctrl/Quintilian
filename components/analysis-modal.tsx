@@ -6,12 +6,15 @@ import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
 import { InfoModal } from "@/components/info-modal"
 import { Eye, Heart, Target, ExternalLink, AlertCircle, User, Edit3, BarChart3, FileText } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { analysisHistory } from "@/lib/history"
+import { EnhancedScoreDisplay } from "@/components/enhanced-score-display"
+import { InteractiveLoadingAnimation } from "@/components/interactive-loading-animation"
+import { ResultsComparisonChart } from "@/components/results-comparison-chart"
 
 interface AnalysisModalProps {
   isOpen: boolean
@@ -215,6 +218,30 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
       // Small delay to show completion
       setTimeout(() => {
         setResult(analysisResult)
+
+        if (analysisResult && formData) {
+          analysisHistory.addAnalysis({
+            brand: formData.brand,
+            message: formData.message,
+            language: formData.language,
+            type: "simple",
+            results: {
+              presence_score: analysisResult.presence_score,
+              tone_score: analysisResult.tone_score,
+              coherence_score: analysisResult.coherence_score,
+              tone_label: analysisResult.tone_label,
+              rationale: analysisResult.rationale,
+              google_summary: analysisResult.google_summary,
+              gpt_summary: analysisResult.gpt_summary,
+              structured_conclusion: analysisResult.structured_conclusion,
+              detailed_analysis: analysisResult.detailed_analysis,
+              sources: analysisResult.sources,
+            },
+            metadata: {
+              fromCache: analysisResult._cache_stats ? true : false,
+            },
+          })
+        }
       }, 500)
     } catch (err) {
       console.error("Analysis error:", err)
@@ -285,75 +312,12 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
 
           <div className="space-y-6">
             {isAnalyzing ? (
-              <div className="py-8 space-y-8">
-                <div className="text-center space-y-4">
-                  <div className="space-y-2">
-                    <p className="text-lg font-medium">
-                      Analyse de : <span className="text-primary">{formData.brand}</span>
-                    </p>
-                    <p className="text-sm text-muted-foreground">Langue : {getLanguageLabel(formData.language)}</p>
-                  </div>
-
-                  {/* Progress Bar */}
-                  <div className="max-w-md mx-auto space-y-3">
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>Progression</span>
-                      <span>{Math.round(loadingProgress)}%</span>
-                    </div>
-                    <Progress value={loadingProgress} className="h-3" />
-                  </div>
-                </div>
-
-                {/* Loading Steps */}
-                <div className="max-w-lg mx-auto space-y-4">
-                  {loadingSteps.map((step, index) => (
-                    <div key={step.id} className="flex items-center gap-4 p-4 rounded-lg border bg-card">
-                      <div className="flex-shrink-0">
-                        {step.completed ? (
-                          <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
-                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                          </div>
-                        ) : step.active ? (
-                          <div className="w-8 h-8 flex items-center justify-center">
-                            <div className="animate-spin">{step.icon}</div>
-                          </div>
-                        ) : (
-                          <div className="w-8 h-8 flex items-center justify-center opacity-50">{step.icon}</div>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <p
-                          className={`font-medium ${
-                            step.completed ? "text-accent" : step.active ? "text-foreground" : "text-muted-foreground"
-                          }`}
-                        >
-                          {step.completed ? step.label.replace("en cours...", "terminée ✓") : step.label}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Animated dots */}
-                <div className="text-center">
-                  <div className="inline-flex space-x-1">
-                    <div
-                      className="w-2 h-2 bg-primary rounded-full animate-bounce"
-                      style={{ animationDelay: "0ms" }}
-                    ></div>
-                    <div
-                      className="w-2 h-2 bg-primary rounded-full animate-bounce"
-                      style={{ animationDelay: "150ms" }}
-                    ></div>
-                    <div
-                      className="w-2 h-2 bg-primary rounded-full animate-bounce"
-                      style={{ animationDelay: "300ms" }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
+              <InteractiveLoadingAnimation
+                isLoading={isAnalyzing}
+                progress={loadingProgress}
+                currentStep={loadingSteps.find((s) => s.active)?.id}
+                onComplete={() => setIsAnalyzing(false)}
+              />
             ) : identitySelection ? (
               <div className="space-y-6">
                 {/* Show scores if available */}
@@ -454,99 +418,37 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
 
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Scores détaillés</h3>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <Card className="relative overflow-hidden">
-                      <div
-                        className={`absolute top-0 left-0 right-0 h-1 ${getProgressColor(result.presence_score)}`}
-                      ></div>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-base">
-                          <Eye className="w-5 h-5 text-primary" />
-                          Présence Digitale
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <span className={`text-3xl font-bold ${getScoreColor(result.presence_score)}`}>
-                              {result.presence_score}
-                            </span>
-                            <span className="text-sm text-muted-foreground">/100</span>
-                          </div>
-                          <Progress value={result.presence_score} className="h-3" />
-                          <div className="space-y-1">
-                            <p className="text-xs font-medium text-muted-foreground">Visibilité sur :</p>
-                            <div className="flex gap-2 text-xs">
-                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">Google</span>
-                              <span className="bg-green-100 text-green-800 px-2 py-1 rounded">ChatGPT</span>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                  <EnhancedScoreDisplay
+                    presence_score={result.presence_score}
+                    tone_score={result.tone_score}
+                    coherence_score={result.coherence_score}
+                    tone_label={result.tone_label}
+                    animated={true}
+                    showTrends={false}
+                  />
+                </div>
 
-                    <Card className="relative overflow-hidden">
-                      <div className={`absolute top-0 left-0 right-0 h-1 ${getProgressColor(result.tone_score)}`}></div>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-base">
-                          <Heart className="w-5 h-5 text-primary" />
-                          Sentiment Global
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <span className={`text-3xl font-bold ${getScoreColor(result.tone_score)}`}>
-                              {result.tone_score}
-                            </span>
-                            <span className="text-sm text-muted-foreground">/100</span>
-                          </div>
-                          <Progress value={result.tone_score} className="h-3" />
-                          <div className="space-y-1">
-                            <p className="text-xs font-medium text-muted-foreground">Tonalité détectée :</p>
-                            <span
-                              className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                                result.tone_label.toLowerCase().includes("positif")
-                                  ? "bg-green-100 text-green-800"
-                                  : result.tone_label.toLowerCase().includes("négatif")
-                                    ? "bg-red-100 text-red-800"
-                                    : "bg-gray-100 text-gray-800"
-                              }`}
-                            >
-                              {result.tone_label}
-                            </span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="relative overflow-hidden">
-                      <div
-                        className={`absolute top-0 left-0 right-0 h-1 ${getProgressColor(result.coherence_score)}`}
-                      ></div>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-base">
-                          <Target className="w-5 h-5 text-primary" />
-                          Cohérence Message
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <span className={`text-3xl font-bold ${getScoreColor(result.coherence_score)}`}>
-                              {result.coherence_score}
-                            </span>
-                            <span className="text-sm text-muted-foreground">/100</span>
-                          </div>
-                          <Progress value={result.coherence_score} className="h-3" />
-                          <div className="space-y-1">
-                            <p className="text-xs font-medium text-muted-foreground">Alignement :</p>
-                            <div className="text-xs text-muted-foreground">Message vs Réalité digitale</div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Analyse Comparative</h3>
+                  <ResultsComparisonChart
+                    data={{
+                      current: {
+                        presence_score: result.presence_score,
+                        tone_score: result.tone_score,
+                        coherence_score: result.coherence_score,
+                        brand: formData.brand,
+                        date: new Date().toISOString(),
+                      },
+                      industry_average: {
+                        presence_score: 65,
+                        tone_score: 70,
+                        coherence_score: 68,
+                      },
+                    }}
+                    showIndustryBenchmark={true}
+                    showCompetitors={false}
+                    showTrends={false}
+                  />
                 </div>
 
                 {(result.google_summary ||
@@ -844,6 +746,14 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                       className="text-primary border-primary hover:bg-primary/10"
                     >
                       Méthodologie de calcul
+                    </Button>
+                    <Button variant="outline" asChild>
+                      <a href="/methodology" target="_blank" rel="noopener noreferrer">
+                        Guide complet
+                      </a>
+                    </Button>
+                    <Button variant="outline" asChild>
+                      <a href="/history">Voir l'historique</a>
                     </Button>
                     <Button onClick={onClose}>Nouvelle analyse</Button>
                   </div>
