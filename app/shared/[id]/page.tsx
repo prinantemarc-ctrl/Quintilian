@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation"
-import { getSharedResult } from "@/lib/services/shared-results"
+import { getSharedResultServer } from "@/lib/services/shared-results-server"
 import { SharedResultDisplay } from "@/components/shared-result-display"
 import type { Metadata } from "next"
 
@@ -9,7 +9,7 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params
-  const result = await getSharedResult(id)
+  const result = await getSharedResultServer(id)
 
   if (!result) {
     return {
@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function SharedResultPage({ params }: PageProps) {
   const { id } = await params
-  const result = await getSharedResult(id)
+  const result = await getSharedResultServer(id)
 
   if (!result) {
     notFound()
