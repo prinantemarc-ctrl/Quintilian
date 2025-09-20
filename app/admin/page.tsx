@@ -492,7 +492,7 @@ export default function AdminPage() {
                     </div>
                     <div className="flex justify-between">
                       <span>Taux de succès</span>
-                      <span className="font-bold text-green-600">
+                      <span className="font-bold text-primary">
                         {(((stats.total - stats.errors) / stats.total) * 100).toFixed(1)}%
                       </span>
                     </div>

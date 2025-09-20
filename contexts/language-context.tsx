@@ -20,8 +20,13 @@ const translations = {
     "header.try_free": "Essayez gratuitement",
 
     // Hero Section
-    "hero.title": "Votre réputation en ligne en 3 indicateurs",
-    "hero.subtitle":
+    "hero.badge": "Analyse SEO Instantanée Powered by AI",
+    "hero.title_measure": "Mesurez",
+    "hero.title_reputation": "votre réputation en ligne",
+    "hero.title_time": "en une minute",
+    "hero.subtitle": "3 scores, un résultat clair",
+    "hero.title": "Mesurez votre réputation en ligne en une minute - 3 scores, un résultat clair",
+    "hero.subtitle_desc":
       "Découvrez en un instant comment Google et l'IA perçoivent votre nom ou votre marque : visibilité, tonalité et cohérence.",
     "hero.name_label": "Nom / Brand",
     "hero.name_placeholder": "Mon identité, mon entreprise, ma marque...",
@@ -50,15 +55,15 @@ const translations = {
 
     // Use Cases
     "usecases.title": "Pour qui ?",
-    "usecases.subtitle": "Un outil adapté à tous les professionnels du digital",
+    "usecases.subtitle": "Un outil adapté pour tout le monde",
     "usecases.companies": "Entreprises",
-    "usecases.companies_desc": "Pilotez votre e-réputation et votre contenu.",
+    "usecases.companies_desc": "Surveillez vos concurrents et protégez votre réputation contre les attaques.",
     "usecases.media": "Médias",
-    "usecases.media_desc": "Cadrez le ton éditorial multi-plateformes.",
+    "usecases.media_desc": "Cadrez le ton éditorial et détectez les campagnes adverses.",
     "usecases.individuals": "Particuliers",
-    "usecases.individuals_desc": "Soignez votre présence en ligne.",
+    "usecases.individuals_desc": "Défendez votre image personnelle contre la désinformation.",
     "usecases.agencies": "Agences de communication",
-    "usecases.agencies_desc": "Auditez et comparez vos clients en un clin d'œil.",
+    "usecases.agencies_desc": "Intelligence concurrentielle et guerre informationnelle pour vos clients.",
 
     // Example Section
     "example.title": "Exemple de résultat",
@@ -68,6 +73,49 @@ const translations = {
     "example.coherence": "Cohérence",
     "example.scale": "Échelle :",
     "example.how_calculated": "Voir comment c'est calculé",
+    "example.simple_mode": "Mode Simple",
+    "example.duel_mode": "Mode Duel",
+    "example.company_name": "TechCorp Solutions",
+    "example.analysis_date": "Analysé le 15 janvier 2025",
+    "example.global_score": "Score Global",
+    "example.key_metrics": "Métriques Clés",
+    "example.search_volume": "Volume de recherche mensuel",
+    "example.brand_mentions": "Mentions de marque",
+    "example.sentiment_evolution": "Évolution sentiment (30j)",
+    "example.strategic_recommendations": "Recommandations Stratégiques",
+    "example.rec1_title": "Optimiser le contenu SEO",
+    "example.rec1_desc": "Créer 15 articles ciblés sur vos mots-clés principaux",
+    "example.rec1_impact": "Impact estimé: +25% visibilité",
+    "example.rec2_title": "Renforcer la présence sociale",
+    "example.rec2_desc": "Augmenter la fréquence de publication LinkedIn",
+    "example.rec2_impact": "Impact estimé: +18% engagement",
+    "example.threat_analysis": "Analyse des Menaces",
+    "example.threat1": "Concurrent direct avec meilleur SEO",
+    "example.threat2": "Mentions négatives sur forums spécialisés",
+    "example.threat3": "Absence sur certains canaux clés",
+    "example.duel_title": "Nike vs Adidas - Analyse Comparative",
+    "example.market_context": "Contexte Marché",
+    "example.market_desc": "Secteur sportswear premium, concurrence intense sur l'innovation et l'image de marque",
+    "example.category_analysis": "Analyse par Catégorie",
+    "example.seo_performance": "Performance SEO",
+    "example.social_presence": "Présence Sociale",
+    "example.brand_perception": "Perception Marque",
+    "example.content_quality": "Qualité Contenu",
+    "example.competitive_intelligence": "Intelligence Concurrentielle",
+    "example.nike_strengths": "Forces Nike",
+    "example.nike_strength1": "Innovation produit constante",
+    "example.nike_strength2": "Partenariats athlètes premium",
+    "example.nike_strength3": "Storytelling émotionnel fort",
+    "example.adidas_strengths": "Forces Adidas",
+    "example.adidas_strength1": "Héritage sportif authentique",
+    "example.adidas_strength2": "Collaborations mode/streetwear",
+    "example.adidas_strength3": "Engagement développement durable",
+    "example.nike_weaknesses": "Faiblesses Nike",
+    "example.nike_weakness1": "Controverses éthiques récurrentes",
+    "example.nike_weakness2": "Prix premium limitant l'accessibilité",
+    "example.adidas_weaknesses": "Faiblesses Adidas",
+    "example.adidas_weakness1": "Innovation perçue comme moins disruptive",
+    "example.adidas_weakness2": "Présence digitale moins agressive",
 
     // Pricing
     "pricing.title": "Tarifs simples et transparents",
@@ -104,7 +152,8 @@ const translations = {
 
     // Contact
     "contact.title": "Contactez-nous",
-    "contact.subtitle": "Une question ? Un besoin spécifique ? Nous sommes là pour vous aider.",
+    "contact.subtitle":
+      "Votre score ne vous satisfait pas ? Vous voulez influer dessus ? Nous avons les solutions qu'il vous faut.",
     "contact.form_title": "Envoyez-nous un message",
     "contact.email": "Email",
     "contact.email_placeholder": "votre@email.com",
@@ -135,7 +184,60 @@ const translations = {
     "footer.terms": "CGU",
     "footer.contact_title": "Contact",
     "footer.support": "Support disponible 7j/7",
-    "footer.copyright": "© 2024 SEO/GPT Score Analyzer. Tous droits réservés.",
+    "footer.copyright": "© 2025 Quintilian App. Tous droits réservés.",
+
+    // Legal pages
+    "legal.back_home": "Retour à l'accueil",
+    "legal.mentions_title": "Mentions légales",
+    "legal.privacy_title": "Politique de confidentialité",
+    "legal.terms_title": "Conditions générales d'utilisation",
+
+    // Mentions légales
+    "legal.editor_info": "Informations sur l'éditeur",
+    "legal.company_address": "Adresse : France",
+    "legal.hosting_info": "Informations sur l'hébergement",
+    "legal.hosting_details":
+      "Ce site est hébergé par Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, États-Unis.",
+    "legal.intellectual_property": "Propriété intellectuelle",
+    "legal.ip_content":
+      "L'ensemble des contenus présents sur ce site (textes, images, logos, etc.) sont protégés par le droit d'auteur et appartiennent à Quintilian App ou à leurs auteurs respectifs.",
+    "legal.liability": "Responsabilité",
+    "legal.liability_content":
+      "Quintilian App s'efforce de fournir des informations exactes mais ne peut garantir l'exactitude, la complétude ou l'actualité des informations diffusées sur ce site.",
+
+    // Politique de confidentialité
+    "legal.data_collection": "Collecte des données",
+    "legal.data_collection_content":
+      "Nous collectons uniquement les données nécessaires au fonctionnement de notre service d'analyse de réputation en ligne.",
+    "legal.data_usage": "Utilisation des données",
+    "legal.data_usage_content":
+      "Vos données sont utilisées exclusivement pour fournir nos services d'analyse et ne sont jamais partagées avec des tiers sans votre consentement.",
+    "legal.cookies": "Cookies",
+    "legal.cookies_content":
+      "Notre site utilise des cookies techniques nécessaires au bon fonctionnement du service. Aucun cookie de tracking n'est utilisé.",
+    "legal.user_rights": "Vos droits",
+    "legal.user_rights_content":
+      "Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, de suppression et de portabilité de vos données personnelles.",
+    "legal.contact_privacy": "Contact",
+    "legal.contact_privacy_content":
+      "Pour toute question relative à la protection de vos données, contactez-nous à : contact@quintilian.app",
+
+    // CGU
+    "legal.acceptance": "Acceptation des conditions",
+    "legal.acceptance_content":
+      "L'utilisation de ce site implique l'acceptation pleine et entière des conditions générales d'utilisation décrites ci-après.",
+    "legal.service_description": "Description du service",
+    "legal.service_description_content":
+      "Quintilian App propose un service d'analyse de réputation en ligne utilisant l'intelligence artificielle pour évaluer votre présence digitale.",
+    "legal.user_obligations": "Obligations de l'utilisateur",
+    "legal.user_obligations_content":
+      "L'utilisateur s'engage à utiliser le service de manière conforme à la loi et à ne pas porter atteinte aux droits de tiers.",
+    "legal.service_availability": "Disponibilité du service",
+    "legal.service_availability_content":
+      "Nous nous efforçons d'assurer une disponibilité maximale du service mais ne pouvons garantir un accès ininterrompu.",
+    "legal.modifications": "Modifications",
+    "legal.modifications_content":
+      "Ces conditions peuvent être modifiées à tout moment. Les utilisateurs seront informés des changements importants.",
 
     // Info Modal
     "info.title": "Comment sont calculés vos scores ?",
@@ -158,7 +260,7 @@ const translations = {
     "info.coherence_item1": "Consistance du message",
     "info.coherence_item2": "Alignement multi-canaux",
     "info.coherence_item3": "Clarté du positionnement",
-    "info.coherence_item4": "Crédibilité des informations",
+    "info.coherence_item4": "Credibilité des informations",
     "info.coherence_item5": "Logique narrative",
     "info.scale_title": "Échelle de notation",
     "info.excellent": "80-100 : Excellent",
@@ -187,7 +289,7 @@ const translations = {
     // Analysis Form
     "analysis.form_title": "Commencez votre analyse",
     "analysis.form_desc": "Remplissez les informations ci-dessous pour analyser votre présence digitale",
-    "analysis.name_label": "Nom / Marque à analyser",
+    "analysis.name_label": "Nom / Brand à analyser",
     "analysis.name_placeholder": "Mon identité, mon entreprise, ma marque...",
     "analysis.message_label": "Message (optionnel)",
     "analysis.message_placeholder": "Vérifiez si cette phrase matche avec votre identité en ligne",
@@ -223,6 +325,117 @@ const translations = {
     "lang.korean": "Coréen",
     "lang.swedish": "Suédois",
     "lang.norwegian": "Norvégien",
+
+    // Solutions Page
+    "solutions.title": "Nos Solutions",
+    "solutions.subtitle":
+      "Votre score ne vous satisfait pas ? Vous voulez influer dessus ? Nous avons les solutions qu'il vous faut.",
+    "solutions.hero_title": "Transformez votre présence digitale",
+    "solutions.hero_desc": "Des solutions personnalisées pour améliorer vos scores de présence, tonalité et cohérence.",
+    "solutions.audit_title": "Audit Complet",
+    "solutions.audit_desc": "Analyse approfondie de votre écosystème digital avec recommandations personnalisées.",
+    "solutions.optimization_title": "Optimisation SEO",
+    "solutions.optimization_desc": "Amélioration de votre visibilité sur Google et les moteurs de recherche.",
+    "solutions.content_title": "Stratégie de Contenu",
+    "solutions.content_desc": "Création d'une ligne éditoriale cohérente pour renforcer votre message.",
+    "solutions.reputation_title": "Gestion de Réputation",
+    "solutions.reputation_desc": "Monitor and improve your online brand image.",
+    "solutions.cta_title": "Prêt à améliorer vos scores ?",
+    "solutions.cta_desc": "Contactez notre équipe d'experts pour une consultation personnalisée.",
+    "solutions.contact_button": "Demander une consultation",
+
+    // Duel CTA
+    "duel_cta.title": "Vous avez un concurrent, un adversaire, ou vous êtes simplement curieux ?",
+    "duel_cta.subtitle": "Testez le mode duel et comparez votre réputation en ligne avec celle des autres",
+    "duel_cta.button": "Lancer un Duel",
+
+    // Solutions Page - Complete translations
+    "solutions.page_title": "Quintilian Solutions",
+    "solutions.page_subtitle": "Digital Reputation",
+    "solutions.nav_solutions": "Solutions",
+    "solutions.nav_method": "Méthode",
+    "solutions.nav_contact": "Contact",
+    "solutions.demo_button": "Demander une démo",
+    "solutions.hero_main_title": "Maîtrisez votre réputation digitale avec IA et SEO",
+    "solutions.hero_main_desc":
+      "Quintilian Solutions combine SEO intelligent, analyse IA et influence sociale pour renforcer votre visibilité et votre crédibilité.",
+    "solutions.discover_button": "Découvrir nos solutions",
+    "solutions.dashboard_title": "Dashboard Analytics",
+    "solutions.our_solutions": "Nos solutions",
+    "solutions.systemic_approach":
+      "Une approche systémique pour dominer votre écosystème digital et neutraliser les menaces",
+
+    // Dashboard Analytics Module
+    "solutions.dashboard_analytics_title": "Dashboard Analytics - Réputation en Temps Réel",
+    "solutions.dashboard_analytics_desc":
+      "Bénéficiez de votre dashboard analytics de votre réputation en ligne en temps réel",
+    "solutions.essential_metrics": "Métriques Essentielles",
+    "solutions.ai_presence": "Présence IA - Visibilité dans les réponses GPT et IA",
+    "solutions.seo_presence": "Présence SEO - Positionnement moteurs de recherche",
+    "solutions.press_impact": "Impact Presse - Couverture médiatique et mentions",
+    "solutions.behavioral_analysis": "Analyse Comportementale",
+    "solutions.social_presence": "Présence Réseaux Sociaux - Engagement et portée",
+    "solutions.sentiment": "Sentiment - Analyse tonalité et perception",
+    "solutions.message_coherence": "Cohérence Message - Alignement narratif global",
+    "solutions.monitoring_247": "⚡ Monitoring 24/7 avec alertes instantanées et recommandations IA personnalisées",
+
+    // 4 Action Modules
+    "solutions.four_modules_title": "Nos 4 modules d'action",
+    "solutions.four_modules_desc": "Solutions opérationnelles pour transformer votre présence digitale",
+
+    // Module H
+    "solutions.module_h_title": "Module H - Duplication Instantanée",
+    "solutions.module_h_desc": "Déploiement instantané de contenu dans un réseau de sites dans 103 pays et 35 langues",
+    "solutions.module_h_feature1": "Influence sur les algorithmes GPT",
+    "solutions.module_h_feature2": "Impact SEO massif et instantané",
+    "solutions.module_h_feature3": "Réseau de sites d'autorité mondial",
+    "solutions.module_h_feature4": "Déploiement multilingue automatisé",
+
+    // Module A
+    "solutions.module_a_title": "Module A - Défense Sociale",
+    "solutions.module_a_desc": "Système de défense et promotion sur les réseaux sociaux, principalement X",
+    "solutions.module_a_feature1": "Impact SEO via signaux sociaux",
+    "solutions.module_a_feature2": "Influence sur recherches réseaux",
+    "solutions.module_a_feature3": "Modification des algorithmes IA",
+    "solutions.module_a_feature4": "Stratégie défensive automatisée",
+
+    // Module C
+    "solutions.module_c_title": "Module C - Autorité Premium",
+    "solutions.module_c_desc": "Réseau de sites premium et d'autorité pour légitimité réelle et durable",
+    "solutions.module_c_feature1": "Implémentation durable SEO",
+    "solutions.module_c_feature2": "Influence sur GPT et IA",
+    "solutions.module_c_feature3": "Sites haute autorité de domaine",
+    "solutions.module_c_feature4": "Légitimité institutionnelle",
+
+    // Module P
+    "solutions.module_p_title": "Module P - Sur Mesure",
+    "solutions.module_p_desc": "Opérateurs spécialisés en OSINT et techniques avancées d'influence",
+    "solutions.module_p_feature1": "Analyse OSINT approfondie",
+    "solutions.module_p_feature2": "Enjeux humains et psychologiques",
+    "solutions.module_p_feature3": "Techniques d'influence avancées",
+    "solutions.module_p_feature4": "Stratégie personnalisée sur mesure",
+
+    // Why Us Section
+    "solutions.why_us_title": "Pourquoi nous ?",
+    "solutions.why_us_desc": "Une expertise unique au service de votre réputation digitale",
+    "solutions.increased_visibility": "Visibilité accrue",
+    "solutions.increased_visibility_desc": "Positionnement optimal sur Google et moteurs de recherche",
+    "solutions.controlled_reputation": "Réputation maîtrisée",
+    "solutions.controlled_reputation_desc": "Contrôle total de votre image digitale et narrative",
+    "solutions.measurable_influence": "Influence mesurable",
+    "solutions.measurable_influence_desc": "ROI transparent avec métriques précises et KPIs",
+    "solutions.digital_strategy": "Stratégie Digitale",
+    "solutions.approach_360": "Approche 360°",
+
+    // Final CTA
+    "solutions.final_cta_title": "Renforcez votre présence en ligne dès aujourd'hui",
+    "solutions.final_cta_desc": "Découvrez comment nos solutions peuvent transformer votre réputation digitale",
+    "solutions.take_contact": "Prendre contact",
+
+    // Footer
+    "solutions.footer_legal": "Mentions légales",
+    "solutions.footer_privacy": "Politique de confidentialité",
+    "solutions.footer_contact": "Contact",
   },
   en: {
     // Header
@@ -233,8 +446,13 @@ const translations = {
     "header.try_free": "Try for Free",
 
     // Hero Section
-    "hero.title": "Your online reputation in 3 indicators",
-    "hero.subtitle":
+    "hero.badge": "Instant SEO Analysis Powered by AI",
+    "hero.title_measure": "Measure",
+    "hero.title_reputation": "your online reputation",
+    "hero.title_time": "in one minute",
+    "hero.subtitle": "3 scores, clear results",
+    "hero.title": "Measure your online reputation in one minute - 3 scores, clear results",
+    "hero.subtitle_desc":
       "Instantly discover how Google and AI perceive your name or brand: visibility, tone, and consistency.",
     "hero.name_label": "Name / Brand",
     "hero.name_placeholder": "My identity, my company, my brand...",
@@ -263,15 +481,15 @@ const translations = {
 
     // Use Cases
     "usecases.title": "Who is it for?",
-    "usecases.subtitle": "A tool adapted to all digital professionals",
+    "usecases.subtitle": "A tool adapted for everyone",
     "usecases.companies": "Companies",
-    "usecases.companies_desc": "Manage your e-reputation and content.",
+    "usecases.companies_desc": "Monitor your competitors and protect your reputation against attacks.",
     "usecases.media": "Media",
-    "usecases.media_desc": "Frame multi-platform editorial tone.",
+    "usecases.media_desc": "Frame editorial tone and detect adverse campaigns.",
     "usecases.individuals": "Individuals",
-    "usecases.individuals_desc": "Take care of your online presence.",
+    "usecases.individuals_desc": "Defend your personal image against disinformation.",
     "usecases.agencies": "Communication agencies",
-    "usecases.agencies_desc": "Audit and compare your clients at a glance.",
+    "usecases.agencies_desc": "Competitive intelligence and information warfare for your clients.",
 
     // Example Section
     "example.title": "Example result",
@@ -281,6 +499,49 @@ const translations = {
     "example.coherence": "Coherence",
     "example.scale": "Scale:",
     "example.how_calculated": "See how it's calculated",
+    "example.simple_mode": "Simple Mode",
+    "example.duel_mode": "Duel Mode",
+    "example.company_name": "TechCorp Solutions",
+    "example.analysis_date": "Analyzed on January 15, 2025",
+    "example.global_score": "Global Score",
+    "example.key_metrics": "Key Metrics",
+    "example.search_volume": "Monthly search volume",
+    "example.brand_mentions": "Brand mentions",
+    "example.sentiment_evolution": "Sentiment evolution (30d)",
+    "example.strategic_recommendations": "Strategic Recommendations",
+    "example.rec1_title": "Optimize SEO content",
+    "example.rec1_desc": "Create 15 targeted articles on your main keywords",
+    "example.rec1_impact": "Estimated impact: +25% visibility",
+    "example.rec2_title": "Strengthen social presence",
+    "example.rec2_desc": "Increase LinkedIn posting frequency",
+    "example.rec2_impact": "Estimated impact: +18% engagement",
+    "example.threat_analysis": "Threat Analysis",
+    "example.threat1": "Direct competitor with better SEO",
+    "example.threat2": "Negative mentions on specialized forums",
+    "example.threat3": "Absence on certain key channels",
+    "example.duel_title": "Nike vs Adidas - Comparative Analysis",
+    "example.market_context": "Market Context",
+    "example.market_desc": "Premium sportswear sector, intense competition on innovation and brand image",
+    "example.category_analysis": "Category Analysis",
+    "example.seo_performance": "SEO Performance",
+    "example.social_presence": "Social Presence",
+    "example.brand_perception": "Brand Perception",
+    "example.content_quality": "Content Quality",
+    "example.competitive_intelligence": "Competitive Intelligence",
+    "example.nike_strengths": "Nike Strengths",
+    "example.nike_strength1": "Constant product innovation",
+    "example.nike_strength2": "Premium athlete partnerships",
+    "example.nike_strength3": "Strong emotional storytelling",
+    "example.adidas_strengths": "Adidas Strengths",
+    "example.adidas_strength1": "Authentic sports heritage",
+    "example.adidas_strength2": "Fashion/streetwear collaborations",
+    "example.adidas_strength3": "Sustainable development commitment",
+    "example.nike_weaknesses": "Nike Weaknesses",
+    "example.nike_weakness1": "Recurring ethical controversies",
+    "example.nike_weakness2": "Premium pricing limiting accessibility",
+    "example.adidas_weaknesses": "Adidas Weaknesses",
+    "example.adidas_weakness1": "Innovation perceived as less disruptive",
+    "example.adidas_weakness2": "Less aggressive digital presence",
 
     // Pricing
     "pricing.title": "Simple and transparent pricing",
@@ -317,7 +578,7 @@ const translations = {
 
     // Contact
     "contact.title": "Contact us",
-    "contact.subtitle": "A question? A specific need? We're here to help.",
+    "contact.subtitle": "Not satisfied with your score? Want to influence it? We have the solutions you need.",
     "contact.form_title": "Send us a message",
     "contact.email": "Email",
     "contact.email_placeholder": "your@email.com",
@@ -348,7 +609,59 @@ const translations = {
     "footer.terms": "Terms of use",
     "footer.contact_title": "Contact",
     "footer.support": "Support available 24/7",
-    "footer.copyright": "© 2024 SEO/GPT Score Analyzer. All rights reserved.",
+    "footer.copyright": "© 2025 Quintilian App. All rights reserved.",
+
+    // Legal pages
+    "legal.back_home": "Back to home",
+    "legal.mentions_title": "Legal notices",
+    "legal.privacy_title": "Privacy policy",
+    "legal.terms_title": "Terms of use",
+
+    // Legal notices
+    "legal.editor_info": "Publisher information",
+    "legal.company_address": "Address: France",
+    "legal.hosting_info": "Hosting information",
+    "legal.hosting_details":
+      "This site is hosted by Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, United States.",
+    "legal.intellectual_property": "Intellectual property",
+    "legal.ip_content":
+      "All content on this site (texts, images, logos, etc.) is protected by copyright and belongs to Quintilian App or their respective authors.",
+    "legal.liability": "Liability",
+    "legal.liability_content":
+      "Quintilian App strives to provide accurate information but cannot guarantee the accuracy, completeness or timeliness of information published on this site.",
+
+    // Privacy policy
+    "legal.data_collection": "Data collection",
+    "legal.data_collection_content":
+      "We only collect data necessary for the operation of our online reputation analysis service.",
+    "legal.data_usage": "Data usage",
+    "legal.data_usage_content":
+      "Your data is used exclusively to provide our analysis services and is never shared with third parties without your consent.",
+    "legal.cookies": "Cookies",
+    "legal.cookies_content":
+      "Our site uses technical cookies necessary for the proper functioning of the service. No tracking cookies are used.",
+    "legal.user_rights": "Your rights",
+    "legal.user_rights_content":
+      "In accordance with GDPR, you have the right to access, rectify, delete and port your personal data.",
+    "legal.contact_privacy": "Contact",
+    "legal.contact_privacy_content":
+      "For any questions regarding the protection of your data, contact us at: contact@quintilian.app",
+
+    // Terms of use
+    "legal.acceptance": "Acceptance of terms",
+    "legal.acceptance_content": "Use of this site implies full acceptance of the general terms of use described below.",
+    "legal.service_description": "Service description",
+    "legal.service_description_content":
+      "Quintilian App offers an online reputation analysis service using artificial intelligence to evaluate your digital presence.",
+    "legal.user_obligations": "User obligations",
+    "legal.user_obligations_content":
+      "The user undertakes to use the service in accordance with the law and not to infringe the rights of third parties.",
+    "legal.service_availability": "Service availability",
+    "legal.service_availability_content":
+      "We strive to ensure maximum service availability but cannot guarantee uninterrupted access.",
+    "legal.modifications": "Modifications",
+    "legal.modifications_content":
+      "These terms may be modified at any time. Users will be informed of important changes.",
 
     // Info Modal
     "info.title": "How are your scores calculated?",
@@ -436,6 +749,114 @@ const translations = {
     "lang.korean": "Korean",
     "lang.swedish": "Swedish",
     "lang.norwegian": "Norwegian",
+
+    // Solutions Page
+    "solutions.title": "Our Solutions",
+    "solutions.subtitle": "Not satisfied with your score? Want to influence it? We have the solutions you need.",
+    "solutions.hero_title": "Transform your digital presence",
+    "solutions.hero_desc": "Personalized solutions to improve your presence, tone and coherence scores.",
+    "solutions.audit_title": "Complete Audit",
+    "solutions.audit_desc": "In-depth analysis of your digital ecosystem with personalized recommendations.",
+    "solutions.optimization_title": "SEO Optimization",
+    "solutions.optimization_desc": "Improve your visibility on Google and search engines.",
+    "solutions.content_title": "Content Strategy",
+    "solutions.content_desc": "Create a coherent editorial line to strengthen your message.",
+    "solutions.reputation_title": "Reputation Management",
+    "solutions.reputation_desc": "Monitor and improve your online brand image.",
+    "solutions.cta_title": "Ready to improve your scores?",
+    "solutions.cta_desc": "Contact our team of experts for a personalized consultation.",
+    "solutions.contact_button": "Request consultation",
+
+    // Duel CTA
+    "duel_cta.title": "Do you have a competitor, an adversary, or are you simply curious?",
+    "duel_cta.subtitle": "Test duel mode and compare your online reputation with others",
+    "duel_cta.button": "Start a Duel",
+
+    // Solutions Page - Complete translations
+    "solutions.page_title": "Quintilian Solutions",
+    "solutions.page_subtitle": "Digital Reputation",
+    "solutions.nav_solutions": "Solutions",
+    "solutions.nav_method": "Method",
+    "solutions.nav_contact": "Contact",
+    "solutions.demo_button": "Request a demo",
+    "solutions.hero_main_title": "Master your digital reputation with AI and SEO",
+    "solutions.hero_main_desc":
+      "Quintilian Solutions combines intelligent SEO, AI analysis and social influence to strengthen your visibility and credibility.",
+    "solutions.discover_button": "Discover our solutions",
+    "solutions.dashboard_title": "Dashboard Analytics",
+    "solutions.our_solutions": "Our solutions",
+    "solutions.systemic_approach": "A systemic approach to dominate your digital ecosystem and neutralize threats",
+
+    // Dashboard Analytics Module
+    "solutions.dashboard_analytics_title": "Dashboard Analytics - Real-Time Reputation",
+    "solutions.dashboard_analytics_desc": "Benefit from your real-time online reputation analytics dashboard",
+    "solutions.essential_metrics": "Essential Metrics",
+    "solutions.ai_presence": "AI Presence - Visibility in GPT and AI responses",
+    "solutions.seo_presence": "SEO Presence - Search engine positioning",
+    "solutions.press_impact": "Press Impact - Media coverage and mentions",
+    "solutions.behavioral_analysis": "Behavioral Analysis",
+    "solutions.social_presence": "Social Media Presence - Engagement and reach",
+    "solutions.sentiment": "Sentiment - Tone and perception analysis",
+    "solutions.message_coherence": "Message Coherence - Global narrative alignment",
+    "solutions.monitoring_247": "⚡ 24/7 Monitoring with instant alerts and personalized AI recommendations",
+
+    // 4 Action Modules
+    "solutions.four_modules_title": "Our 4 action modules",
+    "solutions.four_modules_desc": "Operational solutions to transform your digital presence",
+
+    // Module H
+    "solutions.module_h_title": "Module H - Instant Duplication",
+    "solutions.module_h_desc": "Instant content deployment across a network of sites in 103 countries and 35 languages",
+    "solutions.module_h_feature1": "Influence on GPT algorithms",
+    "solutions.module_h_feature2": "Massive and instant SEO impact",
+    "solutions.module_h_feature3": "Global authority sites network",
+    "solutions.module_h_feature4": "Automated multilingual deployment",
+
+    // Module A
+    "solutions.module_a_title": "Module A - Social Defense",
+    "solutions.module_a_desc": "Defense and promotion system on social networks, mainly X",
+    "solutions.module_a_feature1": "SEO impact via social signals",
+    "solutions.module_a_feature2": "Influence on network searches",
+    "solutions.module_a_feature3": "AI algorithm modification",
+    "solutions.module_a_feature4": "Automated defensive strategy",
+
+    // Module C
+    "solutions.module_c_title": "Module C - Premium Authority",
+    "solutions.module_c_desc": "Network of premium and authority sites for real and lasting legitimacy",
+    "solutions.module_c_feature1": "Sustainable SEO implementation",
+    "solutions.module_c_feature2": "Influence on GPT and AI",
+    "solutions.module_c_feature3": "High domain authority sites",
+    "solutions.module_c_feature4": "Institutional legitimacy",
+
+    // Module P
+    "solutions.module_p_title": "Module P - Custom Made",
+    "solutions.module_p_desc": "Operators specialized in OSINT and advanced influence techniques",
+    "solutions.module_p_feature1": "In-depth OSINT analysis",
+    "solutions.module_p_feature2": "Human and psychological issues",
+    "solutions.module_p_feature3": "Advanced influence techniques",
+    "solutions.module_p_feature4": "Personalized custom strategy",
+
+    // Why Us Section
+    "solutions.why_us_title": "Why us?",
+    "solutions.why_us_desc": "Unique expertise at the service of your digital reputation",
+    "solutions.increased_visibility": "Increased visibility",
+    "solutions.increased_visibility_desc": "Optimal positioning on Google and search engines",
+    "solutions.controlled_reputation": "Controlled reputation",
+    "solutions.controlled_reputation_desc": "Total control of your digital image and narrative",
+    "solutions.measurable_influence": "Measurable influence",
+    "solutions.measurable_influence_desc": "Transparent ROI with precise metrics and KPIs",
+    "solutions.digital_strategy": "Digital Strategy",
+    "solutions.approach_360": "360° Approach",
+
+    // Final CTA
+    "solutions.final_cta_title": "Strengthen your online presence today",
+    "solutions.final_cta_desc": "Discover how our solutions can transform your digital reputation",
+    "solutions.take_contact": "Get in touch",
+
+    // Footer
+    "solutions.footer_legal": "Legal notices",
+    "solutions.footer_privacy": "Privacy policy",
+    "solutions.footer_contact": "Contact",
   },
   es: {
     // Header
@@ -446,8 +867,13 @@ const translations = {
     "header.try_free": "Prueba gratis",
 
     // Hero Section
-    "hero.title": "Tu reputación online en 3 indicadores",
-    "hero.subtitle":
+    "hero.badge": "Análisis SEO Instantáneo Powered by AI",
+    "hero.title_measure": "Mide",
+    "hero.title_reputation": "tu reputación en línea",
+    "hero.title_time": "en un minuto",
+    "hero.subtitle": "3 puntuaciones, resultados claros",
+    "hero.title": "Mide tu reputación en línea en un minuto - 3 puntuaciones, resultados claros",
+    "hero.subtitle_desc":
       "Descubre al instante cómo Google y la IA perciben tu nombre o marca: visibilidad, tono y coherencia.",
     "hero.name_label": "Nombre / Marca",
     "hero.name_placeholder": "Mi identidad, mi empresa, mi marca...",
@@ -476,15 +902,15 @@ const translations = {
 
     // Use Cases
     "usecases.title": "¿Para quién?",
-    "usecases.subtitle": "Una herramienta adaptada a todos los profesionales digitales",
+    "usecases.subtitle": "Una herramienta adaptada para todos",
     "usecases.companies": "Empresas",
-    "usecases.companies_desc": "Gestiona tu e-reputación y contenido.",
+    "usecases.companies_desc": "Monitorea a tus competidores y protege tu reputación contra ataques.",
     "usecases.media": "Medios",
-    "usecases.media_desc": "Enmarca el tono editorial multiplataforma.",
+    "usecases.media_desc": "Enmarca el tono editorial y detecta campañas adversas.",
     "usecases.individuals": "Particulares",
-    "usecases.individuals_desc": "Cuida tu presencia online.",
+    "usecases.individuals_desc": "Defiende tu imagen personal contra la desinformación.",
     "usecases.agencies": "Agencias de comunicación",
-    "usecases.agencies_desc": "Audita y compara tus clientes de un vistazo.",
+    "usecases.agencies_desc": "Inteligencia competitiva y guerra informacional para tus clientes.",
 
     // Example Section
     "example.title": "Ejemplo de resultado",
@@ -494,43 +920,87 @@ const translations = {
     "example.coherence": "Coherencia",
     "example.scale": "Escala:",
     "example.how_calculated": "Ver cómo se calcula",
+    "example.simple_mode": "Modo Simple",
+    "example.duel_mode": "Modo Duelo",
+    "example.company_name": "TechCorp Solutions",
+    "example.analysis_date": "Analizado el 15 de enero de 2025",
+    "example.global_score": "Puntuación Global",
+    "example.key_metrics": "Métricas Clave",
+    "example.search_volume": "Volumen de búsqueda mensual",
+    "example.brand_mentions": "Menciones de marca",
+    "example.sentiment_evolution": "Evolución sentimiento (30d)",
+    "example.strategic_recommendations": "Recomendaciones Estratégicas",
+    "example.rec1_title": "Optimizar contenido SEO",
+    "example.rec1_desc": "Crear 15 artículos dirigidos a tus palabras clave principales",
+    "example.rec1_impact": "Impacto estimado: +25% visibilidad",
+    "example.rec2_title": "Reforzar presencia social",
+    "example.rec2_desc": "Aumentar frecuencia de publicación LinkedIn",
+    "example.rec2_impact": "Impacto estimado: +18% engagement",
+    "example.threat_analysis": "Análisis de Amenazas",
+    "example.threat1": "Competidor directo con mejor SEO",
+    "example.threat2": "Menciones negativas en foros especializados",
+    "example.threat3": "Ausencia en ciertos canales clave",
+    "example.duel_title": "Nike vs Adidas - Análisis Comparativo",
+    "example.market_context": "Contexto de Mercado",
+    "example.market_desc": "Sector sportswear premium, competencia intensa en innovación e imagen de marca",
+    "example.category_analysis": "Análisis por Categoría",
+    "example.seo_performance": "Rendimiento SEO",
+    "example.social_presence": "Presencia Social",
+    "example.brand_perception": "Percepción de Marca",
+    "example.content_quality": "Calidad de Contenido",
+    "example.competitive_intelligence": "Inteligencia Competitiva",
+    "example.nike_strengths": "Fortalezas Nike",
+    "example.nike_strength1": "Innovación constante de productos",
+    "example.nike_strength2": "Asociaciones con atletas premium",
+    "example.nike_strength3": "Storytelling emocional fuerte",
+    "example.adidas_strengths": "Fortalezas Adidas",
+    "example.adidas_strength1": "Herencia deportiva auténtica",
+    "example.adidas_strength2": "Colaboraciones moda/streetwear",
+    "example.adidas_strength3": "Compromiso desarrollo sostenible",
+    "example.nike_weaknesses": "Debilidades Nike",
+    "example.nike_weakness1": "Controversias éticas recurrentes",
+    "example.nike_weakness2": "Precios premium limitando accesibilidad",
+    "example.adidas_weaknesses": "Debilidades Adidas",
+    "example.adidas_weakness1": "Innovación percibida como menos disruptiva",
+    "example.adidas_weakness2": "Presencia digital menos agresiva",
 
     // Pricing
     "pricing.title": "Precios simples y transparentes",
-    "pricing.subtitle": "Comienza gratis, evoluciona según tus necesidades",
-    "pricing.free_title": "Gratis",
+    "pricing.subtitle": "Commencez gratuitement, évoluez selon vos besoins",
+    "pricing.free_title": "Gratuit",
     "pricing.free_price": "0€",
     "pricing.free_period": "/mes",
-    "pricing.free_feature1": "1 análisis por día",
-    "pricing.free_feature2": "Puntuaciones básicas",
-    "pricing.free_feature3": "Historial 7 días",
-    "pricing.free_feature4": "Soporte comunitario",
-    "pricing.free_cta": "Comenzar",
+    "pricing.free_feature1": "1 analyse par jour",
+    "pricing.free_feature2": "Scores de base",
+    "pricing.free_feature3": "Historique 7 jours",
+    "pricing.free_feature4": "Support communautaire",
+    "pricing.free_cta": "Commencer",
     "pricing.pro_title": "Pro",
     "pricing.pro_price": "899€",
-    "pricing.pro_period": "/mes",
-    "pricing.pro_feature1": "15 análisis por día",
-    "pricing.pro_feature2": "Puntuaciones detalladas + insights",
-    "pricing.pro_feature3": "Historial ilimitado",
-    "pricing.pro_feature4": "Informes PDF",
-    "pricing.pro_feature5": "Soporte prioritario",
-    "pricing.pro_feature6": "Acceso API",
-    "pricing.pro_cta": "Contactar ventas",
+    "pricing.pro_period": "/mois",
+    "pricing.pro_feature1": "15 analyses par jour",
+    "pricing.pro_feature2": "Scores détaillés + insights",
+    "pricing.pro_feature3": "Historique illimité",
+    "pricing.pro_feature4": "Rapports PDF",
+    "pricing.pro_feature5": "Support prioritaire",
+    "pricing.pro_feature6": "API access",
+    "pricing.pro_cta": "Contacter les ventes",
     "pricing.ultimate_title": "Ultimate",
-    "pricing.ultimate_price": "Presupuesto personalizado",
-    "pricing.ultimate_feature1": "Análisis ilimitados",
-    "pricing.ultimate_feature2": "Puntuaciones avanzadas + IA personalizada",
-    "pricing.ultimate_feature3": "Integración API completa",
-    "pricing.ultimate_feature4": "Informes personalizados",
-    "pricing.ultimate_feature5": "Soporte dedicado 24/7",
-    "pricing.ultimate_feature6": "Formación del equipo",
-    "pricing.ultimate_feature7": "SLA garantizado",
-    "pricing.ultimate_cta": "Solicitar precio",
-    "pricing.popular": "Popular",
+    "pricing.ultimate_price": "Sur devis",
+    "pricing.ultimate_feature1": "Analyses illimitées",
+    "pricing.ultimate_feature2": "Scores avancés + IA personnalisée",
+    "pricing.ultimate_feature3": "Intégration API complète",
+    "pricing.ultimate_feature4": "Rapports personnalisés",
+    "pricing.ultimate_feature5": "Support dédié 24/7",
+    "pricing.ultimate_feature6": "Formation équipe",
+    "pricing.ultimate_feature7": "SLA garanti",
+    "pricing.ultimate_cta": "Demander le prix",
+    "pricing.popular": "Populaire",
 
     // Contact
     "contact.title": "Contáctanos",
-    "contact.subtitle": "¿Una pregunta? ¿Una necesidad específica? Estamos aquí para ayudarte.",
+    "contact.subtitle":
+      "¿No estás satisfecho con tu puntuación? ¿Quieres influir en ella? Tenemos las soluciones que necesitas.",
     "contact.form_title": "Envíanos un mensaje",
     "contact.email": "Email",
     "contact.email_placeholder": "tu@email.com",
@@ -561,7 +1031,60 @@ const translations = {
     "footer.terms": "Términos de uso",
     "footer.contact_title": "Contacto",
     "footer.support": "Soporte disponible 24/7",
-    "footer.copyright": "© 2024 SEO/GPT Score Analyzer. Todos los derechos reservados.",
+    "footer.copyright": "© 2025 Quintilian App. Todos los derechos reservados.",
+
+    // Legal pages
+    "legal.back_home": "Volver al inicio",
+    "legal.mentions_title": "Avisos legales",
+    "legal.privacy_title": "Política de privacidad",
+    "legal.terms_title": "Términos de uso",
+
+    // Legal notices
+    "legal.editor_info": "Información del editor",
+    "legal.company_address": "Dirección: Francia",
+    "legal.hosting_info": "Información de alojamiento",
+    "legal.hosting_details":
+      "Este sitio está alojado por Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, Estados Unidos.",
+    "legal.intellectual_property": "Propiedad intelectual",
+    "legal.ip_content":
+      "Todo el contenido de este sitio (textos, imágenes, logotipos, etc.) está protegido por derechos de autor y pertenece a Quintilian App o a sus respectivos autores.",
+    "legal.liability": "Responsabilidad",
+    "legal.liability_content":
+      "Quintilian App se esfuerza por proporcionar información precisa pero no puede garantizar la exactitud, integridad o actualidad de la información publicada en este sitio.",
+
+    // Privacy policy
+    "legal.data_collection": "Recopilación de datos",
+    "legal.data_collection_content":
+      "Solo recopilamos los datos necesarios para el funcionamiento de nuestro servicio de análisis de reputación online.",
+    "legal.data_usage": "Uso de datos",
+    "legal.data_usage_content":
+      "Sus datos se utilizan exclusivamente para proporcionar nuestros servicios de análisis y nunca se comparten con terceros sin su consentimiento.",
+    "legal.cookies": "Cookies",
+    "legal.cookies_content":
+      "Nuestro sitio utiliza cookies técnicas necesarias para el buen funcionamiento del servicio. No se utilizan cookies de seguimiento.",
+    "legal.user_rights": "Sus derechos",
+    "legal.user_rights_content":
+      "De acuerdo con el RGPD, tiene derecho a acceder, rectificar, eliminar y portar sus datos personales.",
+    "legal.contact_privacy": "Contacto",
+    "legal.contact_privacy_content":
+      "Para cualquier pregunta sobre la protección de sus datos, contáctenos en: contact@quintilian.app",
+
+    // Terms of use
+    "legal.acceptance": "Aceptación de términos",
+    "legal.acceptance_content":
+      "El uso de este sitio implica la aceptación total de los términos generales de uso descritos a continuación.",
+    "legal.service_description": "Descripción del servicio",
+    "legal.service_description_content":
+      "Quintilian App ofrece un servicio de análisis de reputación online utilizando inteligencia artificial para evaluar su presencia digital.",
+    "legal.user_obligations": "Obligaciones del usuario",
+    "legal.user_obligations_content":
+      "El usuario se compromete a utilizar el servicio de acuerdo con la ley y a no infringir los derechos de terceros.",
+    "legal.service_availability": "Disponibilidad del servicio",
+    "legal.service_availability_content":
+      "Nos esforzamos por garantizar la máxima disponibilidad del servicio pero no podemos garantizar un acceso ininterrumpido.",
+    "legal.modifications": "Modificaciones",
+    "legal.modifications_content":
+      "Estos términos pueden modificarse en cualquier momento. Los usuarios serán informados de cambios importantes.",
 
     // Info Modal
     "info.title": "¿Cómo se calculan tus puntuaciones?",
@@ -577,7 +1100,7 @@ const translations = {
     "info.tone_item1": "Sentimiento positivo/negativo",
     "info.tone_item2": "Palabras clave emocionales",
     "info.tone_item3": "Tono profesional",
-    "info.tone_item4": "Coherencia emocional",
+    "info.tone_item4": "Cohérence emocional",
     "info.tone_item5": "Impacto en la audiencia",
     "info.coherence_title": "Puntuación de Coherencia",
     "info.coherence_desc": "Evalúa la uniformidad de tu mensaje.",
@@ -597,10 +1120,10 @@ const translations = {
     "duel.name1_placeholder": "Primer nombre / marca",
     "duel.name2_placeholder": "Segundo nombre / marca",
     "duel.start_duel": "Comenzar duelo",
-    "duel.analyzing": "Duelo en curso...",
+    "duel.analyzing": "Duel en curso...",
     "duel.results": "Resultados del Duelo",
     "duel.winner": "¡gana el duelo!",
-    "duel.global_score": "Puntuación global:",
+    "duel.global_score": "Puntuación global :",
     "duel.presence": "Presencia",
     "duel.sentiment": "Sentimiento",
     "duel.coherence": "Coherencia",
@@ -649,6 +1172,116 @@ const translations = {
     "lang.korean": "Coreano",
     "lang.swedish": "Sueco",
     "lang.norwegian": "Noruego",
+
+    // Solutions Page
+    "solutions.title": "Nuestras Soluciones",
+    "solutions.subtitle":
+      "¿No estás satisfecho con tu puntuación? ¿Quieres influir en ella? Tenemos las soluciones que necesitas.",
+    "solutions.hero_title": "Transforma tu presencia digital",
+    "solutions.hero_desc": "Soluciones personalizadas para mejorar tus puntuaciones de presencia, tono y coherencia.",
+    "solutions.audit_title": "Auditoría Completa",
+    "solutions.audit_desc": "Análisis profundo de tu ecosistema digital con recomendaciones personalizadas.",
+    "solutions.optimization_title": "Optimización SEO",
+    "solutions.optimization_desc": "Mejora tu visibilidad en Google y motores de búsqueda.",
+    "solutions.content_title": "Estrategia de Contenido",
+    "solutions.content_desc": "Creación de una línea editorial coherente para fortalecer tu mensaje.",
+    "solutions.reputation_title": "Gestión de Reputación",
+    "solutions.reputation_desc": "Monitor and improve your online brand image.",
+    "solutions.cta_title": "¿Listo para mejorar tus puntuaciones?",
+    "solutions.cta_desc": "Contacta a nuestro equipo de expertos para una consulta personalizada.",
+    "solutions.contact_button": "Solicitar consulta",
+
+    // Duel CTA
+    "duel_cta.title": "¿Tienes un competidor, un adversario, o simplemente tienes curiosidad?",
+    "duel_cta.subtitle": "Prueba el modo duelo y compara tu reputación online con la de otros",
+    "duel_cta.button": "Iniciar un Duelo",
+
+    // Solutions Page - Complete translations
+    "solutions.page_title": "Quintilian Solutions",
+    "solutions.page_subtitle": "Reputación Digital",
+    "solutions.nav_solutions": "Soluciones",
+    "solutions.nav_method": "Método",
+    "solutions.nav_contact": "Contacto",
+    "solutions.demo_button": "Solicitar una demo",
+    "solutions.hero_main_title": "Domina tu reputación digital con IA y SEO",
+    "solutions.hero_main_desc":
+      "Quintilian Solutions combina SEO inteligente, análisis de IA e influencia social para fortalecer tu visibilidad y credibilidad.",
+    "solutions.discover_button": "Descubrir nuestras soluciones",
+    "solutions.dashboard_title": "Dashboard Analytics",
+    "solutions.our_solutions": "Nuestras soluciones",
+    "solutions.systemic_approach": "Un enfoque sistémico para dominar tu ecosistema digital y neutralizar amenazas",
+
+    // Dashboard Analytics Module
+    "solutions.dashboard_analytics_title": "Dashboard Analytics - Reputación en Tiempo Real",
+    "solutions.dashboard_analytics_desc":
+      "Benefíciate de tu dashboard analytics de tu reputación online en tiempo real",
+    "solutions.essential_metrics": "Métricas Esenciales",
+    "solutions.ai_presence": "Presencia IA - Visibilidad en respuestas GPT e IA",
+    "solutions.seo_presence": "Presencia SEO - Posicionamiento en motores de búsqueda",
+    "solutions.press_impact": "Impacto Prensa - Cobertura mediática y menciones",
+    "solutions.behavioral_analysis": "Análisis Comportamental",
+    "solutions.social_presence": "Presencia Redes Sociales - Engagement y alcance",
+    "solutions.sentiment": "Sentimiento - Análisis de tono y percepción",
+    "solutions.message_coherence": "Coherencia Mensaje - Alineación narrativa global",
+    "solutions.monitoring_247": "⚡ Monitoreo 24/7 con alertas instantáneas y recomendaciones IA personalizadas",
+
+    // 4 Action Modules
+    "solutions.four_modules_title": "Nuestros 4 módulos de acción",
+    "solutions.four_modules_desc": "Soluciones operacionales para transformar tu presencia digital",
+
+    // Module H
+    "solutions.module_h_title": "Módulo H - Duplicación Instantánea",
+    "solutions.module_h_desc": "Despliegue instantáneo de contenido en una red de sitios en 103 países y 35 idiomas",
+    "solutions.module_h_feature1": "Influencia en algoritmos GPT",
+    "solutions.module_h_feature2": "Impacto SEO masivo e instantáneo",
+    "solutions.module_h_feature3": "Red mundial de sitios de autoridad",
+    "solutions.module_h_feature4": "Despliegue multilingüe automatizado",
+
+    // Module A
+    "solutions.module_a_title": "Módulo A - Defensa Social",
+    "solutions.module_a_desc": "Sistema de defensa y promoción en redes sociales, principalmente X",
+    "solutions.module_a_feature1": "Impacto SEO vía señales sociales",
+    "solutions.module_a_feature2": "Influencia en búsquedas de redes",
+    "solutions.module_a_feature3": "Modificación de algoritmos IA",
+    "solutions.module_a_feature4": "Estrategia defensiva automatizada",
+
+    // Module C
+    "solutions.module_c_title": "Módulo C - Autoridad Premium",
+    "solutions.module_c_desc": "Red de sitios premium y de autoridad para legitimidad real y duradera",
+    "solutions.module_c_feature1": "Implementación SEO sostenible",
+    "solutions.module_c_feature2": "Influencia en GPT e IA",
+    "solutions.module_c_feature3": "Sitios de alta autoridad de dominio",
+    "solutions.module_c_feature4": "Legitimidad institucional",
+
+    // Module P
+    "solutions.module_p_title": "Módulo P - A Medida",
+    "solutions.module_p_desc": "Operadores especializados en OSINT y técnicas avanzadas de influencia",
+    "solutions.module_p_feature1": "Análisis OSINT profundo",
+    "solutions.module_p_feature2": "Aspectos humanos y psicológicos",
+    "solutions.module_p_feature3": "Técnicas de influencia avanzadas",
+    "solutions.module_p_feature4": "Estrategia personalizada a medida",
+
+    // Why Us Section
+    "solutions.why_us_title": "¿Por qué nosotros?",
+    "solutions.why_us_desc": "Una experiencia única al servicio de tu reputación digital",
+    "solutions.increased_visibility": "Visibilidad aumentada",
+    "solutions.increased_visibility_desc": "Posicionamiento óptimo en Google y motores de búsqueda",
+    "solutions.controlled_reputation": "Reputación controlada",
+    "solutions.controlled_reputation_desc": "Control total de tu imagen digital y narrativa",
+    "solutions.measurable_influence": "Influencia medible",
+    "solutions.measurable_influence_desc": "ROI transparente con métricas precisas y KPIs",
+    "solutions.digital_strategy": "Estrategia Digital",
+    "solutions.approach_360": "Enfoque 360°",
+
+    // Final CTA
+    "solutions.final_cta_title": "Fortalece tu presencia online hoy",
+    "solutions.final_cta_desc": "Descubre cómo nuestras soluciones pueden transformar tu reputación digital",
+    "solutions.take_contact": "Ponerse en contacto",
+
+    // Footer
+    "solutions.footer_legal": "Avisos legales",
+    "solutions.footer_privacy": "Política de privacidad",
+    "solutions.footer_contact": "Contacto",
   },
 }
 

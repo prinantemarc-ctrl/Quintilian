@@ -18,7 +18,7 @@ export function Footer() {
         <div className="grid md:grid-cols-4 gap-8">
           {/* Logo & Description */}
           <div className="space-y-4">
-            <h3 className="text-xl font-bold">SEO/GPT Score</h3>
+            <h3 className="text-xl font-bold">QUINTILIAN INDEX</h3>
             <p className="text-sm opacity-90">{t("footer.description")}</p>
           </div>
 
@@ -58,17 +58,17 @@ export function Footer() {
             <h4 className="font-semibold">{t("footer.legal")}</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#" className="opacity-90 hover:opacity-100 transition-opacity">
+                <a href="/legal/mentions" className="opacity-90 hover:opacity-100 transition-opacity">
                   {t("footer.legal_mentions")}
                 </a>
               </li>
               <li>
-                <a href="#" className="opacity-90 hover:opacity-100 transition-opacity">
+                <a href="/legal/privacy" className="opacity-90 hover:opacity-100 transition-opacity">
                   {t("footer.privacy")}
                 </a>
               </li>
               <li>
-                <a href="#" className="opacity-90 hover:opacity-100 transition-opacity">
+                <a href="/legal/terms" className="opacity-90 hover:opacity-100 transition-opacity">
                   {t("footer.terms")}
                 </a>
               </li>
@@ -81,7 +81,7 @@ export function Footer() {
             <div className="text-sm space-y-2">
               <p>
                 <a href="mailto:contact@seogptscore.com" className="opacity-90 hover:opacity-100 transition-opacity">
-                  contact@seogptscore.com
+                  contact@quintilian.app
                 </a>
               </p>
               <p className="opacity-90">{t("footer.support")}</p>
@@ -90,7 +90,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-primary-foreground/20 mt-8 pt-8 text-center">
-          <p className="text-sm opacity-90">{t("footer.copyright")}</p>
+          <p className="text-sm opacity-90">© 2025 Quintilian App</p>
         </div>
       </div>
     </footer>

@@ -687,24 +687,48 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                     <h3 className="text-lg font-semibold">Analyse Complète</h3>
 
                     <Tabs defaultValue="summaries" className="w-full">
-                      <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="summaries" className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                      <TabsList className="grid w-full grid-cols-3 h-12 bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 rounded-xl p-1">
+                        <TabsTrigger
+                          value="summaries"
+                          className="flex items-center gap-2 h-10 rounded-lg font-semibold text-sm data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-primary transition-all duration-200"
+                        >
+                          <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
                             <span className="text-xs font-bold text-white">G</span>
                           </div>
                           Résumés
                         </TabsTrigger>
-                        <TabsTrigger value="detailed" className="flex items-center gap-2">
-                          <FileText className="w-4 h-4" />
+                        <TabsTrigger
+                          value="detailed"
+                          className="flex items-center gap-2 h-10 rounded-lg font-semibold text-sm data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-primary transition-all duration-200"
+                        >
+                          <FileText className="w-5 h-5" />
                           Analyse Détaillée
                         </TabsTrigger>
-                        <TabsTrigger value="conclusion" className="flex items-center gap-2">
-                          <BarChart3 className="w-4 h-4" />
+                        <TabsTrigger
+                          value="conclusion"
+                          className="flex items-center gap-2 h-10 rounded-lg font-semibold text-sm data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-primary transition-all duration-200"
+                        >
+                          <BarChart3 className="w-5 h-5" />
                           Conclusion
                         </TabsTrigger>
                       </TabsList>
 
                       <TabsContent value="summaries" className="space-y-4">
+                        <div className="bg-blue-50/50 border border-blue-200 rounded-lg p-4 mb-4">
+                          <div className="flex items-start gap-3">
+                            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <span className="text-xs font-bold text-white">ℹ</span>
+                            </div>
+                            <div className="text-sm text-blue-800">
+                              <p className="font-medium mb-1">Sources d'analyse différentes</p>
+                              <p>
+                                Les résumés Google et ChatGPT proviennent de sources et d'analyses distinctes pour vous
+                                offrir une vision complète et diversifiée de votre présence digitale.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
                         {/* Search Summaries */}
                         {(result.google_summary || result.gpt_summary) && (
                           <div className="grid md:grid-cols-2 gap-4">
@@ -717,6 +741,7 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                                     </div>
                                     Résumé Google
                                   </CardTitle>
+                                  <p className="text-xs text-blue-600">Basé sur les résultats de recherche Google</p>
                                 </CardHeader>
                                 <CardContent>
                                   <div className="text-sm text-muted-foreground leading-relaxed">
@@ -735,6 +760,7 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                                     </div>
                                     Résumé GPT
                                   </CardTitle>
+                                  <p className="text-xs text-primary/70">Analyse IA avancée et contextuelle</p>
                                 </CardHeader>
                                 <CardContent>
                                   <div className="text-sm text-muted-foreground leading-relaxed">
@@ -745,6 +771,16 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                             )}
                           </div>
                         )}
+
+                        <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                          <div className="text-center">
+                            <h4 className="font-bold text-blue-900 mb-2">Votre score ne vous satisfait pas ?</h4>
+                            <p className="text-sm text-blue-800 mb-3">
+                              Vous voulez influer dessus ? Nous avons les solutions qu'il vous faut.
+                            </p>
+                            <p className="text-sm font-semibold text-blue-900">📞 Contactez-nous dès maintenant !</p>
+                          </div>
+                        </div>
                       </TabsContent>
 
                       <TabsContent value="detailed" className="space-y-4">
@@ -783,6 +819,16 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                             </CardContent>
                           </Card>
                         )}
+
+                        <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                          <div className="text-center">
+                            <h4 className="font-bold text-blue-900 mb-2">Votre score ne vous satisfait pas ?</h4>
+                            <p className="text-sm text-blue-800 mb-3">
+                              Vous voulez influer dessus ? Nous avons les solutions qu'il vous faut.
+                            </p>
+                            <p className="text-sm font-semibold text-blue-900">📞 Contactez-nous dès maintenant !</p>
+                          </div>
+                        </div>
                       </TabsContent>
 
                       <TabsContent value="conclusion" className="space-y-4">
@@ -819,6 +865,16 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                             </CardContent>
                           </Card>
                         )}
+
+                        <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                          <div className="text-center">
+                            <h4 className="font-bold text-blue-900 mb-2">Votre score ne vous satisfait pas ?</h4>
+                            <p className="text-sm text-blue-800 mb-3">
+                              Vous voulez influer dessus ? Nous avons les solutions qu'il vous faut.
+                            </p>
+                            <p className="text-sm font-semibold text-blue-900">📞 Contactez-nous dès maintenant !</p>
+                          </div>
+                        </div>
                       </TabsContent>
                     </Tabs>
                   </div>
@@ -828,7 +884,7 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold">Sources analysées</h3>
-                    <span className="text-sm text-muted-foreground">Echantillon des sources analysées</span>
+                    <span className="text-sm text-muted-foreground">Échantillon des sources analysées</span>
                   </div>
                   {result.sources && result.sources.length > 0 ? (
                     <div className="grid gap-3">
@@ -869,17 +925,6 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                       </CardContent>
                     </Card>
                   )}
-                </div>
-
-                {/* Fixed promotional message */}
-                <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                  <div className="text-center">
-                    <h4 className="font-bold text-blue-900 mb-2">🚀 Vous voulez améliorer votre score ?</h4>
-                    <p className="text-sm text-blue-800 mb-3">
-                      Nous avons tous les outils pour optimiser votre présence digitale et votre cohérence de message.
-                    </p>
-                    <p className="text-sm font-semibold text-blue-900">📞 Contactez-nous dès maintenant !</p>
-                  </div>
                 </div>
 
                 <div className="space-y-4">
@@ -926,9 +971,7 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                     </Button>
                     <Button onClick={onClose}>Nouvelle analyse</Button>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Analyse basée sur {result.sources?.length || 0} sources • Powered by GPT-4 & Google Search
-                  </p>
+                  <p className="text-xs text-muted-foreground">Analyse complète • Powered by GPT-4 & Google Search</p>
                 </div>
               </>
             ) : null}
