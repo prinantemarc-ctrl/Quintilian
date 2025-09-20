@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { createClient } from "@supabase/supabase-js"
 
 export async function GET() {
   try {
-    const supabase = createClient()
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
     const { data: logs, error } = await supabase
       .from("search_logs")
@@ -26,8 +26,8 @@ export async function GET() {
       week: logs.filter((log) => new Date(log.created_at) >= weekAgo).length,
       month: logs.filter((log) => new Date(log.created_at) >= monthAgo).length,
       byType: {
-        analyze: logs.filter((log) => log.type === "analyze").length,
-        duel: logs.filter((log) => log.type === "duel").length,
+        analyze: logs.filter((log) => log.analysis_type === "analyze" || !log.analysis_type).length,
+        duel: logs.filter((log) => log.analysis_type === "duel").length,
       },
       byLanguage: logs.reduce(
         (acc, log) => {
@@ -38,8 +38,8 @@ export async function GET() {
         {} as Record<string, number>,
       ),
       avgProcessingTime:
-        logs.length > 0 ? logs.reduce((sum, log) => sum + (log.processing_time || 0), 0) / logs.length / 1000 : 0,
-      errors: logs.filter((log) => log.error).length,
+        logs.length > 0 ? logs.reduce((sum, log) => sum + (log.processing_time_ms || 0), 0) / logs.length / 1000 : 0,
+      errors: logs.filter((log) => log.error_message).length,
     }
 
     return NextResponse.json(stats)

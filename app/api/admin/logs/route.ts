@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { createClient } from "@supabase/supabase-js"
 
 export async function GET() {
   try {
-    const supabase = createClient()
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
     const { data: logs, error } = await supabase
       .from("search_logs")
@@ -19,23 +19,17 @@ export async function GET() {
     const formattedLogs = logs.map((log) => ({
       id: log.id,
       timestamp: new Date(log.created_at),
-      type: log.type,
-      query: log.query,
-      identity: log.identity,
-      brand1: log.brand1,
-      brand2: log.brand2,
-      language: log.language,
+      type: log.analysis_type || "analyze",
+      query: log.query || log.url,
+      language: log.language || "fr",
       results: {
-        presence_score: log.presence_score,
-        sentiment_score: log.sentiment_score,
-        coherence_score: log.coherence_score,
-        processing_time: log.processing_time,
-        google_results_count: log.google_results_count,
-        openai_tokens_used: log.openai_tokens_used,
+        processing_time: log.processing_time_ms || 0,
+        ...(log.scores || {}),
+        ...(log.results || {}),
       },
       user_agent: log.user_agent,
       ip_address: log.ip_address,
-      error: log.error,
+      error: log.error_message,
     }))
 
     return NextResponse.json(formattedLogs)

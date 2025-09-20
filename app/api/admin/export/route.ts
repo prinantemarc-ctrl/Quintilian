@@ -1,12 +1,51 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { logger } from "@/lib/logger"
+import { createClient } from "@supabase/supabase-js"
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const format = (searchParams.get("format") as "json" | "csv") || "csv"
 
-    const exportData = await logger.exportLogs(format)
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+
+    const { data: logs, error } = await supabase
+      .from("search_logs")
+      .select("*")
+      .order("created_at", { ascending: false })
+
+    if (error) {
+      throw new Error(`Database error: ${error.message}`)
+    }
+
+    let exportData: string
+
+    if (format === "json") {
+      exportData = JSON.stringify(logs, null, 2)
+    } else {
+      // CSV format
+      const headers = [
+        "id",
+        "created_at",
+        "query",
+        "url",
+        "analysis_type",
+        "language",
+        "processing_time_ms",
+        "error_message",
+      ]
+      const csvRows = [
+        headers.join(","),
+        ...logs.map((log) =>
+          headers
+            .map((header) => {
+              const value = log[header]
+              return typeof value === "string" ? `"${value.replace(/"/g, '""')}"` : value || ""
+            })
+            .join(","),
+        ),
+      ]
+      exportData = csvRows.join("\n")
+    }
 
     const filename = `search-logs-${new Date().toISOString().split("T")[0]}.${format}`
     const contentType = format === "json" ? "application/json" : "text/csv"
