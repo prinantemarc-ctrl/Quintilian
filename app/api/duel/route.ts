@@ -12,6 +12,7 @@ import {
   logApiRequest,
   logApiResponse,
 } from "@/lib/utils/api-response"
+import { logger } from "@/lib/services/logger" // Ensure logger is imported
 
 async function generateComparison(
   brand1: string,
@@ -124,8 +125,9 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now()
   logApiRequest("DUEL", {})
 
+  let body: any
   try {
-    const body = await request.json()
+    body = await request.json()
     logApiRequest("DUEL", body)
 
     const { brand1, brand2, message, language, country } = DuelAnalysisSchema.parse(body)
@@ -181,10 +183,52 @@ export async function POST(request: NextRequest) {
     console.log(`[v0] Winner: ${comparison.winner}`)
     console.log(`[v0] Scores: ${brand1} (${brand1GlobalScore}) vs ${brand2} (${brand2GlobalScore})`)
 
+    try {
+      await logger.logSearch({
+        type: "duel",
+        query: brand1,
+        brand1: brand1,
+        brand2: brand2,
+        language: language || "fr",
+        results: {
+          presence_score: (brand1Analysis.presence_score + brand2Analysis.presence_score) / 2,
+          sentiment_score: (brand1Analysis.tone_score + brand2Analysis.tone_score) / 2,
+          coherence_score: (brand1Analysis.coherence_score + brand2Analysis.coherence_score) / 2,
+          processing_time: processingTime,
+          google_results_count: brand1Results.length + brand2Results.length,
+          openai_tokens_used: undefined,
+        },
+        user_agent: request.headers.get("user-agent") || "",
+        ip_address: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || undefined,
+      })
+    } catch (logError) {
+      console.error("[v0] Failed to log search:", logError)
+      // Don't fail the request if logging fails
+    }
+
     return createSuccessResponse(result, { processingTime })
   } catch (error) {
     const processingTime = Date.now() - startTime
     logApiResponse("DUEL", false, processingTime)
+
+    try {
+      await logger.logSearch({
+        type: "duel",
+        query: body?.brand1 || "unknown",
+        brand1: body?.brand1,
+        brand2: body?.brand2,
+        language: body?.language || "fr",
+        results: {
+          processing_time: processingTime,
+          google_results_count: 0,
+        },
+        user_agent: request.headers.get("user-agent") || "",
+        ip_address: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || undefined,
+        error: error instanceof Error ? error.message : "Unknown error",
+      })
+    } catch (logError) {
+      console.error("[v0] Failed to log error:", logError)
+    }
 
     if (error instanceof z.ZodError) {
       return createValidationErrorResponse(error.errors)

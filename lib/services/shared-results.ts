@@ -1,5 +1,4 @@
-import { createClient as createBrowserClient } from "@/lib/supabase/client"
-import type { AnalysisHistoryItem } from "@/lib/history"
+import { createClient } from "@supabase/supabase-js"
 
 export interface SharedResult {
   id: string
@@ -14,9 +13,13 @@ export interface SharedResult {
   is_public: boolean
 }
 
-export async function shareAnalysisResult(analysis: AnalysisHistoryItem): Promise<string | null> {
+function createSupabaseClient() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+}
+
+export async function shareAnalysisResult(analysis: any): Promise<string | null> {
   try {
-    const supabase = createBrowserClient()
+    const supabase = createSupabaseClient()
 
     const { data, error } = await supabase
       .from("shared_results")
@@ -49,7 +52,7 @@ export async function shareAnalysisResult(analysis: AnalysisHistoryItem): Promis
 
 export async function getSharedResult(id: string): Promise<SharedResult | null> {
   try {
-    const supabase = createBrowserClient()
+    const supabase = createSupabaseClient()
 
     const { data, error } = await supabase
       .from("shared_results")

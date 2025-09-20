@@ -1,5 +1,12 @@
-import { createClient } from "@/lib/supabase/server"
-import crypto from "crypto"
+import { createClient } from "@/lib/supabase/client"
+
+function generateUUID(): string {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    const v = c === "x" ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
+}
 
 export interface SearchLog {
   id: string
@@ -26,18 +33,18 @@ export interface SearchLog {
 class Logger {
   async logSearch(logData: Omit<SearchLog, "id" | "timestamp">) {
     const log: SearchLog = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       timestamp: new Date(),
       ...logData,
     }
 
     try {
-      const supabase = await createClient()
+      const supabase = createClient()
 
       const { error } = await supabase.from("search_logs").insert({
         id: log.id,
         created_at: log.timestamp.toISOString(),
-        type: log.type, // Fixed: was search_type
+        type: log.type,
         query: log.query,
         competitor_query: log.brand2 || null,
         language: log.language || "fr",
@@ -63,21 +70,20 @@ class Logger {
         user_ip: log.ip_address,
         user_agent: log.user_agent,
         session_id: log.identity || null,
-        processing_time: log.results.processing_time, // Fixed: was processing_time_ms
+        processing_time: log.results.processing_time,
         error: log.error || null,
       })
 
       if (error) {
-        console.error("[LOGGER] Failed to save to database:", error)
-        // Fallback: still log to console for debugging
-        console.log("[ADMIN LOG]", JSON.stringify(log))
+        console.error("[LOGGER] Failed to save to database:", error.message)
+        console.log("[ADMIN LOG] Fallback console log:", JSON.stringify(log))
         return log
       }
 
       console.log("[ADMIN LOG] Saved to database:", log.id)
     } catch (error) {
-      console.error("[LOGGER] Database error:", error)
-      console.log("[ADMIN LOG]", JSON.stringify(log))
+      console.error("[LOGGER] Database error:", error instanceof Error ? error.message : "Unknown error")
+      console.log("[ADMIN LOG] Fallback console log:", JSON.stringify(log))
     }
 
     return log
@@ -85,7 +91,7 @@ class Logger {
 
   async getLogs(limit = 100): Promise<SearchLog[]> {
     try {
-      const supabase = await createClient()
+      const supabase = createClient()
 
       const { data, error } = await supabase
         .from("search_logs")
@@ -94,14 +100,14 @@ class Logger {
         .limit(limit)
 
       if (error) {
-        console.error("[LOGGER] Failed to fetch logs:", error)
+        console.error("[LOGGER] Failed to fetch logs:", error.message)
         return []
       }
 
       return data.map((record) => ({
         id: record.id,
         timestamp: new Date(record.created_at),
-        type: record.type as "analyze" | "duel", // Fixed: was search_type
+        type: record.type as "analyze" | "duel",
         query: record.query,
         identity: record.session_id,
         brand1: record.query,
@@ -111,7 +117,7 @@ class Logger {
           presence_score: record.presence_score || record.scores?.presence_score,
           sentiment_score: record.sentiment_score || record.scores?.sentiment_score,
           coherence_score: record.coherence_score || record.scores?.coherence_score,
-          processing_time: record.processing_time || 0, // Fixed: was processing_time_ms
+          processing_time: record.processing_time || 0,
           google_results_count: record.google_results?.count || 0,
           openai_tokens_used: record.gpt_analysis?.tokens_used,
         },
@@ -120,19 +126,17 @@ class Logger {
         error: record.error,
       }))
     } catch (error) {
-      console.error("[LOGGER] Database error:", error)
+      console.error("[LOGGER] Database error:", error instanceof Error ? error.message : "Unknown error")
       return []
     }
   }
 
   async getStats() {
     try {
-      const supabase = await createClient()
+      const supabase = createClient()
 
-      // Get total count
       const { count: totalCount } = await supabase.from("search_logs").select("*", { count: "exact", head: true })
 
-      // Get today's count
       const today = new Date()
       today.setHours(0, 0, 0, 0)
       const { count: todayCount } = await supabase
@@ -140,7 +144,6 @@ class Logger {
         .select("*", { count: "exact", head: true })
         .gte("created_at", today.toISOString())
 
-      // Get this week's count
       const thisWeek = new Date()
       thisWeek.setDate(thisWeek.getDate() - 7)
       const { count: weekCount } = await supabase
@@ -148,7 +151,6 @@ class Logger {
         .select("*", { count: "exact", head: true })
         .gte("created_at", thisWeek.toISOString())
 
-      // Get this month's count
       const thisMonth = new Date()
       thisMonth.setDate(1)
       thisMonth.setHours(0, 0, 0, 0)
@@ -202,11 +204,11 @@ class Logger {
           duel: byType.duel || 0,
         },
         byLanguage,
-        avgProcessingTime: avgProcessingTime / 1000, // Convert to seconds
+        avgProcessingTime: avgProcessingTime / 1000,
         errors: errorCount || 0,
       }
     } catch (error) {
-      console.error("[LOGGER] Failed to get stats:", error)
+      console.error("[LOGGER] Failed to get stats:", error instanceof Error ? error.message : "Unknown error")
       return {
         total: 0,
         today: 0,
@@ -222,7 +224,7 @@ class Logger {
 
   async exportLogs(format: "json" | "csv" = "csv") {
     try {
-      const supabase = await createClient()
+      const supabase = createClient()
 
       const { data, error } = await supabase.from("search_logs").select("*").order("created_at", { ascending: false })
 
@@ -234,7 +236,6 @@ class Logger {
         return JSON.stringify(data, null, 2)
       }
 
-      // CSV format
       if (!data || data.length === 0) {
         return "No data to export"
       }
@@ -264,10 +265,10 @@ class Logger {
             `"${row.query.replace(/"/g, '""')}"`,
             row.competitor_query ? `"${row.competitor_query.replace(/"/g, '""')}"` : "",
             row.scores?.overall_score || "",
-            row.presence_score || "", // Added individual score columns
+            row.presence_score || "",
             row.sentiment_score || "",
             row.coherence_score || "",
-            row.processing_time || "", // Fixed: was processing_time_ms
+            row.processing_time || "",
             row.google_results?.count || "",
             row.user_ip || "",
           ].join(","),
@@ -276,7 +277,7 @@ class Logger {
 
       return csvRows.join("\n")
     } catch (error) {
-      console.error("[LOGGER] Export failed:", error)
+      console.error("[LOGGER] Export failed:", error instanceof Error ? error.message : "Unknown error")
       throw error
     }
   }

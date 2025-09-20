@@ -21,10 +21,12 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now()
   logApiRequest("ANALYZE", {})
 
+  let body: any // Declare body variable
+
   try {
     console.log("[v0] Starting analysis request")
 
-    const body = await request.json()
+    body = await request.json() // Assign body variable
     logApiRequest("ANALYZE", body)
 
     console.log("[v0] Parsing request body")
@@ -178,11 +180,29 @@ export async function POST(request: NextRequest) {
     console.log("[v0] Analysis completed successfully in", processingTime, "ms")
     logApiResponse("ANALYZE", true, processingTime)
 
+    // The logger requires Supabase environment variables that aren't available in v0
+    console.log("[v0] Analysis logged:", {
+      type: "analyze",
+      query: brand,
+      language: language || "fr",
+      processing_time: processingTime,
+      google_results_count: searchResults.length,
+      identity: selected_identity || undefined,
+    })
+
     return createSuccessResponse(response, { processingTime })
   } catch (error) {
     const processingTime = Date.now() - startTime
     console.error("[v0] Critical error in analysis:", error)
     logApiResponse("ANALYZE", false, processingTime)
+
+    console.log("[v0] Error logged:", {
+      type: "analyze",
+      query: body?.brand || "unknown",
+      language: body?.language || "fr",
+      processing_time: processingTime,
+      error: error instanceof Error ? error.message : "Unknown error",
+    })
 
     if (error instanceof z.ZodError) {
       console.error("[v0] Validation error:", error.errors)
