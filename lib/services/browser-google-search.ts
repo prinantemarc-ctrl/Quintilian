@@ -22,7 +22,7 @@ export async function searchGoogle(query: string, options: SearchOptions): Promi
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const apiKey = process.env.GOOGLE_API_KEY
+      const apiKey = "AIzaSyAeDFbXJiE-KxRm867_XluumQOg51UknC0"
       const cseId = process.env.GOOGLE_CSE_CX
 
       if (!apiKey || !cseId) {

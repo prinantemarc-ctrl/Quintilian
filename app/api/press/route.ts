@@ -23,12 +23,13 @@ export async function POST(request: NextRequest) {
     const { brand, dateFrom, dateTo, countries, languages, maxResults } = parsedData
 
     console.log("[v0] Processing press search for brand:", brand)
-    console.log("[v0] Google API Key available:", !!process.env.GOOGLE_API_KEY)
+    const googleApiKey = "AIzaSyAeDFbXJiE-KxRm867_XluumQOg51UknC0"
+    console.log("[v0] Google API Key available:", !!googleApiKey)
     console.log("[v0] Google CSE ID available:", !!process.env.GOOGLE_CSE_CX)
 
-    if (process.env.GOOGLE_API_KEY) {
-      console.log("[v0] API Key length:", process.env.GOOGLE_API_KEY.length)
-      console.log("[v0] API Key starts with:", process.env.GOOGLE_API_KEY.substring(0, 10) + "...")
+    if (googleApiKey) {
+      console.log("[v0] API Key length:", googleApiKey.length)
+      console.log("[v0] API Key starts with:", googleApiKey.substring(0, 10) + "...")
     }
     if (process.env.GOOGLE_CSE_CX) {
       console.log("[v0] CSE ID:", process.env.GOOGLE_CSE_CX)
@@ -44,6 +45,7 @@ export async function POST(request: NextRequest) {
         countries,
         languages,
         maxResults: maxResults,
+        apiKey: googleApiKey, // Passing the new API key to the search function
       })
       console.log("[v0] Google CSE search successful, found:", cseResults.length, "results")
     } catch (apiError) {

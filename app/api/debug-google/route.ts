@@ -11,8 +11,8 @@ export async function GET(request: NextRequest) {
   console.log("[v0] CSE CX value:", process.env.GOOGLE_CSE_CX)
 
   try {
-    const apiKey = process.env.GOOGLE_API_KEY
-    const cseId = "150ca924a0b9541d4" // Using your CSE ID directly
+    const apiKey = "AIzaSyAeDFbXJiE-KxRm867_XluumQOg51UknC0"
+    const cseId = process.env.GOOGLE_CSE_CX || "150ca924a0b9541d4"
 
     if (!apiKey) {
       return NextResponse.json({
@@ -61,8 +61,8 @@ export async function GET(request: NextRequest) {
       error: "Network Error",
       message: error instanceof Error ? error.message : "Unknown error",
       debug: {
-        apiKeyPresent: !!process.env.GOOGLE_API_KEY,
-        cseId: "150ca924a0b9541d4",
+        apiKeyPresent: true,
+        cseId: process.env.GOOGLE_CSE_CX || "150ca924a0b9541d4",
       },
     })
   }

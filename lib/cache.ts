@@ -1,5 +1,3 @@
-import { crypto } from "crypto"
-
 interface CacheEntry<T> {
   data: T
   timestamp: number
@@ -15,7 +13,7 @@ class MemoryCache {
     const dataString = JSON.stringify(data)
     const dataBuffer = encoder.encode(dataString)
 
-    const hashBuffer = await crypto.subtle.digest("SHA-256", dataBuffer)
+    const hashBuffer = await globalThis.crypto.subtle.digest("SHA-256", dataBuffer)
     const hashArray = Array.from(new Uint8Array(hashBuffer))
     const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
 

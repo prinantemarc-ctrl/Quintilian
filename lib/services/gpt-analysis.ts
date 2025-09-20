@@ -160,6 +160,7 @@ export async function generateDetailedAnalysis(
       try {
         const apiKey = process.env.OPENAI_API_KEY
         if (!apiKey) {
+          console.log("[v0] No OpenAI API key, using fallback")
           return generateFallbackAnalysis()
         }
 
@@ -177,21 +178,44 @@ export async function generateDetailedAnalysis(
             ? generateDuelAnalysisPrompt(brand, message, googleContent, language)
             : generateSingleAnalysisPrompt(brand, message, googleContent, language)
 
-        const { text } = await generateText({
-          model: openai("gpt-4o-mini"),
-          prompt,
-          temperature: 0.3,
-        })
+        console.log("[v0] Calling OpenAI for detailed analysis")
 
-        console.log(`[v0] Detailed analysis completed for ${brand}`)
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
 
-        let cleanedText = text.trim()
-        if (cleanedText.startsWith("```json")) {
-          cleanedText = cleanedText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
+        try {
+          const { text } = await generateText({
+            model: openai("gpt-4o-mini"),
+            prompt: prompt,
+            temperature: 0.3,
+            abortSignal: controller.signal,
+          })
+
+          clearTimeout(timeoutId)
+          console.log(`[v0] Detailed analysis completed for ${brand}`)
+          console.log("[v0] Raw OpenAI response:", text.substring(0, 200) + "...")
+
+          let cleanedText = text.trim()
+          if (cleanedText.startsWith("```json")) {
+            cleanedText = cleanedText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
+          }
+
+          let parsedAnalysis
+          try {
+            parsedAnalysis = JSON.parse(cleanedText)
+            console.log("[v0] Successfully parsed JSON response")
+          } catch (parseError) {
+            console.error("[v0] JSON parsing failed:", parseError)
+            console.error("[v0] Raw text that failed to parse:", cleanedText)
+            return generateFallbackAnalysis()
+          }
+
+          return normalizeAnalysisResponse(parsedAnalysis)
+        } catch (openaiError) {
+          clearTimeout(timeoutId)
+          console.error("[v0] OpenAI API call failed:", openaiError)
+          return generateFallbackAnalysis()
         }
-
-        const parsedAnalysis = JSON.parse(cleanedText)
-        return normalizeAnalysisResponse(parsedAnalysis)
       } catch (error) {
         console.error(`[v0] Detailed analysis error for ${brand}:`, error)
         return generateFallbackAnalysis()
@@ -299,4 +323,133 @@ function generateFallbackAnalysis(): DetailedAnalysis {
     tone_details: "Détails non disponibles",
     coherence_details: "Détails non disponibles",
   }
+}
+
+export async function detectHomonyms(
+  searchResults: any[],
+  brand: string,
+  language: string,
+): Promise<{
+  requires_identity_selection: boolean
+  identified_entities: string[]
+  message: string
+}> {
+  console.log("[v0] Starting homonym detection for:", brand)
+
+  if (searchResults.length < 3) {
+    console.log("[v0] Not enough search results for homonym detection")
+    return {
+      requires_identity_selection: false,
+      identified_entities: [],
+      message: "",
+    }
+  }
+
+  const cacheKey = {
+    searchResults: searchResults.slice(0, 10),
+    brand,
+    language,
+    type: "homonym-detection",
+  }
+
+  const { data: detection, fromCache } = await analysisCache.getOrSet(
+    cacheKey,
+    async () => {
+      try {
+        const apiKey = process.env.OPENAI_API_KEY
+        if (!apiKey) {
+          return {
+            requires_identity_selection: false,
+            identified_entities: [],
+            message: "",
+          }
+        }
+
+        const searchContext = searchResults
+          .slice(0, 10)
+          .map((item, index) => `${index + 1}. **${item.title}**\n   ${item.snippet}\n   Source: ${item.link}`)
+          .join("\n\n")
+
+        const prompt = `Tu es un expert en analyse d'entités nommées. Analyse les résultats Google suivants pour "${brand}" et détermine s'il y a plusieurs identités distinctes (homonymies).
+
+**Résultats Google à analyser:**
+${searchContext}
+
+**Ta mission:**
+Détermine si "${brand}" fait référence à plusieurs personnes, entreprises ou entités distinctes dans ces résultats.
+
+**Critères pour détecter une homonymie:**
+- Plusieurs personnes différentes avec le même nom
+- Différentes entreprises/organisations avec des noms similaires
+- Contextes géographiques ou sectoriels très différents
+- Mentions d'âges, professions, ou localisations contradictoires
+
+**Instructions:**
+- Si tu détectes clairement 2+ identités distinctes, réponds "OUI"
+- Si tous les résultats semblent parler de la même entité, réponds "NON"
+- En cas de doute, privilégie "NON"
+
+**Format de réponse JSON:**
+{
+  "requires_disambiguation": true/false,
+  "identified_entities": ["Description entité 1", "Description entité 2", ...],
+  "confidence": "high/medium/low",
+  "explanation": "Explication de ta décision"
+}
+
+Écris en ${language}. Réponds uniquement avec du JSON valide.`
+
+        const { text } = await generateText({
+          model: openai("gpt-4o-mini"),
+          prompt: prompt,
+          temperature: 0.2,
+        })
+
+        let cleanedText = text.trim()
+        if (cleanedText.startsWith("```json")) {
+          cleanedText = cleanedText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
+        }
+
+        try {
+          const parsed = JSON.parse(cleanedText)
+          console.log("[v0] Homonym detection result:", parsed)
+
+          if (parsed.requires_disambiguation && parsed.identified_entities && parsed.identified_entities.length >= 2) {
+            return {
+              requires_identity_selection: true,
+              identified_entities: parsed.identified_entities,
+              message: `Plusieurs identités détectées pour "${brand}". Veuillez sélectionner celle qui vous intéresse ou préciser votre recherche.`,
+            }
+          }
+
+          return {
+            requires_identity_selection: false,
+            identified_entities: [],
+            message: "",
+          }
+        } catch (parseError) {
+          console.error("[v0] Failed to parse homonym detection response:", parseError)
+          return {
+            requires_identity_selection: false,
+            identified_entities: [],
+            message: "",
+          }
+        }
+      } catch (error) {
+        console.error("[v0] Homonym detection error:", error)
+        return {
+          requires_identity_selection: false,
+          identified_entities: [],
+          message: "",
+        }
+      }
+    },
+    { ttl: CACHE_TTL.GPT_ANALYSIS },
+  )
+
+  if (fromCache) {
+    console.log("[v0] Using cached homonym detection")
+  }
+
+  return detection
 }

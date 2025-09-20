@@ -59,7 +59,7 @@ export async function searchGMIByCountry(options: GMISearchOptions): Promise<GMI
 }
 
 async function searchGoogleCustom(options: GMISearchOptions): Promise<GMISearchResult[]> {
-  const apiKey = process.env.GOOGLE_API_KEY
+  const apiKey = "AIzaSyAeDFbXJiE-KxRm867_XluumQOg51UknC0"
   const cseId = process.env.GOOGLE_CSE_CX
 
   if (!apiKey || !cseId) {

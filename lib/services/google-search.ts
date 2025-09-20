@@ -30,12 +30,12 @@ export async function searchGoogle(query: string, options: SearchOptions): Promi
     cacheKey,
     async () => {
       try {
-        const apiKey = process.env.GOOGLE_API_KEY
+        const apiKey = "AIzaSyAeDFbXJiE-KxRm867_XluumQOg51UknC0"
         const cseId = process.env.GOOGLE_CSE_CX
 
         if (!apiKey || !cseId) {
           console.log("[v0] Missing Google API credentials, using fallback")
-          return generateFallbackResults()
+          throw new Error("MISSING_CREDENTIALS")
         }
 
         let url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cseId}&q=${encodeURIComponent(query)}&lr=lang_${options.language}&num=${options.maxResults || 10}`
@@ -58,7 +58,10 @@ export async function searchGoogle(query: string, options: SearchOptions): Promi
 
         if (!response.ok) {
           console.log("[v0] Google API error:", response.status, response.statusText)
-          throw new Error(`Google API error: ${response.status}`)
+          if (response.status === 429) {
+            throw new Error("RATE_LIMIT_EXCEEDED")
+          }
+          throw new Error(`GOOGLE_API_ERROR_${response.status}`)
         }
 
         const data: GoogleSearchResponse = await response.json()
@@ -67,7 +70,7 @@ export async function searchGoogle(query: string, options: SearchOptions): Promi
         return data.items || []
       } catch (error) {
         console.error("[v0] Google search error:", error)
-        return generateFallbackResults()
+        throw error
       }
     },
     { ttl: CACHE_TTL.GOOGLE_SEARCH },
@@ -78,6 +81,18 @@ export async function searchGoogle(query: string, options: SearchOptions): Promi
   }
 
   return searchResults
+}
+
+export async function clearGoogleSearchCache(query: string, options: SearchOptions) {
+  const cacheKey = {
+    query,
+    language: options.language,
+    country: options.country,
+    maxResults: options.maxResults || 10,
+  }
+
+  await searchCache.delete(cacheKey)
+  console.log("[v0] Cleared Google search cache for:", query)
 }
 
 function generateFallbackResults(): GoogleSearchResult[] {

@@ -40,7 +40,7 @@ export async function searchCustomSearchEngine(query: string, options: SearchOpt
   const { countries, languages, maxResults = 10 } = options
 
   try {
-    const apiKey = process.env.GOOGLE_API_KEY
+    const apiKey = "AIzaSyAeDFbXJiE-KxRm867_XluumQOg51UknC0"
     const cseId = process.env.GOOGLE_CSE_CX
 
     console.log("[v0] === GOOGLE CSE DEBUG START ===")

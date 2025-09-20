@@ -8,6 +8,16 @@ export const BaseAnalysisSchema = z.object({
 
 export const SingleAnalysisSchema = BaseAnalysisSchema.extend({
   brand: z.string().min(1, "Le nom/brand est requis"),
+  selected_identity: z.string().optional(),
+  search_results: z
+    .array(
+      z.object({
+        title: z.string().optional(),
+        link: z.string().optional(),
+        snippet: z.string().optional(),
+      }),
+    )
+    .optional(),
 })
 
 export const DuelAnalysisSchema = BaseAnalysisSchema.extend({

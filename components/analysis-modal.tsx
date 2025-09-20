@@ -14,7 +14,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { analysisHistory } from "@/lib/history"
 import { EnhancedScoreDisplay } from "@/components/enhanced-score-display"
 import { InteractiveLoadingAnimation } from "@/components/interactive-loading-animation"
-import { ResultsComparisonChart } from "@/components/results-comparison-chart"
 
 interface AnalysisModalProps {
   isOpen: boolean
@@ -200,14 +199,39 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || "Erreur lors de l'analyse")
+        let errorMessage = "Erreur lors de l'analyse"
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.message || errorData.error || errorMessage
+
+          if (response.status === 429 || errorData.error === "RATE_LIMIT_EXCEEDED") {
+            errorMessage =
+              errorData.message ||
+              "L'API Google a atteint sa limite de requêtes. Veuillez réessayer dans quelques minutes."
+          }
+        } catch (jsonError) {
+          // If response is not JSON (like "Internal Server Error"), use status text
+          errorMessage = response.statusText || `Erreur ${response.status}`
+        }
+        throw new Error(errorMessage)
       }
 
-      const analysisResult = await response.json()
+      let analysisResult
+      try {
+        analysisResult = await response.json()
+      } catch (jsonError) {
+        console.error("[v0] Failed to parse JSON response:", jsonError)
+        throw new Error("Réponse invalide du serveur. Veuillez réessayer.")
+      }
 
-      if (analysisResult.requires_identity_selection) {
-        setIdentitySelection(analysisResult)
+      console.log("[v0] Analysis result received:", analysisResult)
+      const resultData = analysisResult.data || analysisResult
+      console.log("[v0] Presence score:", resultData.presence_score)
+      console.log("[v0] Tone score:", resultData.tone_score)
+      console.log("[v0] Coherence score:", resultData.coherence_score)
+
+      if (resultData.requires_identity_selection) {
+        setIdentitySelection(resultData)
         setIsAnalyzing(false)
         return
       }
@@ -217,28 +241,28 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
 
       // Small delay to show completion
       setTimeout(() => {
-        setResult(analysisResult)
+        setResult(resultData)
 
-        if (analysisResult && formData) {
+        if (resultData && formData) {
           analysisHistory.addAnalysis({
             brand: formData.brand,
             message: formData.message,
             language: formData.language,
             type: "simple",
             results: {
-              presence_score: analysisResult.presence_score,
-              tone_score: analysisResult.tone_score,
-              coherence_score: analysisResult.coherence_score,
-              tone_label: analysisResult.tone_label,
-              rationale: analysisResult.rationale,
-              google_summary: analysisResult.google_summary,
-              gpt_summary: analysisResult.gpt_summary,
-              structured_conclusion: analysisResult.structured_conclusion,
-              detailed_analysis: analysisResult.detailed_analysis,
-              sources: analysisResult.sources,
+              presence_score: resultData.presence_score,
+              tone_score: resultData.tone_score,
+              coherence_score: resultData.coherence_score,
+              tone_label: resultData.tone_label,
+              rationale: resultData.rationale,
+              google_summary: resultData.google_summary,
+              gpt_summary: resultData.gpt_summary,
+              structured_conclusion: resultData.structured_conclusion,
+              detailed_analysis: resultData.detailed_analysis,
+              sources: resultData.sources,
             },
             metadata: {
-              fromCache: analysisResult._cache_stats ? true : false,
+              fromCache: resultData._cache_stats ? true : false,
             },
           })
         }
@@ -297,8 +321,8 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-6xl max-h-[95vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-2xl font-bold text-center">
               {isAnalyzing
                 ? "Analyse en cours..."
@@ -310,7 +334,7 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-6">
+          <div className="flex-1 overflow-y-auto space-y-6 pr-2">
             {isAnalyzing ? (
               <InteractiveLoadingAnimation
                 isLoading={isAnalyzing}
@@ -428,33 +452,11 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                   />
                 </div>
 
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Analyse Comparative</h3>
-                  <ResultsComparisonChart
-                    data={{
-                      current: {
-                        presence_score: result.presence_score,
-                        tone_score: result.tone_score,
-                        coherence_score: result.coherence_score,
-                        brand: formData.brand,
-                        date: new Date().toISOString(),
-                      },
-                      industry_average: {
-                        presence_score: 65,
-                        tone_score: 70,
-                        coherence_score: 68,
-                      },
-                    }}
-                    showIndustryBenchmark={true}
-                    showCompetitors={false}
-                    showTrends={false}
-                  />
-                </div>
-
                 {(result.google_summary ||
                   result.gpt_summary ||
                   result.structured_conclusion ||
-                  result.detailed_analysis) && (
+                  result.detailed_analysis ||
+                  result.rationale) && (
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Analyse Complète</h3>
 
@@ -486,21 +488,6 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                       </TabsList>
 
                       <TabsContent value="summaries" className="space-y-4">
-                        <div className="bg-blue-50/50 border border-blue-200 rounded-lg p-4 mb-4">
-                          <div className="flex items-start gap-3">
-                            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                              <span className="text-xs font-bold text-white">ℹ</span>
-                            </div>
-                            <div className="text-sm text-blue-800">
-                              <p className="font-medium mb-1">Sources d'analyse différentes</p>
-                              <p>
-                                Les résumés Google et ChatGPT proviennent de sources et d'analyses distinctes pour vous
-                                offrir une vision complète et diversifiée de votre présence digitale.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
                         {/* Search Summaries */}
                         {(result.google_summary || result.gpt_summary) && (
                           <div className="grid md:grid-cols-2 gap-4">
@@ -516,7 +503,7 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                                   <p className="text-xs text-blue-600">Basé sur les résultats de recherche Google</p>
                                 </CardHeader>
                                 <CardContent>
-                                  <div className="text-sm text-muted-foreground leading-relaxed">
+                                  <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
                                     {result.google_summary}
                                   </div>
                                 </CardContent>
@@ -535,7 +522,7 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                                   <p className="text-xs text-primary/70">Analyse IA avancée et contextuelle</p>
                                 </CardHeader>
                                 <CardContent>
-                                  <div className="text-sm text-muted-foreground leading-relaxed">
+                                  <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
                                     {result.gpt_summary}
                                   </div>
                                 </CardContent>
@@ -556,7 +543,7 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                       </TabsContent>
 
                       <TabsContent value="detailed" className="space-y-4">
-                        {result.detailed_analysis && (
+                        {result.detailed_analysis ? (
                           <Card className="border-2 border-accent/20 bg-gradient-to-br from-accent/5 to-primary/5">
                             <CardHeader>
                               <CardTitle className="flex items-center gap-2 text-accent">
@@ -567,14 +554,20 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                             <CardContent>
                               <div className="prose prose-sm max-w-none prose-headings:text-foreground prose-strong:text-foreground prose-p:text-muted-foreground prose-li:text-muted-foreground">
                                 <div
-                                  className="markdown-content"
+                                  className="markdown-content leading-relaxed"
                                   dangerouslySetInnerHTML={{
                                     __html: (typeof result.detailed_analysis === "string"
                                       ? result.detailed_analysis
                                       : String(result.detailed_analysis || "")
                                     )
-                                      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                                      .replace(/^# (.*$)/gm, '<h1 class="text-xl font-bold text-primary mb-4">$1</h1>')
+                                      .replace(
+                                        /\*\*(.*?)\*\*/g,
+                                        "<strong class='text-foreground font-semibold'>$1</strong>",
+                                      )
+                                      .replace(
+                                        /^# (.*$)/gm,
+                                        '<h1 class="text-xl font-bold text-primary mb-4 mt-6">$1</h1>',
+                                      )
                                       .replace(
                                         /^## (.*$)/gm,
                                         '<h2 class="text-lg font-semibold text-foreground mt-6 mb-3">$1</h2>',
@@ -583,13 +576,39 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                                         /^### (.*$)/gm,
                                         '<h3 class="text-base font-medium text-foreground mt-4 mb-2">$1</h3>',
                                       )
-                                      .replace(/^- (.*$)/gm, '<li class="ml-4 mb-1">$1</li>')
-                                      .replace(/^---$/gm, '<hr class="my-4 border-border">')
-                                      .replace(/\n\n/g, '</p><p class="mb-3">')
-                                      .replace(/^(?!<[h|l|p])(.*$)/gm, '<p class="mb-3">$1</p>')
-                                      .replace(/<p class="mb-3"><\/p>/g, ""),
+                                      .replace(/^- (.*$)/gm, '<li class="ml-4 mb-2 text-muted-foreground">$1</li>')
+                                      .replace(/^---$/gm, '<hr class="my-6 border-border">')
+                                      .replace(/\n\n/g, '</p><p class="mb-4 text-muted-foreground leading-relaxed">')
+                                      .replace(
+                                        /^(?!<[h|l|p])(.*$)/gm,
+                                        '<p class="mb-4 text-muted-foreground leading-relaxed">$1</p>',
+                                      )
+                                      .replace(/<p class="mb-4 text-muted-foreground leading-relaxed"><\/p>/g, ""),
                                   }}
                                 />
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ) : result.rationale ? (
+                          <Card className="border-2 border-accent/20 bg-gradient-to-br from-accent/5 to-primary/5">
+                            <CardHeader>
+                              <CardTitle className="flex items-center gap-2 text-accent">
+                                <FileText className="w-5 h-5" />
+                                Analyse Détaillée
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                                {result.rationale}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ) : (
+                          <Card className="border-dashed">
+                            <CardContent className="p-6 text-center">
+                              <div className="text-muted-foreground">
+                                <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                                <p className="text-sm">Analyse détaillée en cours de traitement</p>
                               </div>
                             </CardContent>
                           </Card>
@@ -616,14 +635,20 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                             <CardContent>
                               <div className="prose prose-sm max-w-none prose-headings:text-foreground prose-strong:text-foreground prose-p:text-muted-foreground prose-li:text-muted-foreground">
                                 <div
-                                  className="markdown-content"
+                                  className="markdown-content leading-relaxed"
                                   dangerouslySetInnerHTML={{
                                     __html: (typeof result.structured_conclusion === "string"
                                       ? result.structured_conclusion
                                       : String(result.structured_conclusion || "")
                                     )
-                                      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                                      .replace(/^# (.*$)/gm, '<h1 class="text-xl font-bold text-primary mb-4">$1</h1>')
+                                      .replace(
+                                        /\*\*(.*?)\*\*/g,
+                                        "<strong class='text-foreground font-semibold'>$1</strong>",
+                                      )
+                                      .replace(
+                                        /^# (.*$)/gm,
+                                        '<h1 class="text-xl font-bold text-primary mb-4 mt-6">$1</h1>',
+                                      )
                                       .replace(
                                         /^## (.*$)/gm,
                                         '<h2 class="text-lg font-semibold text-foreground mt-6 mb-3">$1</h2>',
@@ -632,11 +657,14 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                                         /^### (.*$)/gm,
                                         '<h3 class="text-base font-medium text-foreground mt-4 mb-2">$1</h3>',
                                       )
-                                      .replace(/^- (.*$)/gm, '<li class="ml-4 mb-1">$1</li>')
-                                      .replace(/^---$/gm, '<hr class="my-4 border-border">')
-                                      .replace(/\n\n/g, '</p><p class="mb-3">')
-                                      .replace(/^(?!<[h|l|p])(.*$)/gm, '<p class="mb-3">$1</p>')
-                                      .replace(/<p class="mb-3"><\/p>/g, ""),
+                                      .replace(/^- (.*$)/gm, '<li class="ml-4 mb-2 text-muted-foreground">$1</li>')
+                                      .replace(/^---$/gm, '<hr class="my-6 border-border">')
+                                      .replace(/\n\n/g, '</p><p class="mb-4 text-muted-foreground leading-relaxed">')
+                                      .replace(
+                                        /^(?!<[h|l|p])(.*$)/gm,
+                                        '<p class="mb-4 text-muted-foreground leading-relaxed">$1</p>',
+                                      )
+                                      .replace(/<p class="mb-4 text-muted-foreground leading-relaxed"><\/p>/g, ""),
                                   }}
                                 />
                               </div>

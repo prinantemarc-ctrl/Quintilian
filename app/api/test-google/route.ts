@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server"
 
 export async function GET(request: NextRequest) {
-  const apiKey = process.env.GOOGLE_API_KEY
+  const apiKey = "AIzaSyAeDFbXJiE-KxRm867_XluumQOg51UknC0"
   const cseId = process.env.GOOGLE_CSE_CX
 
   console.log("=== GOOGLE API TEST ===")
