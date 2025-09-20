@@ -12,8 +12,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Swords, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { DuelModal } from "@/components/duel-modal"
+import { useLanguage } from "@/contexts/language-context"
 
 export default function DuelPage() {
+  const { t } = useLanguage()
   const [formData, setFormData] = useState({
     brand1: "",
     brand2: "",
@@ -37,28 +39,28 @@ export default function DuelPage() {
           <div className="text-center mb-8">
             <Link href="/" className="inline-flex items-center gap-2 text-primary hover:underline mb-4">
               <ArrowLeft className="w-4 h-4" />
-              Retour à l'accueil
+              {t("legal.back_home")}
             </Link>
             <div className="flex items-center justify-center gap-3 mb-4">
               <Swords className="w-8 h-8 text-primary" />
               <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Mode Duel
+                {t("duel.title")}
               </h1>
             </div>
-            <p className="text-muted-foreground text-lg">Comparez deux noms ou marques sur le même message</p>
+            <p className="text-muted-foreground text-lg">{t("duel.subtitle")}</p>
           </div>
 
           {/* Form */}
           <Card className="border-2 border-primary/20 shadow-lg">
             <CardHeader>
-              <CardTitle className="text-center text-xl">Configuration du Duel</CardTitle>
+              <CardTitle className="text-center text-xl">{t("duel.title")} - Configuration</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="brand1" className="text-sm font-medium">
-                      Premier concurrent 🥊
+                      {t("duel.name1_placeholder")} 🥊
                     </Label>
                     <Input
                       id="brand1"
@@ -71,7 +73,7 @@ export default function DuelPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="brand2" className="text-sm font-medium">
-                      Second concurrent 🥊
+                      {t("duel.name2_placeholder")} 🥊
                     </Label>
                     <Input
                       id="brand2"
@@ -86,11 +88,11 @@ export default function DuelPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="message" className="text-sm font-medium">
-                    Message à analyser
+                    {t("hero.message_label")}
                   </Label>
                   <Textarea
                     id="message"
-                    placeholder="Ex: Leader de l'innovation technologique"
+                    placeholder={t("hero.message_placeholder")}
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     className="min-h-[100px] border-primary/20 focus:border-primary"
@@ -100,7 +102,7 @@ export default function DuelPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="language" className="text-sm font-medium">
-                    Langue d'analyse
+                    {t("hero.language_label")}
                   </Label>
                   <Select
                     value={formData.language}
@@ -110,11 +112,11 @@ export default function DuelPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="fr">🇫🇷 Français</SelectItem>
-                      <SelectItem value="en">🇺🇸 Anglais</SelectItem>
-                      <SelectItem value="es">🇪🇸 Espagnol</SelectItem>
-                      <SelectItem value="de">🇩🇪 Allemand</SelectItem>
-                      <SelectItem value="it">🇮🇹 Italien</SelectItem>
+                      <SelectItem value="fr">🇫🇷 {t("lang.french")}</SelectItem>
+                      <SelectItem value="en">🇺🇸 {t("lang.english")}</SelectItem>
+                      <SelectItem value="es">🇪🇸 {t("lang.spanish")}</SelectItem>
+                      <SelectItem value="de">🇩🇪 {t("lang.german")}</SelectItem>
+                      <SelectItem value="it">🇮🇹 {t("lang.italian")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -125,7 +127,7 @@ export default function DuelPage() {
                   size="lg"
                 >
                   <Swords className="w-5 h-5 mr-2" />
-                  Lancer le Duel !
+                  {t("duel.start_duel")} !
                 </Button>
               </form>
             </CardContent>

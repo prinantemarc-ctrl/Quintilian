@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { analysisHistory } from "@/lib/history"
 import { EnhancedScoreDisplay } from "@/components/enhanced-score-display"
 import { InteractiveLoadingAnimation } from "@/components/interactive-loading-animation"
+import { ShareButtons } from "@/components/share-buttons"
 
 interface AnalysisModalProps {
   isOpen: boolean
@@ -783,6 +784,30 @@ export function AnalysisModal({ isOpen, onClose, formData }: AnalysisModalProps)
                     <Button variant="outline" asChild>
                       <a href="/history">Voir l'historique</a>
                     </Button>
+                    {result && formData && (
+                      <ShareButtons
+                        analysis={{
+                          id: `temp_${Date.now()}`,
+                          brand: formData.brand,
+                          message: formData.message,
+                          language: formData.language,
+                          type: "simple",
+                          timestamp: Date.now(),
+                          results: {
+                            presence_score: result.presence_score,
+                            tone_score: result.tone_score,
+                            coherence_score: result.coherence_score,
+                            tone_label: result.tone_label,
+                            rationale: result.rationale,
+                            google_summary: result.google_summary,
+                            gpt_summary: result.gpt_summary,
+                            structured_conclusion: result.structured_conclusion,
+                            detailed_analysis: result.detailed_analysis,
+                            sources: result.sources,
+                          },
+                        }}
+                      />
+                    )}
                     <Button onClick={onClose}>Nouvelle analyse</Button>
                   </div>
                   <p className="text-xs text-muted-foreground">Analyse complète • Powered by GPT-4 & Google Search</p>
