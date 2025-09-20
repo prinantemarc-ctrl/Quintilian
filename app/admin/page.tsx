@@ -59,6 +59,8 @@ export default function AdminPage() {
     avgResponseTime: 0,
     errorRate: 0,
   })
+  const [chartData, setChartData] = useState<any>(null)
+  const [geographicData, setGeographicData] = useState<any[]>([])
 
   useEffect(() => {
     if (darkMode) {
@@ -67,19 +69,6 @@ export default function AdminPage() {
       document.documentElement.classList.remove("dark")
     }
   }, [darkMode])
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRealTimeData({
-        activeUsers: Math.floor(Math.random() * 50) + 10,
-        searchesPerMinute: Math.floor(Math.random() * 20) + 5,
-        avgResponseTime: Math.random() * 2 + 1,
-        errorRate: Math.random() * 5,
-      })
-    }, 5000)
-
-    return () => clearInterval(interval)
-  }, [])
 
   const authenticate = () => {
     if (password === "admin123") {
@@ -95,13 +84,159 @@ export default function AdminPage() {
       const [logsRes, statsRes] = await Promise.all([fetch("/api/admin/logs"), fetch("/api/admin/stats")])
 
       if (logsRes.ok && statsRes.ok) {
-        setLogs(await logsRes.json())
-        setStats(await statsRes.json())
+        const logsData = await logsRes.json()
+        const statsData = await statsRes.json()
+
+        setLogs(logsData)
+        setStats(statsData)
+
+        const now = new Date()
+        const oneMinuteAgo = new Date(now.getTime() - 60000)
+        const recentLogs = logsData.filter((log: SearchLog) => new Date(log.timestamp) > oneMinuteAgo)
+
+        setRealTimeData({
+          activeUsers: Math.max(1, Math.floor(statsData.today / 10)),
+          searchesPerMinute: recentLogs.length,
+          avgResponseTime: statsData.avgProcessingTime,
+          errorRate: statsData.total > 0 ? (statsData.errors / statsData.total) * 100 : 0,
+        })
+
+        generateChartData(logsData)
+        generateGeographicData(logsData)
       }
     } catch (error) {
       console.error("Erreur lors du chargement des données:", error)
     }
   }
+
+  const generateChartData = (logs: SearchLog[]) => {
+    const now = new Date()
+
+    const hourlyData = Array.from({ length: 24 }, (_, i) => {
+      const hour = new Date(now.getTime() - (23 - i) * 60 * 60 * 1000)
+      const hourLogs = logs.filter((log) => {
+        const logDate = new Date(log.timestamp)
+        return logDate.getHours() === hour.getHours() && logDate.toDateString() === hour.toDateString()
+      })
+
+      return {
+        hour: `${hour.getHours()}h`,
+        searches: hourLogs.length,
+        errors: hourLogs.filter((log) => log.error).length,
+      }
+    })
+
+    const dailyData = Array.from({ length: 30 }, (_, i) => {
+      const date = new Date(now.getTime() - (29 - i) * 24 * 60 * 60 * 1000)
+      const dayLogs = logs.filter((log) => {
+        const logDate = new Date(log.timestamp)
+        return logDate.toDateString() === date.toDateString()
+      })
+
+      const avgScore =
+        dayLogs.length > 0
+          ? dayLogs.reduce((sum, log) => {
+              const scores = [log.results.presence_score, log.results.sentiment_score, log.results.coherence_score]
+              const validScores = scores.filter((s) => s !== undefined) as number[]
+              return sum + (validScores.length > 0 ? validScores.reduce((a, b) => a + b, 0) / validScores.length : 0)
+            }, 0) / dayLogs.length
+          : 0
+
+      return {
+        date: date.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }),
+        searches: dayLogs.length,
+        avgScore: avgScore,
+      }
+    })
+
+    const analyzeCount = logs.filter((log) => log.type === "analyze").length
+    const duelCount = logs.filter((log) => log.type === "duel").length
+    const total = analyzeCount + duelCount
+
+    const typeDistribution = [
+      { type: "Analyse", count: analyzeCount, percentage: total > 0 ? Math.round((analyzeCount / total) * 100) : 0 },
+      { type: "Duel", count: duelCount, percentage: total > 0 ? Math.round((duelCount / total) * 100) : 0 },
+    ]
+
+    const languageCounts: Record<string, number> = {}
+    logs.forEach((log) => {
+      languageCounts[log.language] = (languageCounts[log.language] || 0) + 1
+    })
+
+    const languageDistribution = Object.entries(languageCounts).map(([language, count]) => ({
+      language: language === "fr" ? "Français" : language === "en" ? "English" : "Español",
+      count,
+    }))
+
+    const performanceData = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(now.getTime() - (6 - i) * 24 * 60 * 60 * 1000)
+      const dayLogs = logs.filter((log) => {
+        const logDate = new Date(log.timestamp)
+        return logDate.toDateString() === date.toDateString()
+      })
+
+      const avgTime =
+        dayLogs.length > 0 ? dayLogs.reduce((sum, log) => sum + log.results.processing_time, 0) / dayLogs.length : 0
+
+      const successRate =
+        dayLogs.length > 0 ? ((dayLogs.length - dayLogs.filter((log) => log.error).length) / dayLogs.length) * 100 : 100
+
+      return {
+        date: date.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }),
+        avgTime,
+        successRate,
+      }
+    })
+
+    setChartData({
+      hourlyData,
+      dailyData,
+      typeDistribution,
+      languageDistribution,
+      performanceData,
+    })
+  }
+
+  const generateGeographicData = (logs: SearchLog[]) => {
+    const countries: Record<string, { searches: number; scores: number[] }> = {}
+
+    logs.forEach((log) => {
+      let country = "France"
+      if (log.language === "en") country = "Canada"
+      if (log.language === "es") country = "Espagne"
+
+      if (!countries[country]) {
+        countries[country] = { searches: 0, scores: [] }
+      }
+
+      countries[country].searches++
+
+      const scores = [log.results.presence_score, log.results.sentiment_score, log.results.coherence_score]
+      const validScores = scores.filter((s) => s !== undefined) as number[]
+      if (validScores.length > 0) {
+        countries[country].scores.push(validScores.reduce((a, b) => a + b, 0) / validScores.length)
+      }
+    })
+
+    const totalSearches = logs.length
+    const geoData = Object.entries(countries).map(([country, data]) => ({
+      country,
+      countryCode: country === "France" ? "FR" : country === "Canada" ? "CA" : "ES",
+      searches: data.searches,
+      percentage: totalSearches > 0 ? Math.round((data.searches / totalSearches) * 100) : 0,
+      avgScore: data.scores.length > 0 ? data.scores.reduce((a, b) => a + b, 0) / data.scores.length : 0,
+      topCities: [],
+    }))
+
+    setGeographicData(geoData)
+  }
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const interval = setInterval(fetchData, 30000)
+      return () => clearInterval(interval)
+    }
+  }, [isAuthenticated])
 
   const filteredLogs = logs.filter(
     (log) =>
@@ -109,76 +244,6 @@ export default function AdminPage() {
       log.type.includes(filter.toLowerCase()) ||
       log.language.includes(filter.toLowerCase()),
   )
-
-  const mockChartData = {
-    hourlyData: Array.from({ length: 24 }, (_, i) => ({
-      hour: `${i}h`,
-      searches: Math.floor(Math.random() * 50) + 10,
-      errors: Math.floor(Math.random() * 5),
-    })),
-    dailyData: Array.from({ length: 30 }, (_, i) => ({
-      date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toLocaleDateString("fr-FR", {
-        day: "2-digit",
-        month: "2-digit",
-      }),
-      searches: Math.floor(Math.random() * 200) + 50,
-      avgScore: Math.random() * 3 + 7,
-    })),
-    typeDistribution: [
-      { type: "Analyse", count: 450, percentage: 75 },
-      { type: "Duel", count: 150, percentage: 25 },
-    ],
-    languageDistribution: [
-      { language: "Français", count: 400 },
-      { language: "English", count: 150 },
-      { language: "Español", count: 50 },
-    ],
-    performanceData: Array.from({ length: 7 }, (_, i) => ({
-      date: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000).toLocaleDateString("fr-FR", {
-        day: "2-digit",
-        month: "2-digit",
-      }),
-      avgTime: Math.random() * 2 + 1,
-      successRate: Math.random() * 10 + 90,
-    })),
-  }
-
-  const mockGeographicData = [
-    {
-      country: "France",
-      countryCode: "FR",
-      searches: 450,
-      percentage: 45,
-      avgScore: 8.2,
-      topCities: [
-        { city: "Paris", searches: 200, avgScore: 8.5 },
-        { city: "Lyon", searches: 100, avgScore: 8.0 },
-        { city: "Marseille", searches: 80, avgScore: 7.8 },
-      ],
-    },
-    {
-      country: "Canada",
-      countryCode: "CA",
-      searches: 200,
-      percentage: 20,
-      avgScore: 7.9,
-      topCities: [
-        { city: "Montréal", searches: 120, avgScore: 8.1 },
-        { city: "Toronto", searches: 80, avgScore: 7.7 },
-      ],
-    },
-    {
-      country: "Belgique",
-      countryCode: "BE",
-      searches: 150,
-      percentage: 15,
-      avgScore: 8.0,
-      topCities: [
-        { city: "Bruxelles", searches: 90, avgScore: 8.2 },
-        { city: "Anvers", searches: 60, avgScore: 7.8 },
-      ],
-    },
-  ]
 
   if (!isAuthenticated) {
     return (
@@ -303,11 +368,11 @@ export default function AdminPage() {
           </TabsList>
 
           <TabsContent value="analytics" className="space-y-6">
-            <AnalyticsCharts data={mockChartData} />
+            {chartData && <AnalyticsCharts data={chartData} />}
           </TabsContent>
 
           <TabsContent value="geographic" className="space-y-6">
-            <GeographicAnalysis data={mockGeographicData} totalSearches={1000} />
+            <GeographicAnalysis data={geographicData} totalSearches={stats?.total || 0} />
           </TabsContent>
 
           <TabsContent value="logs" className="space-y-6">
