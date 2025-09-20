@@ -709,7 +709,7 @@ ANALYSES GPT DÉJÀ EFFECTUÉES :
 MISSION : Créer une analyse DÉTAILLÉE qui répond CONCRÈTEMENT à ces questions :
 
 ## **🔍 ANALYSE DE PRÉSENCE (${presenceScore}/100)**
-- QUE RÉVÈLENT EXACTEMENT les ${googleResults.length} sources trouvées ?
+- QUE RÉVÈLENT EXACTEMENT les sources trouvées ?
 - QUELS SITES/PLATEFORMES dominent les résultats ? (LinkedIn, sites officiels, presse, etc.)
 - QUELLE EST LA QUALITÉ des informations trouvées ? (récentes, obsolètes, contradictoires ?)
 - COMPARAISON : Cette présence est-elle normale pour ce secteur/profil ?
