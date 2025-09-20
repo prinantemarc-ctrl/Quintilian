@@ -2,15 +2,12 @@ import { createClient } from "@supabase/supabase-js"
 
 export interface SharedResult {
   id: string
-  brand: string
-  message: string
-  language: string
-  type: string
-  results: any
+  url: string
+  analysis_data: any
   created_at: string
   expires_at: string
   view_count: number
-  is_public: boolean
+  is_active: boolean
 }
 
 function createSupabaseClient() {
@@ -24,12 +21,18 @@ export async function shareAnalysisResult(analysis: any): Promise<string | null>
     const { data, error } = await supabase
       .from("shared_results")
       .insert({
-        brand: analysis.brand,
-        message: analysis.message,
-        language: analysis.language,
-        type: analysis.type,
-        results: analysis.results,
-        is_public: true,
+        url: `${window.location.origin}/shared/${crypto.randomUUID()}`,
+        analysis_data: {
+          brand: analysis.brand,
+          message: analysis.message,
+          language: analysis.language,
+          type: analysis.type,
+          results: analysis.results,
+          created_at: new Date().toISOString(),
+        },
+        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
+        is_active: true,
+        view_count: 0,
       })
       .select("id")
       .single()
@@ -58,7 +61,7 @@ export async function getSharedResult(id: string): Promise<SharedResult | null> 
       .from("shared_results")
       .select("*")
       .eq("id", id)
-      .eq("is_public", true)
+      .eq("is_active", true)
       .gt("expires_at", new Date().toISOString())
       .single()
 
