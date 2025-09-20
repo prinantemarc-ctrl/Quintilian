@@ -9,7 +9,7 @@ export async function getSharedResultServer(id: string): Promise<SharedResult | 
       .from("shared_results")
       .select("*")
       .eq("id", id)
-      .eq("is_public", true)
+      .eq("is_active", true)
       .gt("expires_at", new Date().toISOString())
       .single()
 
