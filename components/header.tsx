@@ -1,15 +1,52 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Swords, Globe, ChevronDown, Lightbulb, Newspaper } from "lucide-react"
+import { Menu, X, Swords, Globe, ChevronDown, Lightbulb, Newspaper, User, LogOut } from "lucide-react"
 import Link from "next/link"
 import { useLanguage } from "@/contexts/language-context"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const { language, setLanguage, t } = useLanguage()
+  const router = useRouter()
+  const supabase = createClient()
+
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      setUser(user)
+      setIsLoading(false)
+    }
+
+    getUser()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [supabase.auth])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push("/")
+  }
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
@@ -99,7 +136,7 @@ export function Header() {
             </Link>
           </nav>
 
-          {/* Desktop CTA and Language Toggle */}
+          {/* Desktop CTA and Auth */}
           <div className="hidden md:flex items-center space-x-3">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -125,6 +162,45 @@ export function Header() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {!isLoading && (
+              <>
+                {user ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="flex items-center gap-2 bg-transparent">
+                        <User className="w-4 h-4" />
+                        {user.email?.split("@")[0]}
+                        <ChevronDown className="w-3 h-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard" className="flex items-center gap-2">
+                          <User className="w-4 h-4" />
+                          Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 text-destructive">
+                        <LogOut className="w-4 h-4" />
+                        Déconnexion
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href="/auth/login">Connexion</Link>
+                    </Button>
+                    <Button size="sm" asChild>
+                      <Link href="/auth/sign-up">Inscription</Link>
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
+
             <Link href="/analyze">
               <Button className="bg-gradient-to-r from-primary via-accent to-secondary text-primary-foreground hover:from-primary/90 hover:via-accent/90 hover:to-secondary/90 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 font-semibold">
                 {t("header.try_free")}
@@ -184,6 +260,47 @@ export function Header() {
               >
                 {t("header.contact")}
               </Link>
+
+              {!isLoading && (
+                <div className="px-4 py-3 space-y-2">
+                  {user ? (
+                    <>
+                      <p className="text-sm text-muted-foreground">Connecté en tant que {user.email}</p>
+                      <Link href="/dashboard">
+                        <Button
+                          variant="outline"
+                          className="w-full bg-transparent"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <User className="w-4 h-4 mr-2" />
+                          Dashboard
+                        </Button>
+                      </Link>
+                      <Button variant="outline" className="w-full bg-transparent" onClick={handleLogout}>
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Déconnexion
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="space-y-2">
+                      <Link href="/auth/login">
+                        <Button
+                          variant="outline"
+                          className="w-full bg-transparent"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Connexion
+                        </Button>
+                      </Link>
+                      <Link href="/auth/sign-up">
+                        <Button className="w-full" onClick={() => setIsMenuOpen(false)}>
+                          Inscription
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="px-4 py-3">
                 <div className="space-y-3">
