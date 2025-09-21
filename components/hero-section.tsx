@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { AnalysisModal } from "@/components/analysis-modal"
 import { useLanguage } from "@/contexts/language-context"
-import { Zap, Shield, Target, TrendingUp } from "lucide-react"
+import { Zap, Shield, Target, TrendingUp, Info } from "lucide-react"
+import Link from "next/link"
 
 export function HeroSection() {
   const { t, language } = useLanguage()
@@ -136,6 +137,18 @@ export function HeroSection() {
                   <Zap className="w-5 h-5 mr-2" />
                   {t("hero.analyze_button")}
                 </Button>
+
+                <div className="flex items-center justify-center mt-4">
+                  <Link href="/concept">
+                    <Button
+                      variant="outline"
+                      className="h-12 px-6 border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/50 transition-all duration-300 bg-transparent"
+                    >
+                      <Info className="w-4 h-4 mr-2" />
+                      Que proposons-nous ?
+                    </Button>
+                  </Link>
+                </div>
 
                 <div className="flex items-center justify-center gap-6 mt-6 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">

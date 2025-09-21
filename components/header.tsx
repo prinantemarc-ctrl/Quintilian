@@ -63,12 +63,6 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6 ml-8">
-            <button
-              onClick={() => scrollToSection("features")}
-              className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-200 hover:scale-105"
-            >
-              {t("header.features")}
-            </button>
             <Link
               href="/duel"
               className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-200 hover:scale-105 flex items-center gap-1"
@@ -151,12 +145,6 @@ export function Header() {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-4 pb-6 space-y-2 border-t border-border/40 bg-card/30 backdrop-blur-sm">
-              <button
-                onClick={() => scrollToSection("features")}
-                className="block px-4 py-3 text-base font-medium text-foreground/80 hover:text-primary hover:bg-primary/5 transition-all duration-200 w-full text-left rounded-lg"
-              >
-                {t("header.features")}
-              </button>
               <Link
                 href="/duel"
                 className="block px-4 py-3 text-base font-medium text-foreground/80 hover:text-primary hover:bg-primary/5 transition-all duration-200 w-full text-left rounded-lg flex items-center gap-2"

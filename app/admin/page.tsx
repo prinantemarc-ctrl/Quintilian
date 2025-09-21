@@ -81,11 +81,16 @@ export default function AdminPage() {
 
   const fetchData = async () => {
     try {
+      console.log("[v0] Fetching admin data...")
       const [logsRes, statsRes] = await Promise.all([fetch("/api/admin/logs"), fetch("/api/admin/stats")])
+
+      console.log("[v0] API responses:", { logsOk: logsRes.ok, statsOk: statsRes.ok })
 
       if (logsRes.ok && statsRes.ok) {
         const logsData = await logsRes.json()
         const statsData = await statsRes.json()
+
+        console.log("[v0] Received data:", { logsCount: logsData.length, statsData })
 
         setLogs(logsData)
         setStats(statsData)
@@ -94,18 +99,23 @@ export default function AdminPage() {
         const oneMinuteAgo = new Date(now.getTime() - 60000)
         const recentLogs = logsData.filter((log: SearchLog) => new Date(log.timestamp) > oneMinuteAgo)
 
-        setRealTimeData({
+        const newRealTimeData = {
           activeUsers: Math.max(1, Math.floor(statsData.today / 10)),
           searchesPerMinute: recentLogs.length,
           avgResponseTime: statsData.avgProcessingTime,
           errorRate: statsData.total > 0 ? (statsData.errors / statsData.total) * 100 : 0,
-        })
+        }
+
+        console.log("[v0] Real-time data:", newRealTimeData)
+        setRealTimeData(newRealTimeData)
 
         generateChartData(logsData)
         generateGeographicData(logsData)
+      } else {
+        console.error("[v0] API request failed:", { logsStatus: logsRes.status, statsStatus: statsRes.status })
       }
     } catch (error) {
-      console.error("Erreur lors du chargement des données:", error)
+      console.error("[v0] Error fetching admin data:", error)
     }
   }
 

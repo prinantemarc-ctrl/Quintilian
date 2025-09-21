@@ -66,10 +66,10 @@ const translations = {
     // Hero Section
     "hero.badge": "Analyse SEO Instantanée Powered by AI",
     "hero.title_measure": "Mesurez",
-    "hero.title_reputation": "votre réputation en ligne",
+    "hero.title_reputation": "votre image en ligne",
     "hero.title_time": "en une minute",
     "hero.subtitle": "3 scores, un résultat clair",
-    "hero.title": "Mesurez votre réputation en ligne en une minute - 3 scores, un résultat clair",
+    "hero.title": "Mesurez votre image en ligne en une minute - 3 scores, un résultat clair",
     "hero.subtitle_desc":
       "Découvrez en un instant comment Google et l'IA perçoivent votre nom ou votre marque : visibilité, tonalité et cohérence.",
     "hero.name_label": "Nom / Brand",
@@ -514,6 +514,21 @@ const translations = {
     "duel.message_to_analyze": "Message à analyser",
     "duel.analysis_language": "Langue d'analyse",
     "duel.launch_duel": "Lancer le Duel",
+
+    // Concept Section
+    "concept.title": "Découvrez l'image que vous projetez en ligne",
+    "concept.intro":
+      "Un citoyen, un consommateur, un banquier, un collaborateur ou un employeur… Tous ont un premier réflexe avant de vous faire confiance : taper votre nom ou celui de votre marque sur internet.",
+    "concept.questions": "Que vont-ils voir ? Que vont-ils ressentir ? Et surtout, qu'en concluront-ils ?",
+    "concept.analysis":
+      "C'est exactement ce que nous analysons avec nos outils. Notre outil vous permet de savoir quelle image vous renvoyez lorsqu'on effectue une recherche rapide sur vous ou votre organisation.",
+    "concept.measurement":
+      "Nous mesurons la présence, la tonalité et la cohérence narrative de vos résultats sur deux canaux décisifs :",
+    "concept.seo_channel": "les moteurs de recherche (SEO)",
+    "concept.ai_channel": "les IA conversationnelles (GPT et autres)",
+    "concept.objective":
+      "L'objectif n'est pas de dresser une analyse psychologique ou exhaustive de qui vous êtes réellement, mais de révéler la perception immédiate que les outils numériques construisent autour de votre identité.",
+    "concept.summary": "En un mot : ce que les autres voient quand ils vous cherchent.",
   },
   en: {
     // Header
@@ -568,10 +583,10 @@ const translations = {
     // Hero Section
     "hero.badge": "Instant SEO Analysis Powered by AI",
     "hero.title_measure": "Measure",
-    "hero.title_reputation": "your online reputation",
+    "hero.title_reputation": "your online image",
     "hero.title_time": "in one minute",
     "hero.subtitle": "3 scores, clear results",
-    "hero.title": "Measure your online reputation in one minute - 3 scores, clear results",
+    "hero.title": "Measure your online image in one minute - 3 scores, clear results",
     "hero.subtitle_desc":
       "Instantly discover how Google and AI perceive your name or brand: visibility, tone, and consistency.",
     "hero.name_label": "Name / Brand",
@@ -1011,6 +1026,21 @@ const translations = {
     "duel.message_to_analyze": "Message to analyze",
     "duel.analysis_language": "Analysis language",
     "duel.launch_duel": "Launch Duel",
+
+    // Concept Section
+    "concept.title": "Discover the image you project online",
+    "concept.intro":
+      "A citizen, a consumer, a banker, a colleague, or an employer... They all have the same first reflex before trusting you: typing your name or your brand on the internet.",
+    "concept.questions": "What will they see? What will they feel? And most importantly, what will they conclude?",
+    "concept.analysis":
+      "This is exactly what we analyze with our tools. Our tool allows you to know what image you project when someone performs a quick search about you or your organization.",
+    "concept.measurement":
+      "We measure the presence, tone, and narrative consistency of your results on two decisive channels:",
+    "concept.seo_channel": "search engines (SEO)",
+    "concept.ai_channel": "conversational AIs (GPT and others)",
+    "concept.objective":
+      "The objective is not to provide a psychological or exhaustive analysis of who you really are, but to reveal the immediate perception that digital tools build around your identity.",
+    "concept.summary": "In a word: what others see when they search for you.",
   },
   es: {
     // Header
@@ -1065,10 +1095,10 @@ const translations = {
     // Hero Section
     "hero.badge": "Análisis SEO Instantáneo Powered by AI",
     "hero.title_measure": "Mide",
-    "hero.title_reputation": "tu reputación en línea",
+    "hero.title_reputation": "tu imagen en línea",
     "hero.title_time": "en un minuto",
     "hero.subtitle": "3 puntuaciones, resultados claros",
-    "hero.title": "Mide tu reputación en línea en un minuto - 3 puntuaciones, resultados claros",
+    "hero.title": "Mide tu imagen en línea en un minuto - 3 puntuaciones, resultados claros",
     "hero.subtitle_desc":
       "Descubre al instante cómo Google y la IA perciben tu nombre o marca: visibilidad, tono y coherencia.",
     "hero.name_label": "Nombre / Marca",
@@ -1123,7 +1153,7 @@ const translations = {
     "example.global_score": "Puntuación Global",
     "example.key_metrics": "Métricas Clave",
     "example.search_volume": "Volumen de búsqueda mensual",
-    "example.brand_mentions": "Menciones de marca",
+    "example.brand_mentions": "Mentions de marca",
     "example.sentiment_evolution": "Evolución sentimiento (30d)",
     "example.strategic_recommendations": "Recomendaciones Estratégicas",
     "example.rec1_title": "Optimizar contenido SEO",
@@ -1512,6 +1542,21 @@ const translations = {
     "duel.message_to_analyze": "Mensaje a analizar",
     "duel.analysis_language": "Idioma de análisis",
     "duel.launch_duel": "Lanzar Duelo",
+
+    // Concept Section
+    "concept.title": "Descubre la imagen que proyectas en línea",
+    "concept.intro":
+      "Un ciudadano, un consumidor, un banquero, un colaborador o un empleador... Todos tienen el mismo primer reflejo antes de confiar en ti: escribir tu nombre o tu marca en internet.",
+    "concept.questions": "¿Qué verán? ¿Qué sentirán? Y sobre todo, ¿qué concluirán?",
+    "concept.analysis":
+      "Esto es exactamente lo que analizamos con nuestras herramientas. Nuestra herramienta te permite saber qué imagen proyectas cuando alguien realiza una búsqueda rápida sobre ti o tu organización.",
+    "concept.measurement":
+      "Medimos la presencia, el tono y la coherencia narrativa de tus resultados en dos canales decisivos:",
+    "concept.seo_channel": "motores de búsqueda (SEO)",
+    "concept.ai_channel": "IAs conversacionales (GPT y otros)",
+    "concept.objective":
+      "El objetivo no es hacer un análisis psicológico o exhaustivo de quién eres realmente, sino revelar la percepción inmediata que las herramientas digitales construyen alrededor de tu identidad.",
+    "concept.summary": "En una palabra: lo que otros ven cuando te buscan.",
   },
 }
 

@@ -1,12 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createClient } from "@supabase/supabase-js"
+import { createServiceClient } from "@/lib/supabase/server"
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const format = (searchParams.get("format") as "json" | "csv") || "csv"
 
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+    const supabase = createServiceClient()
 
     const { data: logs, error } = await supabase
       .from("search_logs")

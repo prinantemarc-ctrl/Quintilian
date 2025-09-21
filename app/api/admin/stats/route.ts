@@ -1,18 +1,40 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@supabase/supabase-js"
+import { createAdminClient } from "@/lib/supabase/admin"
 
 export async function GET() {
   try {
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+    console.log("[v0] Starting stats API call")
+    const supabase = createAdminClient()
+
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error("[v0] Missing Supabase environment variables")
+      return NextResponse.json({ error: "Configuration manquante" }, { status: 500 })
+    }
 
     const { data: logs, error } = await supabase
       .from("search_logs")
       .select("*")
       .order("created_at", { ascending: false })
 
+    console.log("[v0] Database query result:", { logsCount: logs?.length, error })
+
     if (error) {
-      console.error("Erreur Supabase:", error)
-      return NextResponse.json({ error: "Erreur base de données" }, { status: 500 })
+      console.error("[v0] Supabase error:", error)
+      return NextResponse.json({ error: "Erreur base de données", details: error.message }, { status: 500 })
+    }
+
+    if (!logs || logs.length === 0) {
+      console.log("[v0] No logs found in database")
+      return NextResponse.json({
+        total: 0,
+        today: 0,
+        week: 0,
+        month: 0,
+        byType: { analyze: 0, duel: 0 },
+        byLanguage: {},
+        avgProcessingTime: 0,
+        errors: 0,
+      })
     }
 
     const now = new Date()
@@ -26,7 +48,7 @@ export async function GET() {
       week: logs.filter((log) => new Date(log.created_at) >= weekAgo).length,
       month: logs.filter((log) => new Date(log.created_at) >= monthAgo).length,
       byType: {
-        analyze: logs.filter((log) => log.analysis_type === "analyze" || !log.analysis_type).length,
+        analyze: logs.filter((log) => log.analysis_type === "seo" || !log.analysis_type).length,
         duel: logs.filter((log) => log.analysis_type === "duel").length,
       },
       byLanguage: logs.reduce(
@@ -42,9 +64,13 @@ export async function GET() {
       errors: logs.filter((log) => log.error_message).length,
     }
 
+    console.log("[v0] Computed stats:", stats)
     return NextResponse.json(stats)
   } catch (error) {
-    console.error("Erreur lors de la récupération des stats:", error)
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
+    console.error("[v0] Error in stats API:", error)
+    return NextResponse.json(
+      { error: "Erreur serveur", details: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 },
+    )
   }
 }
