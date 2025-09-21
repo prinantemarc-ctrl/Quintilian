@@ -28,6 +28,7 @@ export interface SearchLog {
   user_agent: string
   ip_address?: string
   error?: string
+  user_id?: string // Ajout du user_id optionnel
 }
 
 class Logger {
@@ -72,6 +73,7 @@ class Logger {
         session_id: log.identity || null,
         processing_time_ms: Math.round(log.results.processing_time * 1000), // Changed to processing_time_ms
         error_message: log.error || null, // Changed from 'error' to 'error_message'
+        user_id: log.user_id || null, // Ajout du user_id dans l'insertion
       })
 
       if (error) {
@@ -124,6 +126,7 @@ class Logger {
         user_agent: record.user_agent || "",
         ip_address: record.user_ip,
         error: record.error_message, // Changed from 'error' to 'error_message'
+        user_id: record.user_id, // Ajout du user_id dans le mapping
       }))
     } catch (error) {
       console.error("[LOGGER] Database error:", error instanceof Error ? error.message : "Unknown error")
@@ -195,6 +198,16 @@ class Logger {
         .select("*", { count: "exact", head: true })
         .not("error_message", "is", null) // Changed from 'error' to 'error_message'
 
+      const { data: userIdData } = await supabase.from("search_logs").select("user_id")
+      const byUserId =
+        userIdData?.reduce(
+          (acc, log) => {
+            acc[log.user_id || "unknown"] = (acc[log.user_id || "unknown"] || 0) + 1
+            return acc
+          },
+          {} as Record<string, number>,
+        ) || {}
+
       return {
         total: totalCount || 0,
         today: todayCount || 0,
@@ -207,6 +220,7 @@ class Logger {
         byLanguage,
         avgProcessingTime: avgProcessingTime / 1000, // Convert from ms to seconds
         errors: errorCount || 0,
+        byUserId,
       }
     } catch (error) {
       console.error("[LOGGER] Failed to get stats:", error instanceof Error ? error.message : "Unknown error")
@@ -219,6 +233,7 @@ class Logger {
         byLanguage: { fr: 0 },
         avgProcessingTime: 0,
         errors: 0,
+        byUserId: { unknown: 0 },
       }
     }
   }
@@ -254,6 +269,7 @@ class Logger {
         "Processing Time (ms)",
         "Google Results",
         "User IP",
+        "User ID", // Ajout du user_id dans les headers
       ]
 
       const csvRows = [
@@ -272,6 +288,7 @@ class Logger {
             row.processing_time_ms || "", // Changed to processing_time_ms
             row.google_results?.count || "",
             row.user_ip || "",
+            row.user_id || "", // Ajout du user_id dans les données CSV
           ].join(","),
         ),
       ]

@@ -15,11 +15,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
     }
 
-    // Récupérer les recherches de l'utilisateur basées sur l'IP ou session
-    // Note: Dans un vrai système, il faudrait lier les recherches à l'user_id
     const { data: searches, error } = await supabase
       .from("search_logs")
       .select("*")
+      .eq("user_id", user.id) // Filtrer par user_id
       .order("created_at", { ascending: false })
       .limit(50)
 
@@ -27,6 +26,9 @@ export async function GET(request: NextRequest) {
       console.error("Erreur lors de la récupération des recherches:", error)
       return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
     }
+
+    console.log("[v0] Nombre de recherches trouvées pour l'utilisateur:", searches?.length || 0)
+    console.log("[v0] User ID:", user.id)
 
     // Calculer les statistiques
     const totalSearches = searches?.length || 0

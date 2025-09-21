@@ -25,27 +25,45 @@ export function Header() {
 
   useEffect(() => {
     const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      setUser(user)
-      setIsLoading(false)
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        setUser(user)
+      } catch (error) {
+        console.log("[v0] Auth error:", error)
+        setUser(null)
+      } finally {
+        setIsLoading(false)
+      }
     }
 
     getUser()
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null)
-    })
+    try {
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((event, session) => {
+        setUser(session?.user ?? null)
+      })
 
-    return () => subscription.unsubscribe()
+      return () => subscription.unsubscribe()
+    } catch (error) {
+      console.log("[v0] Auth listener error:", error)
+      setIsLoading(false)
+    }
   }, [supabase.auth])
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push("/")
+    try {
+      await supabase.auth.signOut()
+      router.push("/")
+    } catch (error) {
+      console.log("[v0] Logout error:", error)
+      // Force logout même en cas d'erreur
+      setUser(null)
+      router.push("/")
+    }
   }
 
   const scrollToSection = (sectionId: string) => {
@@ -143,21 +161,34 @@ export function Header() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex items-center gap-2 bg-card/50 border-border/60 hover:bg-card hover:border-primary/20 transition-all duration-200"
+                  className="flex items-center gap-2 bg-card/50 border-border/60 hover:bg-card hover:border-primary/20 transition-all duration-200 relative z-[60] cursor-pointer touch-manipulation min-h-[36px] px-3"
                 >
                   <Globe className="w-4 h-4" />
                   {getLanguageLabel(language)}
                   <ChevronDown className="w-3 h-3" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-card/95 backdrop-blur-sm border-border/60">
-                <DropdownMenuItem onClick={() => setLanguage("fr")} className="hover:bg-primary/10">
+              <DropdownMenuContent
+                align="end"
+                className="bg-card/95 backdrop-blur-sm border-border/60 z-[200] min-w-[140px]"
+                sideOffset={4}
+              >
+                <DropdownMenuItem
+                  onClick={() => setLanguage("fr")}
+                  className="hover:bg-primary/10 cursor-pointer touch-manipulation min-h-[36px] px-3"
+                >
                   🇫🇷 Français
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguage("en")} className="hover:bg-primary/10">
+                <DropdownMenuItem
+                  onClick={() => setLanguage("en")}
+                  className="hover:bg-primary/10 cursor-pointer touch-manipulation min-h-[36px] px-3"
+                >
                   🇺🇸 English
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguage("es")} className="hover:bg-primary/10">
+                <DropdownMenuItem
+                  onClick={() => setLanguage("es")}
+                  className="hover:bg-primary/10 cursor-pointer touch-manipulation min-h-[36px] px-3"
+                >
                   🇪🇸 Español
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -168,21 +199,31 @@ export function Header() {
                 {user ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="flex items-center gap-2 bg-transparent">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2 bg-transparent relative z-[60] cursor-pointer touch-manipulation min-h-[36px] px-3"
+                      >
                         <User className="w-4 h-4" />
                         {user.email?.split("@")[0]}
                         <ChevronDown className="w-3 h-3" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end" className="z-[200] min-w-[140px]" sideOffset={4}>
                       <DropdownMenuItem asChild>
-                        <Link href="/dashboard" className="flex items-center gap-2">
+                        <Link
+                          href="/dashboard"
+                          className="flex items-center gap-2 cursor-pointer touch-manipulation min-h-[36px] px-3 w-full"
+                        >
                           <User className="w-4 h-4" />
                           Dashboard
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 text-destructive">
+                      <DropdownMenuItem
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 text-destructive cursor-pointer touch-manipulation min-h-[36px] px-3"
+                      >
                         <LogOut className="w-4 h-4" />
                         Déconnexion
                       </DropdownMenuItem>
@@ -210,7 +251,7 @@ export function Header() {
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden p-2 rounded-lg hover:bg-muted/50 transition-colors"
+            className="md:hidden p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer touch-manipulation z-[60]"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -219,7 +260,7 @@ export function Header() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden">
+          <div className="md:hidden z-[100]">
             <div className="px-2 pt-4 pb-6 space-y-2 border-t border-border/40 bg-card/30 backdrop-blur-sm">
               <Link
                 href="/duel"
@@ -314,7 +355,7 @@ export function Header() {
                         setLanguage("fr")
                         setIsMenuOpen(false)
                       }}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer touch-manipulation min-h-[44px] flex-1 ${
                         language === "fr"
                           ? "bg-primary text-primary-foreground shadow-md"
                           : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -327,7 +368,7 @@ export function Header() {
                         setLanguage("en")
                         setIsMenuOpen(false)
                       }}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer touch-manipulation min-h-[44px] flex-1 ${
                         language === "en"
                           ? "bg-primary text-primary-foreground shadow-md"
                           : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -340,7 +381,7 @@ export function Header() {
                         setLanguage("es")
                         setIsMenuOpen(false)
                       }}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer touch-manipulation min-h-[44px] flex-1 ${
                         language === "es"
                           ? "bg-primary text-primary-foreground shadow-md"
                           : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"

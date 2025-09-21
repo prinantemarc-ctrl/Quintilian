@@ -16,18 +16,32 @@ import {
   logApiResponse,
 } from "@/lib/utils/api-response"
 import { searchCache, analysisCache, resultsCache } from "@/lib/cache"
+import { logger } from "@/lib/logger" // Import du logger pour enregistrer les recherches
+import { createClient } from "@/lib/supabase/server" // Import du client Supabase pour vérifier l'auth
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
   logApiRequest("ANALYZE", {})
 
-  let body: any // Declare body variable
+  let body: any
+  let user: any = null // Variable pour stocker l'utilisateur connecté
 
   try {
     console.log("[v0] Starting analysis request")
 
-    body = await request.json() // Assign body variable
+    body = await request.json()
     logApiRequest("ANALYZE", body)
+
+    try {
+      const supabase = await createClient()
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser()
+      user = authUser
+      console.log("[v0] User authenticated:", user?.id || "anonymous")
+    } catch (error) {
+      console.log("[v0] User not authenticated, continuing as anonymous")
+    }
 
     console.log("[v0] Parsing request body")
     const parsedData = SingleAnalysisSchema.parse(body)
@@ -180,15 +194,29 @@ export async function POST(request: NextRequest) {
     console.log("[v0] Analysis completed successfully in", processingTime, "ms")
     logApiResponse("ANALYZE", true, processingTime)
 
-    // The logger requires Supabase environment variables that aren't available in v0
-    console.log("[v0] Analysis logged:", {
-      type: "analyze",
-      query: brand,
-      language: language || "fr",
-      processing_time: processingTime,
-      google_results_count: searchResults.length,
-      identity: selected_identity || undefined,
-    })
+    try {
+      await logger.logSearch({
+        type: "analyze",
+        query: brand,
+        language: language || "fr",
+        results: {
+          presence_score: detailedAnalysis.presence_score,
+          sentiment_score: detailedAnalysis.tone_score,
+          coherence_score: detailedAnalysis.coherence_score,
+          processing_time: processingTime / 1000, // Convert to seconds
+          google_results_count: searchResults.length,
+          openai_tokens_used: undefined,
+        },
+        user_agent: request.headers.get("user-agent") || "",
+        ip_address: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || undefined,
+        identity: selected_identity || undefined,
+        ...(user && { user_id: user.id }),
+      })
+      console.log("[v0] Search logged successfully for user:", user?.id || "anonymous")
+    } catch (logError) {
+      console.error("[v0] Failed to log search:", logError)
+      // Don't fail the request if logging fails
+    }
 
     return createSuccessResponse(response, { processingTime })
   } catch (error) {
@@ -196,13 +224,23 @@ export async function POST(request: NextRequest) {
     console.error("[v0] Critical error in analysis:", error)
     logApiResponse("ANALYZE", false, processingTime)
 
-    console.log("[v0] Error logged:", {
-      type: "analyze",
-      query: body?.brand || "unknown",
-      language: body?.language || "fr",
-      processing_time: processingTime,
-      error: error instanceof Error ? error.message : "Unknown error",
-    })
+    try {
+      await logger.logSearch({
+        type: "analyze",
+        query: body?.brand || "unknown",
+        language: body?.language || "fr",
+        results: {
+          processing_time: processingTime / 1000,
+          google_results_count: 0,
+        },
+        user_agent: request.headers.get("user-agent") || "",
+        ip_address: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || undefined,
+        error: error instanceof Error ? error.message : "Unknown error",
+        ...(user && { user_id: user.id }),
+      })
+    } catch (logError) {
+      console.error("[v0] Failed to log error:", logError)
+    }
 
     if (error instanceof z.ZodError) {
       console.error("[v0] Validation error:", error.errors)

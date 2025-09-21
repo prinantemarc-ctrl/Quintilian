@@ -50,33 +50,31 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<UserStats | null>(null)
   const [searches, setSearches] = useState<SearchResult[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [expandedSearches, setExpandedSearches] = useState<Set<string>>(new Set())
   const supabase = createClient()
 
-  useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      setUser(user)
+  const loadUserData = async (showRefreshLoader = false) => {
+    if (showRefreshLoader) setIsRefreshing(true)
 
-      if (user) {
-        try {
-          const response = await fetch("/api/user/searches")
-          if (response.ok) {
-            const data = await response.json()
-            setStats(data.stats)
-            setSearches(data.searches)
-          } else {
-            setStats({
-              totalAnalyses: 0,
-              thisMonth: 0,
-              avgScore: 0,
-              lastAnalysis: null,
-            })
-          }
-        } catch (error) {
-          console.error("Erreur lors du chargement des données:", error)
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    setUser(user)
+
+    if (user) {
+      try {
+        const response = await fetch("/api/user/searches", {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache",
+          },
+        })
+        if (response.ok) {
+          const data = await response.json()
+          setStats(data.stats)
+          setSearches(data.searches)
+        } else {
           setStats({
             totalAnalyses: 0,
             thisMonth: 0,
@@ -84,12 +82,27 @@ export default function DashboardPage() {
             lastAnalysis: null,
           })
         }
+      } catch (error) {
+        console.error("Erreur lors du chargement des données:", error)
+        setStats({
+          totalAnalyses: 0,
+          thisMonth: 0,
+          avgScore: 0,
+          lastAnalysis: null,
+        })
       }
-
-      setIsLoading(false)
     }
 
-    getUser()
+    setIsLoading(false)
+    if (showRefreshLoader) setIsRefreshing(false)
+  }
+
+  const refreshData = () => {
+    loadUserData(true)
+  }
+
+  useEffect(() => {
+    loadUserData()
   }, [supabase.auth])
 
   const formatDate = (dateString: string) => {
@@ -173,12 +186,18 @@ export default function DashboardPage() {
               <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
               <p className="text-muted-foreground">Bienvenue, {user.email}</p>
             </div>
-            <Button asChild variant="outline">
-              <Link href="/">
-                <Home className="w-4 h-4 mr-2" />
-                Accueil
-              </Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button onClick={refreshData} variant="outline" size="sm" disabled={isRefreshing}>
+                <TrendingUp className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+                {isRefreshing ? "Actualisation..." : "Actualiser"}
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/">
+                  <Home className="w-4 h-4 mr-2" />
+                  Accueil
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
 
