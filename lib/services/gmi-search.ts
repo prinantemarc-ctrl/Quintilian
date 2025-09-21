@@ -26,7 +26,7 @@ export async function searchGMIByCountry(options: GMISearchOptions): Promise<GMI
     query: options.query,
     country: options.country,
     language: options.language,
-    maxResults: options.maxResults || 10,
+    maxResults: options.maxResults || 25,
   }
 
   const { data: results, fromCache } = await searchCache.getOrSet(
@@ -77,7 +77,7 @@ async function searchGoogleCustom(options: GMISearchOptions): Promise<GMISearchR
   url.searchParams.set("lr", `lang_${options.language}`)
   url.searchParams.set("gl", options.country)
   url.searchParams.set("cr", `country${options.country.toUpperCase()}`)
-  url.searchParams.set("num", String(options.maxResults || 10))
+  url.searchParams.set("num", String(options.maxResults || 25)) // Changed default from 10 to 25 results
   url.searchParams.set("dateRestrict", "y1") // Last year only
 
   console.log(`[v0] GMI Google API URL: ${url.toString()}`)

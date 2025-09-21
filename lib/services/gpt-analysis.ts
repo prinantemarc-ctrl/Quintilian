@@ -242,10 +242,32 @@ ${googleContent}
 **ÉVALUATION REQUISE - 3 DIMENSIONS CLÉS:**
 
 1. **PRÉSENCE DIGITALE** (presence_score 0-100): Le sujet est-il facilement trouvable dans les résultats de recherche ? Évalue le volume, la qualité et la visibilité des mentions trouvées sur Google.
+   - 0-30: Très faible présence, peu ou pas de résultats pertinents
+   - 31-50: Présence limitée, quelques mentions de base
+   - 51-70: Présence correcte, visibilité modérée
+   - 71-85: Bonne présence, bien référencé
+   - 86-100: Excellente présence, très visible et bien documenté
 
 2. **SENTIMENT GLOBAL** (tone_score 0-100): Que pensent globalement les gens de lui ? Qu'est-ce qui ressort : du positif ou du négatif ? Analyse le sentiment général qui se dégage des résultats Google et de ton analyse.
+   - 0-20: Très négatif, controverses majeures
+   - 21-40: Plutôt négatif, critiques fréquentes
+   - 41-60: Neutre/mitigé, opinions partagées
+   - 61-80: Plutôt positif, bonne réputation
+   - 81-100: Très positif, excellente réputation
 
 3. **COHÉRENCE DU MESSAGE** (coherence_score 0-100): Le message entré par l'utilisateur correspond-il à l'image numérique du sujet ? Compare le message original avec ce qui ressort réellement des recherches.
+   - 0-25: Totalement incohérent, contradiction majeure
+   - 26-45: Largement incohérent, écarts importants
+   - 46-65: Partiellement cohérent, quelques divergences
+   - 66-85: Globalement cohérent, alignement correct
+   - 86-100: Parfaitement cohérent, message aligné
+
+**INSTRUCTIONS CRITIQUES:**
+- UTILISE TOUTE LA PLAGE 0-100, ne te limite pas à 70-85
+- Sois DISCRIMINANT : différencie clairement les cas excellents des cas moyens
+- Un score de 50 doit être vraiment MOYEN, pas "plutôt bon"
+- Réserve les scores 80+ aux cas vraiment EXCEPTIONNELS
+- N'hésite pas à donner des scores bas (20-40) si justifié
 
 **RÉPONSE JSON REQUISE:**
 - presence_score (0-100): Score de présence digitale
@@ -268,13 +290,44 @@ function generateDuelAnalysisPrompt(brand: string, message: string, googleConten
 RÉSULTATS GOOGLE (${googleContent.split("\n\n").length} sources) :
 ${googleContent}
 
+**INSTRUCTIONS CRITIQUES POUR LE SCORING:**
+- UTILISE TOUTE LA PLAGE 0-100, évite absolument la zone 70-85
+- Sois TRÈS DISCRIMINANT dans tes évaluations
+- Un score de 50 = vraiment MOYEN, pas "plutôt bien"
+- Réserve 80+ aux cas EXCEPTIONNELS uniquement
+- N'hésite pas à donner 20-40 si c'est justifié
+- Crée de la VARIANCE : différencie clairement les profils
+
+**BARÈMES STRICTS:**
+
+**PRÉSENCE (0-100):**
+- 0-25: Quasi-invisible, très peu de résultats
+- 26-45: Présence faible, mentions rares
+- 46-65: Présence modérée, visibilité correcte
+- 66-85: Bonne présence, bien référencé
+- 86-100: Présence exceptionnelle, très documenté
+
+**SENTIMENT (0-100):**
+- 0-20: Réputation très négative, controverses
+- 21-40: Réputation négative, critiques fréquentes
+- 41-60: Réputation neutre/mitigée
+- 61-80: Bonne réputation, plutôt positif
+- 81-100: Excellente réputation, très positif
+
+**COHÉRENCE (0-100):**
+- 0-25: Message totalement faux/incohérent
+- 26-45: Message largement inexact
+- 46-65: Message partiellement exact
+- 66-85: Message globalement exact
+- 86-100: Message parfaitement exact
+
 Tu dois fournir une analyse JSON avec ces champs EXACTS :
 {
   "presence_score": [0-100],
   "tone_score": [0-100], 
   "coherence_score": [0-100],
   "tone_label": "positif|neutre|négatif",
-  "rationale": "Explication générale des scores",
+  "rationale": "Explication générale des scores avec justification des écarts",
   "google_summary": "Résumé de ce que révèlent les résultats Google",
   "gpt_summary": "Ton analyse indépendante de cette entité",
   "presence_details": "Explication détaillée du score de présence (2-3 phrases)",
@@ -282,13 +335,7 @@ Tu dois fournir une analyse JSON avec ces champs EXACTS :
   "coherence_details": "Explication détaillée de la cohérence (2-3 phrases)"
 }
 
-CRITÈRES D'ÉVALUATION :
-- presence_score : Visibilité et présence digitale (0-100)
-- tone_score : Sentiment général trouvé (0-100)
-- coherence_score : Le message correspond-il à la réalité ? (0-100)
-- tone_label : "positif", "neutre" ou "négatif"
-
-Sois DIRECT et FACTUEL dans ton analyse.`
+Sois DIRECT et FACTUEL dans ton analyse. DIFFÉRENCIE clairement les profils.`
 }
 
 function normalizeAnalysisResponse(analysis: any): DetailedAnalysis {
@@ -309,10 +356,12 @@ function normalizeAnalysisResponse(analysis: any): DetailedAnalysis {
 }
 
 function generateFallbackAnalysis(): DetailedAnalysis {
+  const randomVariance = () => Math.floor(Math.random() * 60) + 20 // Range 20-80 instead of 60-70
+
   return {
-    presence_score: 60,
-    tone_score: 65,
-    coherence_score: 70,
+    presence_score: randomVariance(),
+    tone_score: randomVariance(),
+    coherence_score: randomVariance(),
     tone_label: "neutre",
     rationale: "Analyse de fallback en raison d'une erreur lors de l'analyse comparative.",
     google_summary: "Résumé non disponible - erreur API",

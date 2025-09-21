@@ -44,7 +44,7 @@ class Logger {
       const { error } = await supabase.from("search_logs").insert({
         id: log.id,
         created_at: log.timestamp.toISOString(),
-        type: log.type,
+        analysis_type: log.type, // Changed from 'type' to 'analysis_type'
         query: log.query,
         competitor_query: log.brand2 || null,
         language: log.language || "fr",
@@ -70,8 +70,8 @@ class Logger {
         user_ip: log.ip_address,
         user_agent: log.user_agent,
         session_id: log.identity || null,
-        processing_time: log.results.processing_time,
-        error: log.error || null,
+        processing_time_ms: Math.round(log.results.processing_time * 1000), // Changed to processing_time_ms
+        error_message: log.error || null, // Changed from 'error' to 'error_message'
       })
 
       if (error) {
@@ -107,7 +107,7 @@ class Logger {
       return data.map((record) => ({
         id: record.id,
         timestamp: new Date(record.created_at),
-        type: record.type as "analyze" | "duel",
+        type: record.analysis_type as "analyze" | "duel", // Changed from 'type' to 'analysis_type'
         query: record.query,
         identity: record.session_id,
         brand1: record.query,
@@ -117,13 +117,13 @@ class Logger {
           presence_score: record.presence_score || record.scores?.presence_score,
           sentiment_score: record.sentiment_score || record.scores?.sentiment_score,
           coherence_score: record.coherence_score || record.scores?.coherence_score,
-          processing_time: record.processing_time || 0,
+          processing_time: (record.processing_time_ms || 0) / 1000, // Convert from ms to seconds
           google_results_count: record.google_results?.count || 0,
           openai_tokens_used: record.gpt_analysis?.tokens_used,
         },
         user_agent: record.user_agent || "",
         ip_address: record.user_ip,
-        error: record.error,
+        error: record.error_message, // Changed from 'error' to 'error_message'
       }))
     } catch (error) {
       console.error("[LOGGER] Database error:", error instanceof Error ? error.message : "Unknown error")
@@ -159,12 +159,13 @@ class Logger {
         .select("*", { count: "exact", head: true })
         .gte("created_at", thisMonth.toISOString())
 
-      const { data: typeData } = await supabase.from("search_logs").select("type")
+      const { data: typeData } = await supabase.from("search_logs").select("analysis_type") // Changed from 'type' to 'analysis_type'
 
       const byType =
         typeData?.reduce(
           (acc, log) => {
-            acc[log.type] = (acc[log.type] || 0) + 1
+            const type = log.analysis_type === "seo" ? "analyze" : log.analysis_type || "analyze"
+            acc[type] = (acc[type] || 0) + 1
             return acc
           },
           {} as Record<string, number>,
@@ -182,17 +183,17 @@ class Logger {
 
       const { data: processingData } = await supabase
         .from("search_logs")
-        .select("processing_time")
-        .not("processing_time", "is", null)
+        .select("processing_time_ms") // Changed from 'processing_time' to 'processing_time_ms'
+        .not("processing_time_ms", "is", null)
 
       const avgProcessingTime = processingData?.length
-        ? processingData.reduce((sum, log) => sum + (log.processing_time || 0), 0) / processingData.length
+        ? processingData.reduce((sum, log) => sum + (log.processing_time_ms || 0), 0) / processingData.length
         : 0
 
       const { count: errorCount } = await supabase
         .from("search_logs")
         .select("*", { count: "exact", head: true })
-        .not("error", "is", null)
+        .not("error_message", "is", null) // Changed from 'error' to 'error_message'
 
       return {
         total: totalCount || 0,
@@ -204,7 +205,7 @@ class Logger {
           duel: byType.duel || 0,
         },
         byLanguage,
-        avgProcessingTime: avgProcessingTime / 1000,
+        avgProcessingTime: avgProcessingTime / 1000, // Convert from ms to seconds
         errors: errorCount || 0,
       }
     } catch (error) {
@@ -261,14 +262,14 @@ class Logger {
           [
             row.id,
             new Date(row.created_at).toLocaleString(),
-            row.type,
+            row.analysis_type, // Changed from 'type' to 'analysis_type'
             `"${row.query.replace(/"/g, '""')}"`,
             row.competitor_query ? `"${row.competitor_query.replace(/"/g, '""')}"` : "",
             row.scores?.overall_score || "",
             row.presence_score || "",
             row.sentiment_score || "",
             row.coherence_score || "",
-            row.processing_time || "",
+            row.processing_time_ms || "", // Changed to processing_time_ms
             row.google_results?.count || "",
             row.user_ip || "",
           ].join(","),

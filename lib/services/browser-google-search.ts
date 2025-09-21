@@ -30,7 +30,7 @@ export async function searchGoogle(query: string, options: SearchOptions): Promi
         return generateFallbackResults()
       }
 
-      let url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cseId}&q=${encodeURIComponent(query)}&lr=lang_${options.language}&num=${options.maxResults || 10}`
+      let url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cseId}&q=${encodeURIComponent(query)}&lr=lang_${options.language}&num=${options.maxResults || 25}`
 
       if (options.country) {
         url += `&gl=${options.country}&cr=country${options.country.toUpperCase()}`
@@ -101,7 +101,7 @@ function generateFallbackResults(): GoogleSearchResult[] {
 
 export function formatSearchResultsForAnalysis(results: GoogleSearchResult[]): string {
   return results
-    .slice(0, 10)
+    .slice(0, 25)
     .map((item, index) => {
       const title = item.title || "Sans titre"
       const snippet = item.snippet || "Pas de description"

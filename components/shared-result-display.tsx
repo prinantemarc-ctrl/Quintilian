@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { EnhancedScoreDisplay } from "@/components/enhanced-score-display"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ExternalLink, FileText, BarChart3, Share2, Twitter, Facebook } from "lucide-react"
+import { ExternalLink, FileText, BarChart3, Share2, Twitter, Facebook, Target, AlertCircle } from "lucide-react"
 import type { SharedResult } from "@/lib/services/shared-results"
 import Link from "next/link"
 
@@ -122,7 +122,7 @@ export function SharedResultDisplay({ result }: SharedResultDisplayProps) {
           <h3 className="text-lg font-semibold">Analyse Complète</h3>
 
           <Tabs defaultValue="summaries" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 h-12 bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 rounded-xl p-1">
+            <TabsList className="grid w-full grid-cols-4 h-12 bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 rounded-xl p-1">
               <TabsTrigger
                 value="summaries"
                 className="flex items-center gap-2 h-10 rounded-lg font-semibold text-sm data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-primary transition-all duration-200"
@@ -145,6 +145,13 @@ export function SharedResultDisplay({ result }: SharedResultDisplayProps) {
               >
                 <BarChart3 className="w-5 h-5" />
                 Conclusion
+              </TabsTrigger>
+              <TabsTrigger
+                value="insights"
+                className="flex items-center gap-2 h-10 rounded-lg font-semibold text-sm data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-primary transition-all duration-200"
+              >
+                <Target className="w-5 h-5" />
+                Insights
               </TabsTrigger>
             </TabsList>
 
@@ -289,6 +296,160 @@ export function SharedResultDisplay({ result }: SharedResultDisplayProps) {
                   </CardContent>
                 </Card>
               )}
+            </TabsContent>
+
+            <TabsContent value="insights" className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                {/* Performance Metrics */}
+                <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-cyan-50">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-blue-800">
+                      <BarChart3 className="w-5 h-5" />
+                      Métriques de Performance
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="text-center p-2 bg-white rounded-lg">
+                        <div className="text-lg font-bold text-blue-600">{result.results.presence_score}</div>
+                        <div className="text-xs text-blue-700">Présence</div>
+                      </div>
+                      <div className="text-center p-2 bg-white rounded-lg">
+                        <div className="text-lg font-bold text-green-600">{result.results.tone_score}</div>
+                        <div className="text-xs text-green-700">Sentiment</div>
+                      </div>
+                      <div className="text-center p-2 bg-white rounded-lg">
+                        <div className="text-lg font-bold text-purple-600">{result.results.coherence_score}</div>
+                        <div className="text-xs text-purple-700">Cohérence</div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-blue-700">Score global</span>
+                        <span className="font-semibold text-blue-800">{globalScore}/100</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-blue-700">Niveau de performance</span>
+                        <span className="font-semibold text-blue-800">
+                          {globalScore >= 80
+                            ? "Excellent"
+                            : globalScore >= 60
+                              ? "Bon"
+                              : globalScore >= 40
+                                ? "Moyen"
+                                : "À améliorer"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-blue-700">Sentiment général</span>
+                        <span className="font-semibold text-blue-800">{result.results.tone_label || "Neutre"}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Analysis Details */}
+                <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-green-800">
+                      <Target className="w-5 h-5" />
+                      Détails de l'Analyse
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-sm text-green-700 mb-1">Sources analysées</div>
+                        <div className="font-semibold text-green-800">
+                          {result.results.sources?.length || 0} sources web
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="text-sm text-green-700 mb-1">Date d'analyse</div>
+                        <div className="font-semibold text-green-800">
+                          {new Date(result.created_at).toLocaleDateString("fr-FR", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="text-sm text-green-700 mb-1">Langue d'analyse</div>
+                        <div className="font-semibold text-green-800">{getLanguageLabel(result.language)}</div>
+                      </div>
+
+                      <div>
+                        <div className="text-sm text-green-700 mb-1">Popularité du résultat</div>
+                        <div className="font-semibold text-green-800">
+                          {result.view_count} consultation{result.view_count > 1 ? "s" : ""}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Recommendations for shared results */}
+              <Card className="border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-yellow-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-orange-800">
+                    <AlertCircle className="w-5 h-5" />
+                    Recommandations Basées sur cette Analyse
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {result.results.presence_score < 70 && (
+                      <div className="flex items-start gap-3 p-3 bg-white rounded-lg">
+                        <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                        <div>
+                          <div className="font-medium text-red-800">Améliorer la visibilité en ligne</div>
+                          <div className="text-sm text-red-700">
+                            Cette marque pourrait bénéficier d'une stratégie SEO plus agressive
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {result.results.tone_score < 70 && (
+                      <div className="flex items-start gap-3 p-3 bg-white rounded-lg">
+                        <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
+                        <div>
+                          <div className="font-medium text-yellow-800">Optimiser l'image de marque</div>
+                          <div className="text-sm text-yellow-700">
+                            Le sentiment associé à cette marque pourrait être amélioré
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {result.results.coherence_score < 70 && (
+                      <div className="flex items-start gap-3 p-3 bg-white rounded-lg">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                        <div>
+                          <div className="font-medium text-blue-800">Harmoniser la communication</div>
+                          <div className="text-sm text-blue-700">
+                            Le message de cette marque manque de cohérence sur le web
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {globalScore >= 70 && (
+                      <div className="flex items-start gap-3 p-3 bg-white rounded-lg">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                        <div>
+                          <div className="font-medium text-green-800">Excellente performance</div>
+                          <div className="text-sm text-green-700">
+                            Cette marque a une très bonne présence digitale à maintenir
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>

@@ -32,7 +32,7 @@ export interface PressSearchResult {
 
 export async function searchPressArticles(options: PressSearchOptions): Promise<PressSearchResult> {
   const startTime = Date.now()
-  console.log(`[v0] Press Search: "${options.query}" with ${options.maxResults || 20} max results`)
+  console.log(`[v0] Press Search: "${options.query}" with ${options.maxResults || 25} max results`)
 
   const cacheKey = {
     type: "press",
@@ -41,7 +41,7 @@ export async function searchPressArticles(options: PressSearchOptions): Promise<
     dateTo: options.dateTo,
     countries: options.countries?.sort(),
     languages: options.languages?.sort(),
-    maxResults: options.maxResults || 20,
+    maxResults: options.maxResults || 25,
   }
 
   const { data: result, fromCache } = await searchCache.getOrSet(
@@ -74,7 +74,7 @@ export async function searchPressArticles(options: PressSearchOptions): Promise<
         const uniqueArticles = deduplicateArticles(allArticles)
         const sortedArticles = uniqueArticles
           .sort((a, b) => b.relevanceScore - a.relevanceScore)
-          .slice(0, options.maxResults || 20)
+          .slice(0, options.maxResults || 25)
 
         return {
           articles: sortedArticles,
@@ -129,7 +129,7 @@ async function searchGoogleCustomSearch(options: PressSearchOptions): Promise<Pr
   url.searchParams.set("key", apiKey)
   url.searchParams.set("cx", cseId)
   url.searchParams.set("q", searchQuery)
-  url.searchParams.set("num", String(Math.min(options.maxResults || 10, 10)))
+  url.searchParams.set("num", String(options.maxResults || 25))
   url.searchParams.set("dateRestrict", "m3") // Last 3 months
   url.searchParams.set("sort", "date") // Sort by date
 

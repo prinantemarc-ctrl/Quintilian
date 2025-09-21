@@ -73,26 +73,48 @@ export function calculatePressScore(articles: AnalyzedArticle[]): PressScores {
     }
   }
 
-  // Volume Score (40 points) - Normalized log of unique articles over 30 days
-  const volumeScore = Math.min(40, Math.log(articles.length + 1) * 10)
+  // Volume Score (40 points) - More aggressive scaling to create variance
+  let volumeScore = 0
+  if (articles.length <= 2) {
+    volumeScore = articles.length * 8 // 8-16 points for very low volume
+  } else if (articles.length <= 5) {
+    volumeScore = 16 + (articles.length - 2) * 6 // 22-34 points for low volume
+  } else if (articles.length <= 10) {
+    volumeScore = 34 + (articles.length - 5) * 1 // 35-39 points for medium volume
+  } else {
+    volumeScore = Math.min(40, 39 + Math.log(articles.length - 9) * 0.5) // 39-40 points for high volume
+  }
 
-  // Authority Score (30 points) - Average credibility of sources
-  const authorityScore = (articles.reduce((sum, article) => sum + article.credibility, 0) / articles.length) * 0.3
+  const avgCredibility = articles.reduce((sum, article) => sum + article.credibility, 0) / articles.length
+  let authorityScore = 0
+  if (avgCredibility < 50) {
+    authorityScore = avgCredibility * 0.2 // 0-10 points for low credibility
+  } else if (avgCredibility < 70) {
+    authorityScore = 10 + (avgCredibility - 50) * 0.4 // 10-18 points for medium credibility
+  } else if (avgCredibility < 85) {
+    authorityScore = 18 + (avgCredibility - 70) * 0.6 // 18-27 points for good credibility
+  } else {
+    authorityScore = 27 + (avgCredibility - 85) * 0.2 // 27-30 points for excellent credibility
+  }
 
-  // Diversity Score (15 points) - Countries + languages + domain variety
   const uniqueCountries = new Set(articles.map((a) => a.country)).size
   const uniqueLanguages = new Set(articles.map((a) => a.language)).size
   const uniqueDomains = new Set(articles.map((a) => a.source)).size
-  const diversityScore = Math.min(15, (uniqueCountries * 2 + uniqueLanguages + uniqueDomains) * 0.5)
 
-  // Recency Score (15 points) - Exponential weighting over 14 days
-  const recencyScore = calculateRecencyScore(articles)
+  let diversityScore = 0
+  // Country diversity (0-6 points)
+  diversityScore += Math.min(6, uniqueCountries * 1.5)
+  // Language diversity (0-4 points)
+  diversityScore += Math.min(4, uniqueLanguages * 1.3)
+  // Domain diversity (0-5 points)
+  diversityScore += Math.min(5, uniqueDomains * 0.8)
 
-  // Total Presence Score
+  const recencyScore = calculateEnhancedRecencyScore(articles)
+
+  // Total Presence Score with enhanced calculation
   const presenceScore = Math.round(volumeScore + authorityScore + diversityScore + recencyScore)
 
-  // Tonality Score (-100 to +100)
-  const tonalityScore = calculateTonalityScore(articles)
+  const tonalityScore = calculateEnhancedTonalityScore(articles)
 
   return {
     presenceScore: Math.min(100, presenceScore),
@@ -102,6 +124,77 @@ export function calculatePressScore(articles: AnalyzedArticle[]): PressScores {
     diversityScore: Math.round(diversityScore),
     recencyScore: Math.round(recencyScore),
   }
+}
+
+function calculateEnhancedRecencyScore(articles: AnalyzedArticle[]): number {
+  const now = new Date()
+  let recencyScore = 0
+
+  articles.forEach((article) => {
+    const articleDate = new Date(article.date)
+    const daysDiff = Math.max(0, (now.getTime() - articleDate.getTime()) / (24 * 60 * 60 * 1000))
+
+    if (daysDiff <= 1) {
+      recencyScore += 3 // Very recent articles get high score
+    } else if (daysDiff <= 3) {
+      recencyScore += 2.5
+    } else if (daysDiff <= 7) {
+      recencyScore += 2
+    } else if (daysDiff <= 14) {
+      recencyScore += 1.5
+    } else if (daysDiff <= 30) {
+      recencyScore += 1
+    } else {
+      recencyScore += 0.5 // Older articles get minimal score
+    }
+  })
+
+  return Math.min(15, recencyScore)
+}
+
+function calculateEnhancedTonalityScore(articles: AnalyzedArticle[]): number {
+  if (articles.length === 0) return 0
+
+  let positiveWeight = 0
+  let negativeWeight = 0
+  let neutralWeight = 0
+  let totalWeight = 0
+
+  articles.forEach((article) => {
+    // Weight by both credibility and recency
+    const credibilityWeight = article.credibility / 100
+    const articleDate = new Date(article.date)
+    const daysDiff = Math.max(0, (new Date().getTime() - articleDate.getTime()) / (24 * 60 * 60 * 1000))
+    const recencyWeight = Math.max(0.3, Math.exp(-daysDiff / 30)) // 30-day half-life
+
+    const weight = credibilityWeight * recencyWeight
+    totalWeight += weight
+
+    if (article.sentiment === "positive") {
+      positiveWeight += weight * (1 + Math.abs(article.sentimentScore) / 100)
+    } else if (article.sentiment === "negative") {
+      negativeWeight += weight * (1 + Math.abs(article.sentimentScore) / 100)
+    } else {
+      neutralWeight += weight
+    }
+  })
+
+  if (totalWeight === 0) return 0
+
+  // Calculate net sentiment with enhanced range
+  const netPositive = positiveWeight - negativeWeight
+  const totalSentiment = positiveWeight + negativeWeight + neutralWeight
+
+  // Enhanced scoring that can reach extreme values
+  let tonalityScore = 0
+  if (totalSentiment > 0) {
+    tonalityScore = (netPositive / totalSentiment) * 120 // Allow scores beyond ±100
+
+    // Apply sigmoid function to create more extreme scores
+    tonalityScore = tonalityScore * (1 + Math.abs(tonalityScore) / 200)
+  }
+
+  return Math.round(Math.max(-100, Math.min(100, tonalityScore)))
 }
 
 function analyzeSentimentHeuristic(
@@ -255,50 +348,4 @@ function calculateRelevance(title: string, snippet: string, brand: string): numb
   relevanceScore += Math.min(30, mentions * 10)
 
   return Math.min(100, relevanceScore)
-}
-
-function calculateRecencyScore(articles: AnalyzedArticle[]): number {
-  const now = new Date()
-  const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
-
-  let recencyScore = 0
-
-  articles.forEach((article) => {
-    const articleDate = new Date(article.date)
-    const daysDiff = Math.max(0, (now.getTime() - articleDate.getTime()) / (24 * 60 * 60 * 1000))
-
-    if (daysDiff <= 14) {
-      // Exponential decay: more recent = higher score
-      const weight = Math.exp(-daysDiff / 7) // Half-life of 7 days
-      recencyScore += weight
-    }
-  })
-
-  return Math.min(15, recencyScore)
-}
-
-function calculateTonalityScore(articles: AnalyzedArticle[]): number {
-  if (articles.length === 0) return 0
-
-  let weightedPositive = 0
-  let weightedNegative = 0
-  let totalWeight = 0
-
-  articles.forEach((article) => {
-    const weight = article.credibility / 100 // Weight by source credibility
-    totalWeight += weight
-
-    if (article.sentiment === "positive") {
-      weightedPositive += weight
-    } else if (article.sentiment === "negative") {
-      weightedNegative += weight
-    }
-  })
-
-  if (totalWeight === 0) return 0
-
-  const epsilon = 0.01
-  const tonalityScore = ((weightedPositive - weightedNegative) / (weightedPositive + weightedNegative + epsilon)) * 100
-
-  return Math.round(Math.max(-100, Math.min(100, tonalityScore)))
 }
