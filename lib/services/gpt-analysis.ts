@@ -20,13 +20,21 @@ export interface DetailedAnalysis extends AnalysisScores {
   coherence_details?: string
 }
 
-export async function analyzeGoogleResults(searchResults: any[], brand: string, language: string): Promise<string> {
+export async function analyzeGoogleResults(
+  searchResults: any[],
+  brand: string,
+  language: string,
+  presentationLanguage?: string,
+): Promise<string> {
   console.log("[v0] Starting Google results analysis")
+
+  const responseLanguage = presentationLanguage || language
 
   const cacheKey = {
     searchResults: searchResults.slice(0, 10),
     brand,
     language,
+    presentationLanguage: responseLanguage, // Include in cache key
     type: "google-analysis",
   }
 
@@ -46,7 +54,7 @@ export async function analyzeGoogleResults(searchResults: any[], brand: string, 
 
         const prompt = `Tu es un expert en analyse de contenu web. Analyse les 10 premiers résultats Google suivants concernant "${brand}" et fournis un résumé synthétique et intelligible.
 
-**Résultats Google à analyser:**
+**Résultats Google à analyser (en ${language}):**
 ${searchContext}
 
 **Instructions:**
@@ -54,7 +62,7 @@ ${searchContext}
 - Identifie les tendances principales et les points récurrents
 - Mentionne les sources les plus pertinentes
 - Sois factuel et objectif
-- Écris en ${language}
+- Les sources sont en ${language} mais tu dois répondre en ${responseLanguage}
 
 Réponds uniquement avec le résumé, sans formatage markdown.`
 
@@ -81,10 +89,17 @@ Réponds uniquement avec le résumé, sans formatage markdown.`
   return analysis
 }
 
-export async function independentGPTAnalysis(brand: string, message: string, language: string): Promise<string> {
+export async function independentGPTAnalysis(
+  brand: string,
+  message: string,
+  language: string,
+  presentationLanguage?: string,
+): Promise<string> {
   console.log("[v0] Starting independent GPT analysis")
 
-  const cacheKey = { brand, message, language, type: "independent-gpt" }
+  const responseLanguage = presentationLanguage || language
+
+  const cacheKey = { brand, message, language, presentationLanguage: responseLanguage, type: "independent-gpt" }
 
   const { data: analysis, fromCache } = await analysisCache.getOrSet(
     cacheKey,
@@ -99,6 +114,7 @@ export async function independentGPTAnalysis(brand: string, message: string, lan
 
 **Entité analysée:** ${brand}
 **Affirmation à évaluer:** "${message}"
+**Contexte d'analyse:** Sources principalement en ${language}
 
 **Ta mission:**
 Produis une analyse de réputation IA qui évalue cette affirmation concernant ${brand}. Ton analyse doit :
@@ -112,7 +128,7 @@ Produis une analyse de réputation IA qui évalue cette affirmation concernant $
 **Format attendu:**
 Une analyse de 4-5 phrases qui ressemble à un rapport d'expert en réputation, pas à une réponse directe à une question. Évite les formulations comme "à ma connaissance" ou "selon mes informations". Présente plutôt les faits comme une analyse professionnelle.
 
-Écris en ${language}. Réponds uniquement avec ton analyse, sans formatage markdown.`
+Écris en ${responseLanguage}. Réponds uniquement avec ton analyse, sans formatage markdown.`
 
         const { text } = await generateText({
           model: openai("gpt-4o-mini"),
@@ -143,14 +159,18 @@ export async function generateDetailedAnalysis(
   googleResults: any[],
   language: string,
   analysisType: "single" | "duel" = "single",
+  presentationLanguage?: string,
 ): Promise<DetailedAnalysis> {
   console.log(`[v0] Starting detailed analysis for: ${brand}`)
+
+  const responseLanguage = presentationLanguage || language
 
   const cacheKey = {
     brand,
     message,
     googleResults: googleResults.slice(0, 10),
     language,
+    presentationLanguage: responseLanguage, // Include in cache key
     analysisType,
   }
 
@@ -172,17 +192,17 @@ export async function generateDetailedAnalysis(
           .map((item, index) => {
             const title = item.title || "Sans titre"
             const snippet = item.snippet || "Pas de description"
-            return `${index + 1}. ${title}\n   ${snippet}`
+            return `${index + 1}. ${title}\\n   ${snippet}`
           })
-          .join("\n\n")
+          .join("\\n\\n")
 
         console.log(`[v0] Google results count: ${googleResults.length}`)
         console.log(`[v0] First Google result:`, googleResults[0]?.title || "No results")
 
         const prompt =
           analysisType === "duel"
-            ? generateDuelAnalysisPrompt(brand, message, googleContent, language)
-            : generateSingleAnalysisPrompt(brand, message, googleContent, language)
+            ? generateDuelAnalysisPrompt(brand, message, googleContent, language, responseLanguage)
+            : generateSingleAnalysisPrompt(brand, message, googleContent, language, responseLanguage)
 
         console.log("[v0] Calling OpenAI for detailed analysis")
 
@@ -277,12 +297,19 @@ export async function generateDetailedAnalysis(
   return analysis
 }
 
-function generateSingleAnalysisPrompt(brand: string, message: string, googleContent: string, language: string): string {
+function generateSingleAnalysisPrompt(
+  brand: string,
+  message: string,
+  googleContent: string,
+  language: string,
+  responseLanguage: string,
+): string {
   return `Tu es un expert en analyse de réputation digitale. Compare l'analyse GPT indépendante avec les résultats Google pour évaluer "${brand}" selon 3 dimensions précises.
 
 **Message original:** "${message}"
+**Sources analysées:** Principalement en ${language}
 
-**Résultats Google (${googleContent.split("\n\n").length} sources) :**
+**Résultats Google (${googleContent.split("\\n\\n").length} sources) :**
 ${googleContent}
 
 **ÉVALUATION REQUISE - 3 DIMENSIONS CLÉS:**
@@ -326,14 +353,22 @@ ${googleContent}
 - structured_conclusion: Conclusion en markdown (250-350 mots) structurée autour des 3 dimensions avec recommandations
 - detailed_analysis: Analyse approfondie en markdown (400-500 mots) qui détaille chaque dimension
 
-Concentre-toi exclusivement sur ces 3 dimensions. Sois précis, factuel et actionnable. Écris en ${language}.
+Concentre-toi exclusivement sur ces 3 dimensions. Sois précis, factuel et actionnable. Écris en ${responseLanguage}.
 Réponds uniquement avec du JSON valide, sans balises markdown.`
 }
 
-function generateDuelAnalysisPrompt(brand: string, message: string, googleContent: string, language: string): string {
-  return `Tu es un expert en analyse de réputation digitale. Analyse "${brand}" concernant le message "${message}" en ${language}.
+function generateDuelAnalysisPrompt(
+  brand: string,
+  message: string,
+  googleContent: string,
+  language: string,
+  responseLanguage: string,
+): string {
+  return `Tu es un expert en analyse de réputation digitale. Analyse "${brand}" concernant le message "${message}".
 
-RÉSULTATS GOOGLE (${googleContent.split("\n\n").length} sources) :
+**Sources analysées:** Principalement en ${language}
+
+RÉSULTATS GOOGLE (${googleContent.split("\\n\\n").length} sources) :
 ${googleContent}
 
 **INSTRUCTIONS CRITIQUES POUR LE SCORING:**
@@ -381,7 +416,151 @@ Tu dois fournir une analyse JSON avec ces champs EXACTS :
   "coherence_details": "Explication détaillée de la cohérence (2-3 phrases)"
 }
 
-Sois DIRECT et FACTUEL dans ton analyse. DIFFÉRENCIE clairement les profils.`
+Sois DIRECT et FACTUEL dans ton analyse. DIFFÉRENCIE clairement les profils. Écris en ${responseLanguage}.`
+}
+
+export async function detectHomonyms(
+  searchResults: any[],
+  brand: string,
+  language: string,
+  presentationLanguage?: string,
+): Promise<{
+  requires_identity_selection: boolean
+  identified_entities: string[]
+  message: string
+}> {
+  console.log("[v0] Starting homonym detection for:", brand)
+
+  const responseLanguage = presentationLanguage || language
+
+  if (searchResults.length < 3) {
+    console.log("[v0] Not enough search results for homonym detection")
+    return {
+      requires_identity_selection: false,
+      identified_entities: [],
+      message: "",
+    }
+  }
+
+  const cacheKey = {
+    searchResults: searchResults.slice(0, 10),
+    brand,
+    language,
+    presentationLanguage: responseLanguage, // Include in cache key
+    type: "homonym-detection",
+  }
+
+  const { data: detection, fromCache } = await analysisCache.getOrSet(
+    cacheKey,
+    async () => {
+      try {
+        const apiKey = process.env.OPENAI_API_KEY
+        if (!apiKey) {
+          return {
+            requires_identity_selection: false,
+            identified_entities: [],
+            message: "",
+          }
+        }
+
+        const searchContext = searchResults
+          .slice(0, 10)
+          .map((item, index) => `${index + 1}. **${item.title}**\\n   ${item.snippet}\\n   Source: ${item.link}`)
+          .join("\\n\\n")
+
+        const prompt = `Tu es un expert en analyse d'entités nommées. Analyse les résultats Google suivants pour "${brand}" et détermine s'il y a plusieurs identités distinctes (homonymies).
+
+**Résultats Google à analyser (sources en ${language}):**
+${searchContext}
+
+**Ta mission:**
+Détermine si "${brand}" fait référence à plusieurs personnes, entreprises ou entités distinctes dans ces résultats.
+
+**Critères pour détecter une homonymie:**
+- Plusieurs personnes différentes avec le même nom
+- Différentes entreprises/organisations avec des noms similaires
+- Contextes géographiques ou sectoriels très différents
+- Mentions d'âges, professions, ou localisations contradictoires
+
+**Instructions:**
+- Si tu détectes clairement 2+ identités distinctes, réponds "OUI"
+- Si tous les résultats semblent parler de la même entité, réponds "NON"
+- En cas de doute, privilégie "NON"
+
+**Format de réponse JSON:**
+{
+  "requires_disambiguation": true/false,
+  "identified_entities": ["Description entité 1", "Description entité 2", ...],
+  "confidence": "high/medium/low",
+  "explanation": "Explication de ta décision"
+}
+
+Écris en ${responseLanguage}. Réponds uniquement avec du JSON valide.`
+
+        const { text } = await generateText({
+          model: openai("gpt-4o-mini"),
+          prompt: prompt,
+          temperature: 0.2,
+        })
+
+        let cleanedText = text.trim()
+        if (cleanedText.startsWith("```json")) {
+          cleanedText = cleanedText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
+        }
+        if (cleanedText.startsWith("```")) {
+          cleanedText = cleanedText.replace(/^```\s*/, "").replace(/\s*```$/, "")
+        }
+
+        try {
+          const parsed = JSON.parse(cleanedText)
+          console.log("[v0] Homonym detection result:", parsed)
+
+          if (parsed.requires_disambiguation && parsed.identified_entities && parsed.identified_entities.length >= 2) {
+            const message =
+              responseLanguage === "en"
+                ? `Multiple identities detected for "${brand}". Please select the one you're interested in or refine your search.`
+                : responseLanguage === "es"
+                  ? `Múltiples identidades detectadas para "${brand}". Por favor selecciona la que te interesa o refina tu búsqueda.`
+                  : `Plusieurs identités détectées pour "${brand}". Veuillez sélectionner celle qui vous intéresse ou préciser votre recherche.`
+
+            return {
+              requires_identity_selection: true,
+              identified_entities: parsed.identified_entities,
+              message,
+            }
+          }
+
+          return {
+            requires_identity_selection: false,
+            identified_entities: [],
+            message: "",
+          }
+        } catch (parseError) {
+          console.error("[v0] Failed to parse homonym detection response:", parseError)
+          console.error("[v0] Cleaned text that failed to parse:", cleanedText.substring(0, 500))
+          return {
+            requires_identity_selection: false,
+            identified_entities: [],
+            message: "",
+          }
+        }
+      } catch (error) {
+        console.error("[v0] Homonym detection error:", error)
+        return {
+          requires_identity_selection: false,
+          identified_entities: [],
+          message: "",
+        }
+      }
+    },
+    { ttl: CACHE_TTL.GPT_ANALYSIS },
+  )
+
+  if (fromCache) {
+    console.log("[v0] Using cached homonym detection")
+  }
+
+  return detection
 }
 
 function normalizeAnalysisResponse(analysis: any): DetailedAnalysis {
@@ -423,135 +602,6 @@ function generateFallbackAnalysis(): DetailedAnalysis {
     tone_details: "⚠️ Détails non disponibles - erreur technique",
     coherence_details: "⚠️ Détails non disponibles - erreur technique",
   }
-}
-
-export async function detectHomonyms(
-  searchResults: any[],
-  brand: string,
-  language: string,
-): Promise<{
-  requires_identity_selection: boolean
-  identified_entities: string[]
-  message: string
-}> {
-  console.log("[v0] Starting homonym detection for:", brand)
-
-  if (searchResults.length < 3) {
-    console.log("[v0] Not enough search results for homonym detection")
-    return {
-      requires_identity_selection: false,
-      identified_entities: [],
-      message: "",
-    }
-  }
-
-  const cacheKey = {
-    searchResults: searchResults.slice(0, 10),
-    brand,
-    language,
-    type: "homonym-detection",
-  }
-
-  const { data: detection, fromCache } = await analysisCache.getOrSet(
-    cacheKey,
-    async () => {
-      try {
-        const apiKey = process.env.OPENAI_API_KEY
-        if (!apiKey) {
-          return {
-            requires_identity_selection: false,
-            identified_entities: [],
-            message: "",
-          }
-        }
-
-        const searchContext = searchResults
-          .slice(0, 10)
-          .map((item, index) => `${index + 1}. **${item.title}**\n   ${item.snippet}\n   Source: ${item.link}`)
-          .join("\n\n")
-
-        const prompt = `Tu es un expert en analyse d'entités nommées. Analyse les résultats Google suivants pour "${brand}" et détermine s'il y a plusieurs identités distinctes (homonymies).
-
-**Résultats Google à analyser:**
-${searchContext}
-
-**Ta mission:**
-Détermine si "${brand}" fait référence à plusieurs personnes, entreprises ou entités distinctes dans ces résultats.
-
-**Critères pour détecter une homonymie:**
-- Plusieurs personnes différentes avec le même nom
-- Différentes entreprises/organisations avec des noms similaires
-- Contextes géographiques ou sectoriels très différents
-- Mentions d'âges, professions, ou localisations contradictoires
-
-**Instructions:**
-- Si tu détectes clairement 2+ identités distinctes, réponds "OUI"
-- Si tous les résultats semblent parler de la même entité, réponds "NON"
-- En cas de doute, privilégie "NON"
-
-**Format de réponse JSON:**
-{
-  "requires_disambiguation": true/false,
-  "identified_entities": ["Description entité 1", "Description entité 2", ...],
-  "confidence": "high/medium/low",
-  "explanation": "Explication de ta décision"
-}
-
-Écris en ${language}. Réponds uniquement avec du JSON valide.`
-
-        const { text } = await generateText({
-          model: openai("gpt-4o-mini"),
-          prompt: prompt,
-          temperature: 0.2,
-        })
-
-        let cleanedText = text.trim()
-        if (cleanedText.startsWith("```json")) {
-          cleanedText = cleanedText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
-        }
-
-        try {
-          const parsed = JSON.parse(cleanedText)
-          console.log("[v0] Homonym detection result:", parsed)
-
-          if (parsed.requires_disambiguation && parsed.identified_entities && parsed.identified_entities.length >= 2) {
-            return {
-              requires_identity_selection: true,
-              identified_entities: parsed.identified_entities,
-              message: `Plusieurs identités détectées pour "${brand}". Veuillez sélectionner celle qui vous intéresse ou préciser votre recherche.`,
-            }
-          }
-
-          return {
-            requires_identity_selection: false,
-            identified_entities: [],
-            message: "",
-          }
-        } catch (parseError) {
-          console.error("[v0] Failed to parse homonym detection response:", parseError)
-          return {
-            requires_identity_selection: false,
-            identified_entities: [],
-            message: "",
-          }
-        }
-      } catch (error) {
-        console.error("[v0] Homonym detection error:", error)
-        return {
-          requires_identity_selection: false,
-          identified_entities: [],
-          message: "",
-        }
-      }
-    },
-    { ttl: CACHE_TTL.GPT_ANALYSIS },
-  )
-
-  if (fromCache) {
-    console.log("[v0] Using cached homonym detection")
-  }
-
-  return detection
 }
 
 function isValidJsonStructure(text: string): boolean {

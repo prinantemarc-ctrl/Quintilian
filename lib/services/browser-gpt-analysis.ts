@@ -19,8 +19,15 @@ export interface DetailedAnalysis extends AnalysisScores {
   coherence_details?: string
 }
 
-export async function analyzeGoogleResults(searchResults: any[], brand: string, language: string): Promise<string> {
+export async function analyzeGoogleResults(
+  searchResults: any[],
+  brand: string,
+  language: string,
+  presentationLanguage?: string,
+): Promise<string> {
   console.log("[v0] Starting Google results analysis")
+
+  const responseLanguage = presentationLanguage || language
 
   try {
     const apiKey = process.env.OPENAI_API_KEY
@@ -35,7 +42,7 @@ export async function analyzeGoogleResults(searchResults: any[], brand: string, 
 
     const prompt = `Tu es un expert en analyse de contenu web. Analyse les 10 premiers résultats Google suivants concernant "${brand}" et fournis un résumé synthétique et intelligible.
 
-**Résultats Google à analyser:**
+**Résultats Google à analyser (sources en ${language}):**
 ${searchContext}
 
 **Instructions:**
@@ -43,7 +50,7 @@ ${searchContext}
 - Identifie les tendances principales et les points récurrents
 - Mentionne les sources les plus pertinentes
 - Sois factuel et objectif
-- Écris en ${language}
+- Les sources sont en ${language} mais tu dois répondre en ${responseLanguage}
 
 Réponds uniquement avec le résumé, sans formatage markdown.`
 
@@ -61,8 +68,15 @@ Réponds uniquement avec le résumé, sans formatage markdown.`
   }
 }
 
-export async function independentGPTAnalysis(brand: string, message: string, language: string): Promise<string> {
+export async function independentGPTAnalysis(
+  brand: string,
+  message: string,
+  language: string,
+  presentationLanguage?: string,
+): Promise<string> {
   console.log("[v0] Starting independent GPT analysis")
+
+  const responseLanguage = presentationLanguage || language
 
   try {
     const apiKey = process.env.OPENAI_API_KEY
@@ -74,6 +88,7 @@ export async function independentGPTAnalysis(brand: string, message: string, lan
 
 **Entité analysée:** ${brand}
 **Affirmation à évaluer:** "${message}"
+**Contexte d'analyse:** Sources principalement en ${language}
 
 **Ta mission:**
 Produis une analyse de réputation IA qui évalue cette affirmation concernant ${brand}. Ton analyse doit :
@@ -87,7 +102,7 @@ Produis une analyse de réputation IA qui évalue cette affirmation concernant $
 **Format attendu:**
 Une analyse de 4-5 phrases qui ressemble à un rapport d'expert en réputation, pas à une réponse directe à une question. Évite les formulations comme "à ma connaissance" ou "selon mes informations". Présente plutôt les faits comme une analyse professionnelle.
 
-Écris en ${language}. Réponds uniquement avec ton analyse, sans formatage markdown.`
+Écris en ${responseLanguage}. Réponds uniquement avec ton analyse, sans formatage markdown.`
 
     const { text } = await generateText({
       model: openai("gpt-4o-mini"),
@@ -109,8 +124,11 @@ export async function generateDetailedAnalysis(
   googleResults: any[],
   language: string,
   analysisType: "single" | "duel" = "single",
+  presentationLanguage?: string,
 ): Promise<DetailedAnalysis> {
   console.log(`[v0] Starting detailed analysis for: ${brand}`)
+
+  const responseLanguage = presentationLanguage || language
 
   try {
     const apiKey = process.env.OPENAI_API_KEY
@@ -123,18 +141,18 @@ export async function generateDetailedAnalysis(
       .map((item, index) => {
         const title = item.title || "Sans titre"
         const snippet = item.snippet || "Pas de description"
-        return `${index + 1}. ${title}\n   ${snippet}`
+        return `${index + 1}. ${title}\\n   ${snippet}`
       })
-      .join("\n\n")
+      .join("\\n\\n")
 
     const prompt =
       analysisType === "duel"
-        ? generateDuelAnalysisPrompt(brand, message, googleContent, language)
-        : generateSingleAnalysisPrompt(brand, message, googleContent, language)
+        ? generateDuelAnalysisPrompt(brand, message, googleContent, language, responseLanguage)
+        : generateSingleAnalysisPrompt(brand, message, googleContent, language, responseLanguage)
 
     const { text } = await generateText({
       model: openai("gpt-4o-mini"),
-      prompt,
+      prompt: prompt,
       temperature: 0.3,
     })
 
@@ -142,7 +160,7 @@ export async function generateDetailedAnalysis(
 
     let cleanedText = text.trim()
     if (cleanedText.startsWith("```json")) {
-      cleanedText = cleanedText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
+      cleanedText = cleanedText.replace(/^```json\\s*/, "").replace(/\\s*```$/, "")
     }
 
     const parsedAnalysis = JSON.parse(cleanedText)
@@ -153,12 +171,19 @@ export async function generateDetailedAnalysis(
   }
 }
 
-function generateSingleAnalysisPrompt(brand: string, message: string, googleContent: string, language: string): string {
+function generateSingleAnalysisPrompt(
+  brand: string,
+  message: string,
+  googleContent: string,
+  language: string,
+  responseLanguage: string,
+): string {
   return `Tu es un expert en analyse de réputation digitale. Compare l'analyse GPT indépendante avec les résultats Google pour évaluer "${brand}" selon 3 dimensions précises.
 
 **Message original:** "${message}"
+**Sources analysées:** Principalement en ${language}
 
-**Résultats Google (${googleContent.split("\n\n").length} sources) :**
+**Résultats Google (${googleContent.split("\\n\\n").length} sources) :**
 ${googleContent}
 
 **ÉVALUATION REQUISE - 3 DIMENSIONS CLÉS:**
@@ -180,14 +205,22 @@ ${googleContent}
 - structured_conclusion: Conclusion en markdown (250-350 mots) structurée autour des 3 dimensions avec recommandations
 - detailed_analysis: Analyse approfondie en markdown (400-500 mots) qui détaille chaque dimension
 
-Concentre-toi exclusivement sur ces 3 dimensions. Sois précis, factuel et actionnable. Écris en ${language}.
+Concentre-toi exclusivement sur ces 3 dimensions. Sois précis, factuel et actionnable. Écris en ${responseLanguage}.
 Réponds uniquement avec du JSON valide, sans balises markdown.`
 }
 
-function generateDuelAnalysisPrompt(brand: string, message: string, googleContent: string, language: string): string {
-  return `Tu es un expert en analyse de réputation digitale. Analyse "${brand}" concernant le message "${message}" en ${language}.
+function generateDuelAnalysisPrompt(
+  brand: string,
+  message: string,
+  googleContent: string,
+  language: string,
+  responseLanguage: string,
+): string {
+  return `Tu es un expert en analyse de réputation digitale. Analyse "${brand}" concernant le message "${message}".
 
-RÉSULTATS GOOGLE (${googleContent.split("\n\n").length} sources) :
+**Sources analysées:** Principalement en ${language}
+
+RÉSULTATS GOOGLE (${googleContent.split("\\n\\n").length} sources) :
 ${googleContent}
 
 Tu dois fournir une analyse JSON avec ces champs EXACTS :
@@ -210,7 +243,7 @@ CRITÈRES D'ÉVALUATION :
 - coherence_score : Le message correspond-il à la réalité ? (0-100)
 - tone_label : "positif", "neutre" ou "négatif"
 
-Sois DIRECT et FACTUEL dans ton analyse.`
+Sois DIRECT et FACTUEL dans ton analyse. Écris en ${responseLanguage}.`
 }
 
 function normalizeAnalysisResponse(analysis: any): DetailedAnalysis {
@@ -251,25 +284,33 @@ export async function analyzeReputation(
   searchResults: any[],
   query: string,
   context = "",
+  presentationLanguage = "fr", // Renamed from userLanguage to presentationLanguage for clarity
 ): Promise<{
   score: number
   sentiment: string
   summary: string
   keyTopics?: string[]
   riskFactors?: string[]
+  presence_score?: number
 }> {
   console.log("[v0] Starting reputation analysis for:", query)
 
   try {
     const apiKey = process.env.OPENAI_API_KEY
     if (!apiKey) {
-      return generateReputationFallback(query)
+      return generateReputationFallback(query, presentationLanguage)
     }
 
     const searchContext = searchResults
       .slice(0, 10)
-      .map((item, index) => `${index + 1}. **${item.title}**\n   ${item.snippet}\n   Source: ${item.link}`)
-      .join("\n\n")
+      .map((item, index) => `${index + 1}. **${item.title}**\\n   ${item.snippet}\\n   Source: ${item.link}`)
+      .join("\\n\\n")
+
+    const languageInstructions = {
+      fr: "Réponds en français",
+      en: "Respond in English",
+      es: "Responde en español",
+    }
 
     const prompt = `Tu es un expert en analyse de réputation. Analyse les résultats de recherche suivants concernant "${query}" ${context ? `dans le contexte de ${context}` : ""}.
 
@@ -282,6 +323,7 @@ ${searchContext}
 - Identifie 3-4 sujets clés qui ressortent
 - Signale les facteurs de risque potentiels
 - Fais un résumé de 2-3 phrases
+- ${languageInstructions[presentationLanguage] || languageInstructions["fr"]}
 
 Réponds en JSON avec cette structure exacte:
 {
@@ -289,7 +331,8 @@ Réponds en JSON avec cette structure exacte:
   "sentiment": "positive|negative|neutral|mixed",
   "summary": "Résumé de l'analyse",
   "keyTopics": ["sujet1", "sujet2", "sujet3"],
-  "riskFactors": ["risque1", "risque2"] ou []
+  "riskFactors": ["risque1", "risque2"] ou [],
+  "presence_score": [0-1] (score de présence normalisé)
 }
 
 Réponds uniquement avec du JSON valide, sans formatage markdown.`
@@ -304,7 +347,7 @@ Réponds uniquement avec du JSON valide, sans formatage markdown.`
 
     let cleanedText = text.trim()
     if (cleanedText.startsWith("```json")) {
-      cleanedText = cleanedText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
+      cleanedText = cleanedText.replace(/^```json\\s*/, "").replace(/\\s*```$/, "")
     }
 
     const analysis = JSON.parse(cleanedText)
@@ -314,24 +357,32 @@ Réponds uniquement avec du JSON valide, sans formatage markdown.`
       summary: analysis.summary || "Analyse non disponible",
       keyTopics: analysis.keyTopics || [],
       riskFactors: analysis.riskFactors || [],
+      presence_score: analysis.presence_score || analysis.score / 10,
     }
   } catch (error) {
     console.error("[v0] Reputation analysis error:", error)
-    return generateReputationFallback(query)
+    return generateReputationFallback(query, presentationLanguage)
   }
 }
 
-function generateReputationFallback(query: string) {
+function generateReputationFallback(query: string, presentationLanguage = "fr") {
   const scores = [6.2, 7.1, 5.8, 7.5, 6.9, 8.0, 5.5, 7.3]
   const sentiments = ["neutral", "positive", "mixed", "positive", "neutral", "positive", "mixed", "positive"]
 
   const randomIndex = Math.floor(Math.random() * scores.length)
 
+  const fallbackMessages = {
+    fr: `Analyse de réputation pour "${query}" basée sur les données disponibles. La perception générale semble ${sentiments[randomIndex] === "positive" ? "favorable" : sentiments[randomIndex] === "negative" ? "défavorable" : "mitigée"}.`,
+    en: `Reputation analysis for "${query}" based on available data. The general perception appears ${sentiments[randomIndex] === "positive" ? "favorable" : sentiments[randomIndex] === "negative" ? "unfavorable" : "mixed"}.`,
+    es: `Análisis de reputación para "${query}" basado en datos disponibles. La percepción general parece ${sentiments[randomIndex] === "positive" ? "favorable" : sentiments[randomIndex] === "negative" ? "desfavorable" : "mixta"}.`,
+  }
+
   return {
     score: scores[randomIndex],
     sentiment: sentiments[randomIndex],
-    summary: `Analyse de réputation pour "${query}" basée sur les données disponibles. La perception générale semble ${sentiments[randomIndex] === "positive" ? "favorable" : sentiments[randomIndex] === "negative" ? "défavorable" : "mitigée"}.`,
+    summary: fallbackMessages[presentationLanguage] || fallbackMessages["fr"],
     keyTopics: ["réputation", "perception publique", "image de marque"],
     riskFactors: scores[randomIndex] < 6 ? ["perception négative"] : [],
+    presence_score: scores[randomIndex] / 10,
   }
 }

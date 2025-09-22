@@ -47,6 +47,9 @@ export async function POST(request: NextRequest) {
     const parsedData = SingleAnalysisSchema.parse(body)
     let { brand, message, language, country, selected_identity, search_results } = parsedData
 
+    const userLanguage = request.headers.get("accept-language")?.split(",")[0]?.split("-")[0] || "fr"
+    console.log("[v0] Analysis language:", language, "| Presentation language:", userLanguage)
+
     console.log("[v0] Processing brand:", brand, country ? `(Country: ${country})` : "")
 
     // If we have a selected identity, use the provided search results
@@ -90,7 +93,7 @@ export async function POST(request: NextRequest) {
       if (searchResults.length >= 3) {
         console.log("[v0] Step 1.5: Checking for homonyms")
         try {
-          const homonymDetection = await detectHomonyms(searchResults, brand, language)
+          const homonymDetection = await detectHomonyms(searchResults, brand, language, userLanguage)
 
           if (homonymDetection.requires_identity_selection) {
             console.log("[v0] Homonyms detected, requesting identity selection")
@@ -121,7 +124,7 @@ export async function POST(request: NextRequest) {
     let googleSummary = "Résumé Google non disponible"
     try {
       if (searchResults.length > 0) {
-        googleSummary = await analyzeGoogleResults(searchResults, brand, language)
+        googleSummary = await analyzeGoogleResults(searchResults, brand, language, userLanguage)
         console.log("[v0] Google analysis completed")
       } else {
         googleSummary = "Aucun résultat Google disponible pour l'analyse"
@@ -135,7 +138,7 @@ export async function POST(request: NextRequest) {
     console.log("[v0] Step 3: Starting independent GPT analysis")
     let gptSummary = "Analyse GPT non disponible"
     try {
-      gptSummary = await independentGPTAnalysis(brand, message, language)
+      gptSummary = await independentGPTAnalysis(brand, message, language, userLanguage)
       console.log("[v0] GPT analysis completed")
     } catch (error) {
       console.error("[v0] GPT analysis failed:", error)
@@ -145,7 +148,7 @@ export async function POST(request: NextRequest) {
     console.log("[v0] Step 4: Starting detailed analysis")
     let detailedAnalysis
     try {
-      detailedAnalysis = await generateDetailedAnalysis(brand, message, searchResults, language, "single")
+      detailedAnalysis = await generateDetailedAnalysis(brand, message, searchResults, language, "single", userLanguage)
       console.log("[v0] Detailed analysis completed")
     } catch (error) {
       console.error("[v0] Detailed analysis failed:", error)

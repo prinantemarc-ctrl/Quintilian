@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -99,6 +99,21 @@ export default function PressePage() {
   const [entityOptions, setEntityOptions] = useState<EntityOption[]>([])
   const [selectedEntity, setSelectedEntity] = useState<EntityOption | null>(null)
   const [disambiguationLoading, setDisambiguationLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (data) {
+      console.log("[v0] Press data received:", {
+        globalKpis: data.kpis,
+        pressScore: data.kpis?.pressScore,
+        results: data.results?.map((r) => ({
+          country: r.country,
+          pressScore: r.kpis?.pressScore,
+          isUncertain: r.isUncertain,
+        })),
+      })
+    }
+  }, [data])
 
   const handleCountryToggle = (countryCode: string) => {
     setSelectedCountries((prev) => {
@@ -173,34 +188,8 @@ export default function PressePage() {
 
   // Added disambiguation handler
   const handleDisambiguation = async () => {
-    if (!query.trim()) return
-
-    setDisambiguationLoading(true)
-    try {
-      const response = await fetch("/api/entity-disambiguation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: query.trim() }),
-      })
-
-      if (response.ok) {
-        const options = await response.json()
-        if (options.length > 1) {
-          setEntityOptions(options)
-          setShowDisambiguation(true)
-        } else {
-          setSelectedEntity(options[0] || null)
-          handleSearch()
-        }
-      } else {
-        handleSearch()
-      }
-    } catch (error) {
-      console.error("[v0] Disambiguation error:", error)
-      handleSearch()
-    } finally {
-      setDisambiguationLoading(false)
-    }
+    // This function is now only called when disambiguation is already triggered
+    // The entities are already set by handleSearch
   }
 
   // Added entity selection handler
@@ -210,16 +199,91 @@ export default function PressePage() {
     handleSearch(entity)
   }
 
-  const handleSearch = async (entity?: EntityOption) => {
-    const searchEntity = entity || selectedEntity
-    const searchQuery = searchEntity ? searchEntity.name : query.trim()
-
-    if (!searchQuery || selectedCountries.length === 0) return
+  const handleSearch = async (searchEntity: any = null) => {
+    if (!query.trim()) return
 
     setLoading(true)
+    setError(null)
+    setData(null)
+
+    console.log("[v0] Starting press analysis...")
+    console.log("[v0] Search query:", query.trim())
+    console.log("[v0] Selected countries:", selectedCountries)
+    console.log("[v0] Search entity:", searchEntity)
 
     try {
-      console.log("[v0] Starting press analysis for:", searchQuery, "in countries:", selectedCountries)
+      const response = await fetch("/api/presse-analysis", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: query.trim(),
+          countries: selectedCountries,
+          entityType: searchEntity?.type,
+          entityContext: searchEntity?.context,
+          userLanguage: "fr",
+          selected_identity: searchEntity?.name || searchEntity?.description,
+        }),
+      })
+
+      const result = await response.json()
+      console.log("[v0] Press analysis completed:", result)
+
+      if (result.requires_identity_selection && result.identified_entities) {
+        // Convert identified_entities to EntityOption format
+        const entityOptions = result.identified_entities.map((entity: string, index: number) => ({
+          id: `entity-${index}`,
+          name: entity,
+          description: entity,
+          type: "entity",
+          context: `Entité détectée dans les résultats de recherche`,
+        }))
+
+        setEntityOptions(entityOptions)
+        setShowDisambiguation(true)
+        setError(result.message || "Plusieurs identités détectées. Veuillez choisir celle qui vous intéresse.")
+      } else if (result.kpis && result.articles) {
+        // Normal result with data
+        setData(result)
+      } else {
+        // Unexpected result format
+        setError("Format de réponse inattendu")
+      }
+    } catch (error) {
+      console.error("[v0] Press analysis error:", error)
+      setError("Erreur lors de l'analyse. Veuillez réessayer.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCountrySelect = (countryCode: string) => {
+    setSelectedCountries((prev) =>
+      prev.includes(countryCode) ? prev.filter((c) => c !== countryCode) : [...prev, countryCode],
+    )
+  }
+
+  const handleAnalyze = async () => {
+    if (!query.trim() || selectedCountries.length === 0) {
+      return
+    }
+
+    setLoading(true)
+    setData(null)
+    setError(null)
+
+    try {
+      console.log("[v0] Starting press analysis...")
+      console.log("[v0] Search query:", query)
+      console.log("[v0] Selected countries:", selectedCountries)
+      console.log("[v0] Search entity:", selectedEntity)
+
+      const userLanguage = navigator.language.startsWith("fr")
+        ? "fr"
+        : navigator.language.startsWith("en")
+          ? "en"
+          : navigator.language.startsWith("es")
+            ? "es"
+            : "fr"
 
       const response = await fetch("/api/presse-analysis", {
         method: "POST",
@@ -227,10 +291,11 @@ export default function PressePage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          query: searchQuery,
+          query: query,
           countries: selectedCountries,
-          entityType: searchEntity?.type,
-          entityContext: searchEntity?.context,
+          entityType: selectedEntity?.type,
+          entityContext: selectedEntity?.context,
+          userLanguage, // Added userLanguage parameter
         }),
       })
 
@@ -244,16 +309,10 @@ export default function PressePage() {
       setData(result)
     } catch (error) {
       console.error("[v0] Press analysis error:", error)
-      setData(mockData)
+      setError("Une erreur est survenue lors de l'analyse. Veuillez réessayer.")
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleCountrySelect = (countryCode: string) => {
-    setSelectedCountries((prev) =>
-      prev.includes(countryCode) ? prev.filter((c) => c !== countryCode) : [...prev, countryCode],
-    )
   }
 
   const getSentimentColor = (sentiment: string) => {
@@ -345,7 +404,7 @@ export default function PressePage() {
   }
 
   const getPersonalizedScoreExplanation = () => {
-    if (!data) return null
+    if (!data || !data.kpis) return null
 
     const { kpis, articles } = data
     const { pressScore, totalArticles, uniqueOutlets, tonalityScore } = kpis
@@ -415,6 +474,21 @@ export default function PressePage() {
             Mesurez votre présence médiatique et analysez la tonalité de votre couverture presse
           </p>
 
+          <div className="max-w-3xl mx-auto mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <div className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0">ℹ️</div>
+              <div className="text-left">
+                <h3 className="font-medium text-amber-900 mb-1">À propos des résultats de recherche</h3>
+                <p className="text-sm text-amber-800 leading-relaxed">
+                  Les résultats présentés reflètent la <strong>couverture presse accessible sur internet</strong>{" "}
+                  lorsqu'on effectue une recherche depuis un pays donné. Ils ne représentent pas nécessairement la
+                  présence dans les médias locaux de ce pays, mais plutôt la visibilité numérique de l'entité recherchée
+                  dans l'écosystème médiatique accessible depuis cette zone géographique.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Search Form */}
           <div className="max-w-2xl mx-auto">
             <div className="flex gap-4 mb-4">
@@ -427,7 +501,7 @@ export default function PressePage() {
                 />
               </div>
               <Button
-                onClick={handleDisambiguation}
+                onClick={handleAnalyze}
                 disabled={loading || disambiguationLoading || !query.trim() || selectedCountries.length === 0}
                 className="px-8 py-3"
               >
@@ -587,7 +661,7 @@ export default function PressePage() {
         </Card>
 
         {/* Results Section */}
-        {data && (
+        {data && data.kpis && (
           <div className="space-y-8">
             {/* KPIs */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -766,7 +840,11 @@ export default function PressePage() {
                                             </span>
                                           </div>
                                         </div>
-                                        <ExternalLink className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                                        <Button variant="ghost" size="sm" asChild className="p-1 h-auto">
+                                          <a href={article.url} target="_blank" rel="noopener noreferrer">
+                                            <ExternalLink className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                                          </a>
+                                        </Button>
                                       </div>
                                     ))}
                                   </div>
@@ -1016,6 +1094,17 @@ export default function PressePage() {
               Entrez le nom de votre marque ou entité et sélectionnez les pays pour découvrir votre présence médiatique,
               analyser la tonalité des articles et comparer avec vos concurrents.
             </p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-12">
+            <div className="w-24 h-24 mx-auto mb-6 bg-red-50 rounded-full flex items-center justify-center">
+              <AlertTriangle className="w-12 h-12 text-red-600" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2 text-red-600">Erreur</h3>
+            <p className="text-red-600 max-w-md mx-auto">{error}</p>
           </div>
         )}
       </div>
