@@ -22,7 +22,7 @@ export async function searchGoogle(query: string, options: SearchOptions): Promi
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const apiKey = "AIzaSyAeDFbXJiE-KxRm867_XluumQOg51UknC0"
+      const apiKey = process.env.GOOGLE_API_KEY
       const cseId = process.env.GOOGLE_CSE_CX
 
       if (!apiKey || !cseId) {
@@ -30,10 +30,11 @@ export async function searchGoogle(query: string, options: SearchOptions): Promi
         return generateFallbackResults()
       }
 
-      let url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cseId}&q=${encodeURIComponent(query)}&lr=lang_${options.language}&num=${options.maxResults || 25}`
+      let url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cseId}&q=${encodeURIComponent(query)}&num=${options.maxResults || 10}`
 
-      if (options.country) {
-        url += `&gl=${options.country}&cr=country${options.country.toUpperCase()}`
+      if (options.country && options.country.length === 2) {
+        const countryCode = options.country.toLowerCase()
+        url += `&gl=${countryCode}`
       }
 
       console.log("[v0] Making Google API request with geolocation:", options.country || "global")
@@ -62,8 +63,9 @@ export async function searchGoogle(query: string, options: SearchOptions): Promi
       }
 
       if (!response.ok) {
-        console.log("[v0] Google API error:", response.status, response.statusText)
-        throw new Error(`Google API error: ${response.status}`)
+        const errorText = await response.text().catch(() => "Unknown error")
+        console.log("[v0] Google API error:", response.status, response.statusText, errorText)
+        throw new Error(`Google API error: ${response.status} - ${errorText}`)
       }
 
       const data: GoogleSearchResponse = await response.json()
@@ -75,7 +77,6 @@ export async function searchGoogle(query: string, options: SearchOptions): Promi
       if (attempt === maxRetries) {
         return generateFallbackResults()
       }
-      // Wait before retry
       const delay = baseDelay * attempt
       await new Promise((resolve) => setTimeout(resolve, delay))
     }

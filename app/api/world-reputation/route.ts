@@ -96,8 +96,7 @@ export async function POST(request: NextRequest) {
             flag: getCountryFlag(upperCountryCode),
             presence: analysis.presence_score,
             sentiment: analysis.tone_score,
-            coherence: analysis.coherence_score,
-            globalScore: Math.round((analysis.presence_score + analysis.tone_score + analysis.coherence_score) / 3),
+            globalScore: Math.round((analysis.presence_score + analysis.tone_score) / 2),
             analysis: analysis.rationale,
             presenceRationale:
               analysis.presence_details ||
@@ -105,9 +104,6 @@ export async function POST(request: NextRequest) {
             sentimentRationale:
               analysis.tone_details ||
               `Sentiment ${getScoreLabel(analysis.tone_score)} selon l'analyse des contenus trouvés.`,
-            coherenceRationale:
-              analysis.coherence_details ||
-              `Cohérence ${getScoreLabel(analysis.coherence_score)} dans la communication digitale.`,
             sources: searchResults.slice(0, 3).map((result, index) => ({
               title: result.title || `Source ${index + 1}`,
               snippet: result.snippet || "Pas de description disponible",
@@ -143,8 +139,7 @@ export async function POST(request: NextRequest) {
       countryResults.reduce((sum, result) => sum + result.globalScore, 0) / countryResults.length,
     )
 
-    // Generate global analysis
-    const globalAnalysis = `${query} présente une réputation ${getScoreLabel(averageScore)} à l'international avec un score moyen de ${averageScore}/100 sur ${countryResults.length} pays analysés. ${bestCountry.country} représente le marché le plus favorable (${bestCountry.globalScore}/100) tandis que ${worstCountry.country} offre des opportunités d'amélioration (${worstCountry.globalScore}/100). L'analyse révèle des variations géographiques dans la perception digitale de la marque.`
+    const globalAnalysis = `${query} présente une réputation ${getScoreLabel(averageScore)} à l'international avec un score moyen de ${averageScore}/100 sur ${countryResults.length} pays analysés. L'analyse se base sur la présence digitale et le sentiment. ${bestCountry.country} représente le marché le plus favorable (${bestCountry.globalScore}/100) tandis que ${worstCountry.country} offre des opportunités d'amélioration (${worstCountry.globalScore}/100).`
 
     const processingTime = Date.now() - startTime
     console.log(`[v0] GMI Analysis completed in ${processingTime}ms`)
@@ -188,12 +183,10 @@ function generateCountryFallback(countryCode: string, countryName: string, query
     flag: getCountryFlag(countryCode),
     presence: Math.max(30, Math.min(95, baseScore + variation)),
     sentiment: Math.max(30, Math.min(95, baseScore + variation + 5)),
-    coherence: Math.max(30, Math.min(95, baseScore + variation - 5)),
-    globalScore: Math.max(30, Math.min(95, baseScore)),
+    globalScore: Math.max(30, Math.min(95, Math.round((baseScore + baseScore + 5) / 2))),
     analysis: `Analyse de démonstration pour ${query} en ${countryName}. Les données réelles nécessitent une configuration API complète.`,
     presenceRationale: `Présence ${getScoreLabel(baseScore)} basée sur une analyse simulée.`,
     sentimentRationale: `Sentiment ${getScoreLabel(baseScore + 5)} selon une évaluation de démonstration.`,
-    coherenceRationale: `Cohérence ${getScoreLabel(baseScore - 5)} dans la communication digitale simulée.`,
     sources: [
       {
         title: `Source de démonstration 1 - ${countryName}`,

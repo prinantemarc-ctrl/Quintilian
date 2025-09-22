@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
             country: countryName,
             countryCode: upperCountryCode,
             flag: getCountryFlag(upperCountryCode),
-            score: Math.round((analysis.presence_score + analysis.tone_score + analysis.coherence_score) / 3),
+            score: Math.round((analysis.presence_score + analysis.tone_score) / 2),
             sentiment: analysis.tone_score >= 70 ? "positive" : analysis.tone_score >= 50 ? "neutral" : "negative",
             summary: analysis.rationale,
             articles: searchResults.slice(0, 8).map((result, index) => ({
@@ -105,7 +105,6 @@ export async function POST(request: NextRequest) {
             riskFactors: analysis.tone_score < 50 ? ["perception négative", "couverture défavorable"] : [],
             presenceScore: analysis.presence_score,
             toneScore: analysis.tone_score,
-            coherenceScore: analysis.coherence_score,
             googleSummary: analysis.google_summary,
             gptSummary: analysis.gpt_summary,
           }
@@ -199,7 +198,6 @@ function generatePressFallback(countryCode: string, countryName: string, query: 
     riskFactors: finalScore < 60 ? ["perception négative", "couverture défavorable"] : [],
     presenceScore: finalScore,
     toneScore: finalScore + variation,
-    coherenceScore: finalScore - variation,
     googleSummary: `Résumé de démonstration des résultats presse pour ${query} en ${countryName}.`,
     gptSummary: `Analyse GPT de démonstration de la couverture presse de ${query} en ${countryName}.`,
   }

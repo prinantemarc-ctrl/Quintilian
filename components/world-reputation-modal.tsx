@@ -164,17 +164,6 @@ export function WorldReputationModal({ isOpen, onClose, results }: WorldReputati
                               <Progress value={country.sentiment} className="h-2" />
                               <p className="text-xs text-muted-foreground mt-1">{country.sentimentRationale}</p>
                             </div>
-
-                            <div>
-                              <div className="flex justify-between items-center mb-1">
-                                <span className="text-sm font-medium">Cohérence</span>
-                                <span className={`text-sm font-bold ${getScoreColor(country.coherence)}`}>
-                                  {country.coherence}
-                                </span>
-                              </div>
-                              <Progress value={country.coherence} className="h-2" />
-                              <p className="text-xs text-muted-foreground mt-1">{country.coherenceRationale}</p>
-                            </div>
                           </div>
 
                           {/* Analysis */}
