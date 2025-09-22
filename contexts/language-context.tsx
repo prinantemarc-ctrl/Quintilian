@@ -529,6 +529,34 @@ const translations = {
     "concept.objective":
       "L'objectif n'est pas de dresser une analyse psychologique ou exhaustive de qui vous êtes réellement, mais de révéler la perception immédiate que les outils numériques construisent autour de votre identité.",
     "concept.summary": "En un mot : ce que les autres voient quand ils vous cherchent.",
+    "concept.back_home": "Retour à l'accueil",
+    "concept.hero_title": "Découvrez l'image que vous projetez en ligne",
+    "concept.hero_subtitle":
+      "Dans un monde numérique où votre réputation se construit à chaque recherche, comprenez comment vous êtes perçu par vos clients, partenaires et concurrents.",
+    "concept.first_reflex_title": "Le premier réflexe de tous",
+    "concept.first_reflex_text":
+      "Un citoyen, un consommateur, un banquier, un collaborateur, ou un concurrent. Tous ont un premier réflexe avant de vous faire confiance :",
+    "concept.first_reflex_bold": "taper votre nom ou celui de votre marque sur internet",
+    "concept.what_will_they_see": "Que vont-ils voir ?",
+    "concept.what_will_they_see_desc": "Les premiers résultats qui apparaissent définissent votre image",
+    "concept.what_will_they_feel": "Que vont-ils ressentir ?",
+    "concept.what_will_they_feel_desc": "L'émotion transmise par vos contenus influence leur décision",
+    "concept.what_will_they_conclude": "Qu'en concluront-ils ?",
+    "concept.what_will_they_conclude_desc": "Leur impression finale détermine s'ils vous font confiance",
+    "concept.analysis_title": "C'est exactement ce que nous analysons",
+    "concept.methodology_tagline": "Une méthodologie unique, un algorithme robuste",
+    "concept.analysis_subtitle":
+      "Notre technologie scrute l'ensemble de votre écosystème digital pour vous révéler votre véritable image en ligne.",
+    "concept.quintilian_quote":
+      "« Aujourd'hui, quand on cherche une information, on ne se limite plus au moteur de recherche classique. On interroge aussi les grands modèles d'intelligence artificielle, qui deviennent une nouvelle porte d'entrée vers le savoir. Or, ces deux sources donnent des visions différentes : l'une reflète ce qui existe réellement en ligne, l'autre reflète ce qui est perçu et structuré dans sa mémoire. Quintilian combine les deux pour révéler ce que \"le web\" pense vraiment de vous. Le système délivre trois scores clairs : présence, sentiment et cohérence. »",
+    "concept.search_engines": "Moteurs de recherche",
+    "concept.seo": "(SEO)",
+    "concept.search_engines_desc":
+      "Analyse complète de votre visibilité sur Google, Bing et autres moteurs de recherche",
+    "concept.conversational_ai": "IA conversationnelles",
+    "concept.gpt_others": "(GPT et autres)",
+    "concept.conversational_ai_desc": "Évaluation de votre réputation auprès des intelligences artificielles",
+    "concept.cta_button": "Analyser ma réputation maintenant",
   },
   en: {
     // Header
@@ -1041,6 +1069,32 @@ const translations = {
     "concept.objective":
       "The objective is not to provide a psychological or exhaustive analysis of who you really are, but to reveal the immediate perception that digital tools build around your identity.",
     "concept.summary": "In a word: what others see when they search for you.",
+    "concept.back_home": "Back to home",
+    "concept.hero_title": "Discover the image you project online",
+    "concept.hero_subtitle":
+      "In a digital world where your reputation is built with every search, understand how you are perceived by your clients, partners and competitors.",
+    "concept.first_reflex_title": "Everyone's first reflex",
+    "concept.first_reflex_text":
+      "A citizen, a consumer, a banker, a collaborator, or a competitor. They all have a first reflex before trusting you:",
+    "concept.first_reflex_bold": "type your name or your brand name on the internet",
+    "concept.what_will_they_see": "What will they see?",
+    "concept.what_will_they_see_desc": "The first results that appear define your image",
+    "concept.what_will_they_feel": "What will they feel?",
+    "concept.what_will_they_feel_desc": "The emotion conveyed by your content influences their decision",
+    "concept.what_will_they_conclude": "What will they conclude?",
+    "concept.what_will_they_conclude_desc": "Their final impression determines whether they trust you",
+    "concept.analysis_title": "This is exactly what we analyze",
+    "concept.methodology_tagline": "A unique methodology, a robust algorithm",
+    "concept.analysis_subtitle": "Our technology scans your entire digital ecosystem to reveal your true online image.",
+    "concept.quintilian_quote":
+      '« Today, when we search for information, we no longer limit ourselves to classic search engines. We also query large artificial intelligence models, which are becoming a new gateway to knowledge. However, these two sources give different visions: one reflects what actually exists online, the other reflects what is perceived and structured in its memory. Quintilian combines both to reveal what "the web" really thinks of you. The system delivers three clear scores: presence, sentiment and coherence. »',
+    "concept.search_engines": "Search engines",
+    "concept.seo": "(SEO)",
+    "concept.search_engines_desc": "Complete analysis of your visibility on Google, Bing and other search engines",
+    "concept.conversational_ai": "Conversational AI",
+    "concept.gpt_others": "(GPT and others)",
+    "concept.conversational_ai_desc": "Assessment of your reputation with artificial intelligences",
+    "concept.cta_button": "Analyze my reputation now",
   },
   es: {
     // Header
@@ -1246,7 +1300,7 @@ const translations = {
     "cta.button": "Probar ahora",
 
     // Footer
-    "footer.description": "La herramienta de análisis de presencia digital que mide tu impacto en 3 puntuaciones.",
+    "footer.description": "La herramienta de análisis de presencia digital que mide tu impacto en 3 scores.",
     "footer.quick_links": "Enlaces rápidos",
     "footer.features": "Características",
     "footer.pricing": "Precios",
@@ -1546,17 +1600,44 @@ const translations = {
     // Concept Section
     "concept.title": "Descubre la imagen que proyectas en línea",
     "concept.intro":
-      "Un ciudadano, un consumidor, un banquero, un colaborador o un empleador... Todos tienen el mismo primer reflejo antes de confiar en ti: escribir tu nombre o tu marca en internet.",
-    "concept.questions": "¿Qué verán? ¿Qué sentirán? Y sobre todo, ¿qué concluirán?",
+      "Un ciudadano, un consumidor, un banquero, un colaborador o un empleador… Todos tienen un primer réflexe avant de vous faire confiance : taper votre nom ou celui de votre marque sur internet.",
+    "concept.questions": "Que vont-ils voir ? Que vont-ils ressentir ? Et surtout, qu'en concluront-ils ?",
     "concept.analysis":
-      "Esto es exactamente lo que analizamos con nuestras herramientas. Nuestra herramienta te permite saber qué imagen proyectas cuando alguien realiza una búsqueda rápida sobre ti o tu organización.",
+      "C'est exactement ce que nous analysons avec nos outils. Notre outil vous permet de savoir quelle image vous renvoyez lorsqu'on effectue une recherche rapide sur vous ou votre organisation.",
     "concept.measurement":
-      "Medimos la presencia, el tono y la coherencia narrativa de tus resultados en dos canales decisivos:",
-    "concept.seo_channel": "motores de búsqueda (SEO)",
-    "concept.ai_channel": "IAs conversacionales (GPT y otros)",
+      "Nous mesurons la présence, la tonalité et la cohérence narrative de vos résultats sur deux canaux décisifs :",
+    "concept.seo_channel": "les moteurs de recherche (SEO)",
+    "concept.ai_channel": "les IA conversationnelles (GPT et autres)",
     "concept.objective":
-      "El objetivo no es hacer un análisis psicológico o exhaustivo de quién eres realmente, sino revelar la percepción inmediata que las herramientas digitales construyen alrededor de tu identidad.",
-    "concept.summary": "En una palabra: lo que otros ven cuando te buscan.",
+      "L'objectif n'est pas de dresser une analyse psychologique ou exhaustive de qui vous êtes réellement, mais de révéler la perception immédiate que les outils numériques construisent autour de votre identité.",
+    "concept.summary": "En un mot : ce que les autres voient quand ils vous cherchent.",
+    "concept.back_home": "Volver al inicio",
+    "concept.hero_title": "Descubre la imagen que proyectas en línea",
+    "concept.hero_subtitle":
+      "En un mundo digital donde tu reputación se construye con cada búsqueda, comprende cómo te perciben tus clientes, socios y competidores.",
+    "concept.first_reflex_title": "El primer reflejo de todos",
+    "concept.first_reflex_text":
+      "Un ciudadano, un consumidor, un banquero, un colaborador o un competidor. Todos tienen un primer reflejo antes de confiar en ti:",
+    "concept.first_reflex_bold": "escribir tu nombre o el de tu marca en internet",
+    "concept.what_will_they_see": "¿Qué verán?",
+    "concept.what_will_they_see_desc": "Los primeros resultados que aparecen definen tu imagen",
+    "concept.what_will_they_feel": "¿Qué sentirán?",
+    "concept.what_will_they_feel_desc": "La emoción transmitida por tus contenidos influye en su decisión",
+    "concept.what_will_they_conclude": "¿Qué concluirán?",
+    "concept.what_will_they_conclude_desc": "Su impresión final determina si confían en ti",
+    "concept.analysis_title": "Esto es exactamente lo que analizamos",
+    "concept.methodology_tagline": "Una metodología única, un algoritmo robusto",
+    "concept.analysis_subtitle":
+      "Nuestra tecnología escanea todo tu ecosistema digital para revelarte tu verdadera imagen en línea.",
+    "concept.quintilian_quote":
+      '« Hoy, cuando buscamos información, ya no nos limitamos a los motores de búsqueda clásicos. También consultamos grandes modelos de inteligencia artificial, que se están convirtiendo en una nueva puerta de entrada al conocimiento. Sin embargo, estas dos fuentes dan visiones diferentes: una refleja lo que realmente existe en línea, la otra refleja lo que se percibe y estructura en su memoria. Quintilian combina ambas para revelar lo que "la web" realmente piensa de ti. El sistema entrega tres puntuaciones claras: presencia, sentimiento y coherencia. »',
+    "concept.search_engines": "Motores de búsqueda",
+    "concept.seo": "(SEO)",
+    "concept.search_engines_desc": "Análisis completo de tu visibilidad en Google, Bing y otros motores de búsqueda",
+    "concept.conversational_ai": "IA conversacional",
+    "concept.gpt_others": "(GPT y otros)",
+    "concept.conversational_ai_desc": "Evaluación de tu reputación con las inteligencias artificiales",
+    "concept.cta_button": "Analizar mi reputación ahora",
   },
 }
 

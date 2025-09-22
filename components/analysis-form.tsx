@@ -6,12 +6,12 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { SimpleSelect } from "@/components/ui/simple-select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { AnalysisModal } from "@/components/analysis-modal"
 import { Search, MessageSquare, Globe } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
+import { AnalysisAdapter } from "@/components/dialog-fit/analysis-adapter"
 
 export function AnalysisForm() {
   const { t } = useLanguage()
@@ -22,6 +22,24 @@ export function AnalysisForm() {
     message: "",
     language: "",
   })
+
+  const languageOptions = [
+    { value: "fr", label: t("lang.french"), icon: <span>🇫🇷</span> },
+    { value: "en", label: t("lang.english"), icon: <span>🇺🇸</span> },
+    { value: "es", label: t("lang.spanish"), icon: <span>🇪🇸</span> },
+    { value: "de", label: t("lang.german"), icon: <span>🇩🇪</span> },
+    { value: "it", label: t("lang.italian"), icon: <span>🇮🇹</span> },
+    { value: "pt", label: t("lang.portuguese"), icon: <span>🇵🇹</span> },
+    { value: "nl", label: t("lang.dutch"), icon: <span>🇳🇱</span> },
+    { value: "ru", label: t("lang.russian"), icon: <span>🇷🇺</span> },
+    { value: "zh", label: t("lang.chinese"), icon: <span>🇨🇳</span> },
+    { value: "ja", label: t("lang.japanese"), icon: <span>🇯🇵</span> },
+    { value: "ar", label: t("lang.arabic"), icon: <span>🇸🇦</span> },
+    { value: "hi", label: t("lang.hindi"), icon: <span>🇮🇳</span> },
+    { value: "ko", label: t("lang.korean"), icon: <span>🇰🇷</span> },
+    { value: "sv", label: t("lang.swedish"), icon: <span>🇸🇪</span> },
+    { value: "no", label: t("lang.norwegian"), icon: <span>🇳🇴</span> },
+  ]
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -78,31 +96,13 @@ export function AnalysisForm() {
                 <Globe className="h-4 w-4 text-primary" />
                 {t("analysis.language_label")}
               </Label>
-              <Select
+              <SimpleSelect
+                options={languageOptions}
                 value={formData.language}
                 onValueChange={(value) => setFormData({ ...formData, language: value })}
-              >
-                <SelectTrigger className="border-primary/30 focus:border-primary">
-                  <SelectValue placeholder={t("analysis.language_placeholder")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="fr">{t("lang.french")}</SelectItem>
-                  <SelectItem value="en">{t("lang.english")}</SelectItem>
-                  <SelectItem value="es">{t("lang.spanish")}</SelectItem>
-                  <SelectItem value="de">{t("lang.german")}</SelectItem>
-                  <SelectItem value="it">{t("lang.italian")}</SelectItem>
-                  <SelectItem value="pt">{t("lang.portuguese")}</SelectItem>
-                  <SelectItem value="nl">{t("lang.dutch")}</SelectItem>
-                  <SelectItem value="ru">{t("lang.russian")}</SelectItem>
-                  <SelectItem value="zh">{t("lang.chinese")}</SelectItem>
-                  <SelectItem value="ja">{t("lang.japanese")}</SelectItem>
-                  <SelectItem value="ar">{t("lang.arabic")}</SelectItem>
-                  <SelectItem value="hi">{t("lang.hindi")}</SelectItem>
-                  <SelectItem value="ko">{t("lang.korean")}</SelectItem>
-                  <SelectItem value="sv">{t("lang.swedish")}</SelectItem>
-                  <SelectItem value="no">{t("lang.norwegian")}</SelectItem>
-                </SelectContent>
-              </Select>
+                placeholder={t("analysis.language_placeholder")}
+                className="border-primary/30 focus:border-primary"
+              />
             </div>
 
             <Button
@@ -116,7 +116,7 @@ export function AnalysisForm() {
         </CardContent>
       </Card>
 
-      <AnalysisModal
+      <AnalysisAdapter
         isOpen={showResults}
         onClose={() => setShowResults(false)}
         searchTerm={formData.name}

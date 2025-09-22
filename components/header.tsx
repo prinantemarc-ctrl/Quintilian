@@ -2,18 +2,13 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Swords, Globe, ChevronDown, Lightbulb, Newspaper, User, LogOut } from "lucide-react"
+import { Menu, X, Swords, Globe, Lightbulb, Newspaper, User, LogOut } from "lucide-react"
 import Link from "next/link"
 import { useLanguage } from "@/contexts/language-context"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
+import { LanguageSelector } from "@/components/language-selector-new"
+import { UserMenu } from "@/components/auth/user-menu-new"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -21,9 +16,25 @@ export function Header() {
   const [isLoading, setIsLoading] = useState(true)
   const { language, setLanguage, t } = useLanguage()
   const router = useRouter()
-  const supabase = createClient()
+  const [supabase, setSupabase] = useState<any>(null)
 
   useEffect(() => {
+    try {
+      const client = createClient()
+      setSupabase(client)
+    } catch (error) {
+      console.log("[v0] Failed to create Supabase client:", error)
+      setSupabase(null)
+      setIsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!supabase) {
+      setIsLoading(false)
+      return
+    }
+
     const getUser = async () => {
       try {
         const {
@@ -52,9 +63,15 @@ export function Header() {
       console.log("[v0] Auth listener error:", error)
       setIsLoading(false)
     }
-  }, [supabase.auth])
+  }, [supabase])
 
   const handleLogout = async () => {
+    if (!supabase) {
+      setUser(null)
+      router.push("/")
+      return
+    }
+
     try {
       await supabase.auth.signOut()
       router.push("/")
@@ -77,24 +94,6 @@ export function Header() {
   const scrollToHero = () => {
     window.scrollTo({ top: 0, behavior: "smooth" })
     setIsMenuOpen(false)
-  }
-
-  const getLanguageLabel = (lang: string) => {
-    const labels = {
-      fr: "🇫🇷 FR",
-      en: "🇺🇸 EN",
-      es: "🇪🇸 ES",
-    }
-    return labels[lang as keyof typeof labels] || lang.toUpperCase()
-  }
-
-  const getLanguageName = (lang: string) => {
-    const names = {
-      fr: "Français",
-      en: "English",
-      es: "Español",
-    }
-    return names[lang as keyof typeof names] || lang
   }
 
   return (
@@ -156,79 +155,13 @@ export function Header() {
 
           {/* Desktop CTA and Auth */}
           <div className="hidden md:flex items-center space-x-3">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2 bg-card/50 border-border/60 hover:bg-card hover:border-primary/20 transition-all duration-200 relative z-[60] cursor-pointer touch-manipulation min-h-[36px] px-3"
-                >
-                  <Globe className="w-4 h-4" />
-                  {getLanguageLabel(language)}
-                  <ChevronDown className="w-3 h-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="bg-card/95 backdrop-blur-sm border-border/60 z-[200] min-w-[140px]"
-                sideOffset={4}
-              >
-                <DropdownMenuItem
-                  onClick={() => setLanguage("fr")}
-                  className="hover:bg-primary/10 cursor-pointer touch-manipulation min-h-[36px] px-3"
-                >
-                  🇫🇷 Français
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setLanguage("en")}
-                  className="hover:bg-primary/10 cursor-pointer touch-manipulation min-h-[36px] px-3"
-                >
-                  🇺🇸 English
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setLanguage("es")}
-                  className="hover:bg-primary/10 cursor-pointer touch-manipulation min-h-[36px] px-3"
-                >
-                  🇪🇸 Español
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <LanguageSelector />
 
             {!isLoading && (
               <>
                 {user ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center gap-2 bg-transparent relative z-[60] cursor-pointer touch-manipulation min-h-[36px] px-3"
-                      >
-                        <User className="w-4 h-4" />
-                        {user.email?.split("@")[0]}
-                        <ChevronDown className="w-3 h-3" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="z-[200] min-w-[140px]" sideOffset={4}>
-                      <DropdownMenuItem asChild>
-                        <Link
-                          href="/dashboard"
-                          className="flex items-center gap-2 cursor-pointer touch-manipulation min-h-[36px] px-3 w-full"
-                        >
-                          <User className="w-4 h-4" />
-                          Dashboard
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={handleLogout}
-                        className="flex items-center gap-2 text-destructive cursor-pointer touch-manipulation min-h-[36px] px-3"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Déconnexion
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  /* Nouveau menu utilisateur sans DropdownMenu */
+                  <UserMenu />
                 ) : (
                   <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm" asChild>

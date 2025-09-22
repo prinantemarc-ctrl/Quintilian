@@ -16,7 +16,7 @@ export default function ConceptPage() {
           <Link href="/">
             <Button variant="ghost" className="gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Retour à l'accueil
+              {t("concept.back_home")}
             </Button>
           </Link>
         </div>
@@ -29,13 +29,8 @@ export default function ConceptPage() {
             <div className="mb-8">
               <Eye className="h-16 w-16 text-blue-600 mx-auto mb-6" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Découvrez l'image que vous projetez en ligne
-            </h1>
-            <p className="text-xl text-gray-700 leading-relaxed">
-              Dans un monde numérique où votre réputation se construit à chaque recherche, comprenez comment vous êtes
-              perçu par vos clients, partenaires et concurrents.
-            </p>
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">{t("concept.hero_title")}</h1>
+            <p className="text-xl text-gray-700 leading-relaxed">{t("concept.hero_subtitle")}</p>
           </div>
         </div>
       </section>
@@ -46,11 +41,10 @@ export default function ConceptPage() {
           <div className="max-w-4xl mx-auto space-y-12">
             {/* Introduction */}
             <div className="text-center">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">Le premier réflexe de tous</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">{t("concept.first_reflex_title")}</h2>
               <p className="text-lg text-gray-700 leading-relaxed">
-                Un citoyen, un consommateur, un banquier, un collaborateur, ou un concurrent. Tous ont un premier
-                réflexe avant de vous faire confiance :{" "}
-                <strong className="text-blue-600">taper votre nom ou celui de votre marque sur internet</strong>.
+                {t("concept.first_reflex_text")}{" "}
+                <strong className="text-blue-600">{t("concept.first_reflex_bold")}</strong>.
               </p>
             </div>
 
@@ -61,8 +55,8 @@ export default function ConceptPage() {
                   <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Eye className="h-8 w-8 text-red-600" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">Que vont-ils voir ?</h3>
-                  <p className="text-gray-600">Les premiers résultats qui apparaissent définissent votre image</p>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">{t("concept.what_will_they_see")}</h3>
+                  <p className="text-gray-600">{t("concept.what_will_they_see_desc")}</p>
                 </div>
               </div>
 
@@ -71,8 +65,8 @@ export default function ConceptPage() {
                   <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <MessageSquare className="h-8 w-8 text-yellow-600" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">Que vont-ils ressentir ?</h3>
-                  <p className="text-gray-600">L'émotion transmise par vos contenus influence leur décision</p>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">{t("concept.what_will_they_feel")}</h3>
+                  <p className="text-gray-600">{t("concept.what_will_they_feel_desc")}</p>
                 </div>
               </div>
 
@@ -81,8 +75,8 @@ export default function ConceptPage() {
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <TrendingUp className="h-8 w-8 text-green-600" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">Qu'en concluront-ils ?</h3>
-                  <p className="text-gray-600">Leur impression finale détermine s'ils vous font confiance</p>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">{t("concept.what_will_they_conclude")}</h3>
+                  <p className="text-gray-600">{t("concept.what_will_they_conclude_desc")}</p>
                 </div>
               </div>
             </div>
@@ -90,11 +84,13 @@ export default function ConceptPage() {
             {/* Analysis Section */}
             <div className="bg-blue-50 rounded-2xl p-8 md:p-12">
               <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">C'est exactement ce que nous analysons</h2>
-                <p className="text-lg text-gray-700">
-                  Notre technologie scrute l'ensemble de votre écosystème digital pour vous révéler votre véritable
-                  image en ligne.
-                </p>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">{t("concept.analysis_title")}</h2>
+                <p className="text-xl font-semibold text-blue-600 mb-4">{t("concept.methodology_tagline")}</p>
+                <p className="text-lg text-gray-700">{t("concept.analysis_subtitle")}</p>
+              </div>
+
+              <div className="bg-white rounded-xl p-6 md:p-8 mb-8 border-l-4 border-blue-600">
+                <p className="text-gray-800 leading-relaxed italic">{t("concept.quintilian_quote")}</p>
               </div>
 
               <div className="grid md:grid-cols-2 gap-8">
@@ -104,13 +100,11 @@ export default function ConceptPage() {
                       <Search className="h-6 w-6 text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-900">Moteurs de recherche</h3>
-                      <p className="text-gray-600">(SEO)</p>
+                      <h3 className="text-xl font-semibold text-gray-900">{t("concept.search_engines")}</h3>
+                      <p className="text-gray-600">{t("concept.seo")}</p>
                     </div>
                   </div>
-                  <p className="text-gray-700">
-                    Analyse complète de votre visibilité sur Google, Bing et autres moteurs de recherche
-                  </p>
+                  <p className="text-gray-700">{t("concept.search_engines_desc")}</p>
                 </div>
 
                 <div className="bg-white rounded-xl p-6 shadow-sm">
@@ -119,11 +113,11 @@ export default function ConceptPage() {
                       <MessageSquare className="h-6 w-6 text-purple-600" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-900">IA conversationnelles</h3>
-                      <p className="text-gray-600">(GPT et autres)</p>
+                      <h3 className="text-xl font-semibold text-gray-900">{t("concept.conversational_ai")}</h3>
+                      <p className="text-gray-600">{t("concept.gpt_others")}</p>
                     </div>
                   </div>
-                  <p className="text-gray-700">Évaluation de votre réputation auprès des intelligences artificielles</p>
+                  <p className="text-gray-700">{t("concept.conversational_ai_desc")}</p>
                 </div>
               </div>
             </div>
@@ -132,7 +126,7 @@ export default function ConceptPage() {
             <div className="text-center">
               <Link href="/">
                 <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3">
-                  Analyser ma réputation maintenant
+                  {t("concept.cta_button")}
                 </Button>
               </Link>
             </div>

@@ -134,16 +134,37 @@ export async function POST(request: NextRequest) {
 
     console.log(`[v0] Processing duel: ${brand1} vs ${brand2}`, country ? `(Country: ${country})` : "")
 
+    const apiKey = process.env.OPENAI_API_KEY
+    if (!apiKey) {
+      console.error("[v0] CRITICAL: No OpenAI API key found for duel analysis!")
+      throw new Error("Configuration manquante - clé API OpenAI non trouvée")
+    }
+    console.log("[v0] OpenAI API key verified for duel analysis")
+
     // Search and analyze both brands in parallel
     const [brand1Results, brand2Results] = await Promise.all([
       searchGoogle(brand1, { language, country }),
       searchGoogle(brand2, { language, country }),
     ])
 
+    console.log(`[v0] Brand1 search results: ${brand1Results.length} items`)
+    console.log(`[v0] Brand2 search results: ${brand2Results.length} items`)
+
+    if (brand1Results.length === 0) {
+      console.warn(`[v0] No search results found for ${brand1}`)
+    }
+    if (brand2Results.length === 0) {
+      console.warn(`[v0] No search results found for ${brand2}`)
+    }
+
     const [brand1Analysis, brand2Analysis] = await Promise.all([
       generateDetailedAnalysis(brand1, message, brand1Results, language, "duel"),
       generateDetailedAnalysis(brand2, message, brand2Results, language, "duel"),
     ])
+
+    if (brand1Analysis.rationale.includes("FALLBACK") || brand2Analysis.rationale.includes("FALLBACK")) {
+      console.error("[v0] WARNING: Fallback data detected in duel analysis!")
+    }
 
     const comparison = await generateComparison(brand1, brand1Analysis, brand2, brand2Analysis, message, language)
 

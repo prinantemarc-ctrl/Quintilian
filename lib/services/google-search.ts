@@ -43,23 +43,29 @@ export async function searchGoogle(query: string, options: SearchOptions): Promi
 
         console.log("[v0] Using CSE ID:", cseId)
 
-        let url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cseId}&q=${encodeURIComponent(query)}&num=${options.maxResults || 25}`
+        let url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cseId}&q=${encodeURIComponent(query)}`
 
-        // Add country parameter only (language is handled by country)
+        const numResults = options.maxResults || 25
+        url += `&num=${Math.min(numResults, 10)}` // Google API max is 10 per request
+
+        // Fix country parameter - use gl instead of cr for better compatibility
         if (options.country) {
           url += `&gl=${options.country.toLowerCase()}`
         }
 
-        // Add interface language if needed
-        if (options.language && options.language !== "fr") {
+        // Add interface language
+        if (options.language) {
           url += `&hl=${options.language}`
         }
 
-        console.log("[v0] Making Google API request with geolocation:", options.country || "global")
+        console.log(
+          "[v0] Making Google API request with country restriction:",
+          options.country ? options.country.toLowerCase() : "global",
+        )
         console.log("[v0] Google API URL:", url.replace(apiKey, "HIDDEN_API_KEY"))
 
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 10000)
+        const timeoutId = setTimeout(() => controller.abort(), 15000) // Increased timeout
 
         const response = await fetch(url, {
           signal: controller.signal,
@@ -72,6 +78,21 @@ export async function searchGoogle(query: string, options: SearchOptions): Promi
           console.log("[v0] Google API error:", response.status)
           const errorText = await response.text()
           console.log("[v0] Google API error details:", errorText)
+
+          if (response.status === 400 && options.country) {
+            console.log("[v0] Retrying without country parameter")
+            const fallbackUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cseId}&q=${encodeURIComponent(query)}&num=${Math.min(numResults, 10)}&hl=${options.language || "fr"}`
+
+            const fallbackResponse = await fetch(fallbackUrl, {
+              cache: "no-store",
+            })
+
+            if (fallbackResponse.ok) {
+              const data: GoogleSearchResponse = await fallbackResponse.json()
+              console.log("[v0] Fallback search successful, found", data.items?.length || 0, "results")
+              return data.items || []
+            }
+          }
 
           if (response.status === 400) {
             // Clear cache for this query to avoid repeated failures

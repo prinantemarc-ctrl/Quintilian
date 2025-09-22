@@ -160,9 +160,12 @@ export async function generateDetailedAnalysis(
       try {
         const apiKey = process.env.OPENAI_API_KEY
         if (!apiKey) {
-          console.log("[v0] No OpenAI API key, using fallback")
+          console.error("[v0] CRITICAL: No OpenAI API key found - this will cause mock data!")
+          console.error("[v0] Please check OPENAI_API_KEY environment variable")
           return generateFallbackAnalysis()
         }
+
+        console.log("[v0] OpenAI API key found, proceeding with real analysis")
 
         const googleContent = googleResults
           .slice(0, 10)
@@ -173,6 +176,9 @@ export async function generateDetailedAnalysis(
           })
           .join("\n\n")
 
+        console.log(`[v0] Google results count: ${googleResults.length}`)
+        console.log(`[v0] First Google result:`, googleResults[0]?.title || "No results")
+
         const prompt =
           analysisType === "duel"
             ? generateDuelAnalysisPrompt(brand, message, googleContent, language)
@@ -181,32 +187,65 @@ export async function generateDetailedAnalysis(
         console.log("[v0] Calling OpenAI for detailed analysis")
 
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 45000)
 
         try {
           const { text } = await generateText({
             model: openai("gpt-4o-mini"),
             prompt: prompt,
             temperature: 0.3,
+            maxTokens: 2000,
             abortSignal: controller.signal,
           })
 
           clearTimeout(timeoutId)
           console.log(`[v0] Detailed analysis completed for ${brand}`)
-          console.log("[v0] Raw OpenAI response:", text.substring(0, 200) + "...")
+          console.log("[v0] Raw OpenAI response length:", text.length)
 
           let cleanedText = text.trim()
           if (cleanedText.startsWith("```json")) {
             cleanedText = cleanedText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
           }
 
+          if (!isValidJsonStructure(cleanedText)) {
+            console.error("[v0] JSON appears to be truncated or malformed")
+            console.error("[v0] Text length:", cleanedText.length)
+            console.error("[v0] First 500 chars:", cleanedText.substring(0, 500))
+            console.error("[v0] Last 500 chars:", cleanedText.substring(cleanedText.length - 500))
+
+            const partialAnalysis = extractPartialJsonData(cleanedText)
+            if (partialAnalysis) {
+              console.log("[v0] Using partial analysis data")
+              return normalizeAnalysisResponse(partialAnalysis)
+            }
+
+            console.error("[v0] Falling back to mock data due to JSON validation failure")
+            return generateFallbackAnalysis()
+          }
+
           let parsedAnalysis
           try {
             parsedAnalysis = JSON.parse(cleanedText)
             console.log("[v0] Successfully parsed JSON response")
+
+            if (parsedAnalysis.presence_score && parsedAnalysis.tone_score && parsedAnalysis.coherence_score) {
+              console.log(
+                `[v0] Real analysis scores: P:${parsedAnalysis.presence_score} T:${parsedAnalysis.tone_score} C:${parsedAnalysis.coherence_score}`,
+              )
+            } else {
+              console.error("[v0] Missing required scores in parsed analysis")
+            }
           } catch (parseError) {
             console.error("[v0] JSON parsing failed:", parseError)
-            console.error("[v0] Raw text that failed to parse:", cleanedText)
+            console.error("[v0] Raw text that failed to parse (first 1000 chars):", cleanedText.substring(0, 1000))
+
+            const partialAnalysis = extractPartialJsonData(cleanedText)
+            if (partialAnalysis) {
+              console.log("[v0] Using partial analysis data after parse error")
+              return normalizeAnalysisResponse(partialAnalysis)
+            }
+
+            console.error("[v0] Falling back to mock data due to JSON parse error")
             return generateFallbackAnalysis()
           }
 
@@ -214,10 +253,17 @@ export async function generateDetailedAnalysis(
         } catch (openaiError) {
           clearTimeout(timeoutId)
           console.error("[v0] OpenAI API call failed:", openaiError)
+          console.error("[v0] Error details:", {
+            message: openaiError.message,
+            name: openaiError.name,
+            stack: openaiError.stack?.substring(0, 500),
+          })
+          console.error("[v0] Falling back to mock data due to OpenAI API error")
           return generateFallbackAnalysis()
         }
       } catch (error) {
         console.error(`[v0] Detailed analysis error for ${brand}:`, error)
+        console.error("[v0] Falling back to mock data due to general error")
         return generateFallbackAnalysis()
       }
     },
@@ -356,21 +402,26 @@ function normalizeAnalysisResponse(analysis: any): DetailedAnalysis {
 }
 
 function generateFallbackAnalysis(): DetailedAnalysis {
-  const randomVariance = () => Math.floor(Math.random() * 60) + 20 // Range 20-80 instead of 60-70
+  const randomVariance = () => Math.floor(Math.random() * 60) + 20
+
+  console.error("[v0] GENERATING FALLBACK/MOCK DATA - This should not happen in production!")
 
   return {
     presence_score: randomVariance(),
     tone_score: randomVariance(),
     coherence_score: randomVariance(),
     tone_label: "neutre",
-    rationale: "Analyse de fallback en raison d'une erreur lors de l'analyse comparative.",
-    google_summary: "Résumé non disponible - erreur API",
-    gpt_summary: "Analyse non disponible - erreur API",
-    structured_conclusion: "# Analyse de Fallback\n\n⚠️ Analyse réalisée sans IA comparative.",
-    detailed_analysis: "## Analyse Détaillée\n\nAnalyse de base en raison d'une erreur technique.",
-    presence_details: "Détails non disponibles",
-    tone_details: "Détails non disponibles",
-    coherence_details: "Détails non disponibles",
+    rationale:
+      "⚠️ DONNÉES DE FALLBACK - Analyse réalisée sans IA comparative en raison d'une erreur technique. Veuillez réessayer.",
+    google_summary: "⚠️ Résumé non disponible - erreur API ou clé manquante",
+    gpt_summary: "⚠️ Analyse non disponible - erreur API ou clé manquante",
+    structured_conclusion:
+      "# ⚠️ Analyse de Fallback\n\nAnalyse réalisée sans IA comparative en raison d'une erreur technique.",
+    detailed_analysis:
+      "## ⚠️ Analyse Détaillée Non Disponible\n\nAnalyse de base en raison d'une erreur technique. Veuillez réessayer.",
+    presence_details: "⚠️ Détails non disponibles - erreur technique",
+    tone_details: "⚠️ Détails non disponibles - erreur technique",
+    coherence_details: "⚠️ Détails non disponibles - erreur technique",
   }
 }
 
@@ -501,4 +552,52 @@ Détermine si "${brand}" fait référence à plusieurs personnes, entreprises ou
   }
 
   return detection
+}
+
+function isValidJsonStructure(text: string): boolean {
+  try {
+    // Check if the text starts with { and ends with }
+    const trimmed = text.trim()
+    if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) {
+      return false
+    }
+
+    // Count braces to ensure they're balanced
+    let braceCount = 0
+    for (const char of trimmed) {
+      if (char === "{") braceCount++
+      if (char === "}") braceCount--
+    }
+
+    return braceCount === 0
+  } catch {
+    return false
+  }
+}
+
+function extractPartialJsonData(text: string): Partial<DetailedAnalysis> | null {
+  try {
+    // Try to extract basic scores using regex
+    const presenceMatch = text.match(/"presence_score":\s*(\d+)/)
+    const toneMatch = text.match(/"tone_score":\s*(\d+)/)
+    const coherenceMatch = text.match(/"coherence_score":\s*(\d+)/)
+    const toneLabelMatch = text.match(/"tone_label":\s*"([^"]+)"/)
+    const rationaleMatch = text.match(/"rationale":\s*"([^"]+)"/)
+
+    if (presenceMatch && toneMatch && coherenceMatch) {
+      return {
+        presence_score: Number.parseInt(presenceMatch[1]),
+        tone_score: Number.parseInt(toneMatch[1]),
+        coherence_score: Number.parseInt(coherenceMatch[1]),
+        tone_label: toneLabelMatch?.[1] || "neutre",
+        rationale: rationaleMatch?.[1] || "Analyse partielle récupérée après erreur de parsing JSON.",
+        google_summary: "Résumé non disponible - erreur de parsing",
+        gpt_summary: "Analyse non disponible - erreur de parsing",
+      }
+    }
+  } catch (error) {
+    console.error("[v0] Failed to extract partial JSON data:", error)
+  }
+
+  return null
 }

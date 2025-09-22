@@ -5,20 +5,9 @@ import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import {
-  BarChart3,
-  TrendingUp,
-  Users,
-  Zap,
-  ArrowRight,
-  Home,
-  Calendar,
-  Globe,
-  Star,
-  Eye,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react"
+import { CreditDisplay } from "@/components/credits/credit-display"
+import { UsageTracker } from "@/components/paywall/usage-tracker"
+import { BarChart3, TrendingUp, Users, Zap, ArrowRight, Calendar, Globe, Eye, Search, CreditCard } from "lucide-react"
 import Link from "next/link"
 
 interface UserStats {
@@ -167,7 +156,7 @@ export default function DashboardPage() {
             </Button>
             <Button asChild variant="outline" className="w-full bg-transparent">
               <Link href="/">
-                <Home className="w-4 h-4 mr-2" />
+                <Search className="w-4 h-4 mr-2" />
                 Retour à l'accueil
               </Link>
             </Button>
@@ -178,31 +167,21 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background space-y-6">
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-              <p className="text-muted-foreground">Bienvenue, {user.email}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button onClick={refreshData} variant="outline" size="sm" disabled={isRefreshing}>
-                <TrendingUp className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
-                {isRefreshing ? "Actualisation..." : "Actualiser"}
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="/">
-                  <Home className="w-4 h-4 mr-2" />
-                  Accueil
-                </Link>
-              </Button>
-            </div>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+            <p className="text-muted-foreground">Bienvenue, {user.email}</p>
           </div>
+          <Button onClick={refreshData} variant="outline" size="sm" disabled={isRefreshing}>
+            <TrendingUp className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+            {isRefreshing ? "Actualisation..." : "Actualiser"}
+          </Button>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Analyses totales</CardTitle>
@@ -243,15 +222,21 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                <Badge variant="secondary">Gratuit</Badge>
+                <Badge variant="secondary">Freemium</Badge>
               </div>
               <p className="text-xs text-muted-foreground">Plan actuel</p>
             </CardContent>
           </Card>
         </div>
 
+        {/* Credits and Usage */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CreditDisplay />
+          <UsageTracker />
+        </div>
+
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
               <CardTitle>Nouvelle analyse</CardTitle>
@@ -270,14 +255,14 @@ export default function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Mode Duel</CardTitle>
-              <CardDescription>Comparez deux marques directement</CardDescription>
+              <CardTitle>Gérer mes crédits</CardTitle>
+              <CardDescription>Achetez des crédits pour débloquer plus de fonctionnalités</CardDescription>
             </CardHeader>
             <CardContent>
               <Button asChild variant="outline" className="w-full bg-transparent">
-                <Link href="/duel">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Lancer un duel
+                <Link href="/dashboard/credits">
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Voir mes crédits
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
               </Button>
@@ -294,13 +279,19 @@ export default function DashboardPage() {
           <CardContent>
             {searches.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>Aucune analyse récente</p>
                 <p className="text-sm">Commencez votre première analyse pour voir l'historique ici</p>
+                <Button asChild className="mt-4">
+                  <Link href="/dashboard/search">
+                    <Search className="w-4 h-4 mr-2" />
+                    Commencer maintenant
+                  </Link>
+                </Button>
               </div>
             ) : (
               <div className="space-y-4">
-                {searches.map((search) => {
+                {searches.slice(0, 3).map((search) => {
                   const isExpanded = expandedSearches.has(search.id)
                   return (
                     <Card key={search.id} className="border-l-4 border-l-primary/20">
@@ -357,73 +348,13 @@ export default function DashboardPage() {
                           </div>
                         )}
 
-                        {search.gpt_analysis && (
-                          <div className="bg-muted/50 rounded-lg p-4 text-sm">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Star className="w-4 h-4 text-primary" />
-                              <span className="font-medium">Analyse IA</span>
-                            </div>
-                            <p className={`text-muted-foreground ${!isExpanded ? "line-clamp-3" : ""}`}>
-                              {typeof search.gpt_analysis === "string"
-                                ? search.gpt_analysis
-                                : search.gpt_analysis.summary || "Analyse disponible"}
-                            </p>
-                          </div>
-                        )}
-
-                        {isExpanded && (
-                          <div className="mt-4 space-y-4 border-t pt-4">
-                            {search.results && typeof search.results === "object" && (
-                              <div>
-                                <h4 className="font-medium mb-2 flex items-center gap-2">
-                                  <Eye className="w-4 h-4" />
-                                  Résultats détaillés
-                                </h4>
-                                <div className="bg-muted/30 rounded-lg p-4 text-sm">
-                                  <pre className="whitespace-pre-wrap text-xs overflow-x-auto">
-                                    {JSON.stringify(search.results, null, 2)}
-                                  </pre>
-                                </div>
-                              </div>
-                            )}
-
-                            {search.gpt_analysis && typeof search.gpt_analysis === "object" && (
-                              <div>
-                                <h4 className="font-medium mb-2 flex items-center gap-2">
-                                  <Star className="w-4 h-4" />
-                                  Analyse IA complète
-                                </h4>
-                                <div className="bg-muted/30 rounded-lg p-4 text-sm">
-                                  <pre className="whitespace-pre-wrap text-xs overflow-x-auto">
-                                    {JSON.stringify(search.gpt_analysis, null, 2)}
-                                  </pre>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                        <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Eye className="w-4 h-4" />
-                            <span>
-                              {search.results && typeof search.results === "object"
-                                ? `${Object.keys(search.results).length} résultats`
-                                : "Résultats disponibles"}
-                            </span>
+                            <span>Résultats disponibles</span>
                           </div>
-                          <Button variant="outline" size="sm" onClick={() => toggleSearchDetails(search.id)}>
-                            {isExpanded ? (
-                              <>
-                                <ChevronUp className="w-4 h-4 mr-1" />
-                                Masquer détails
-                              </>
-                            ) : (
-                              <>
-                                <ChevronDown className="w-4 h-4 mr-1" />
-                                Voir détails
-                              </>
-                            )}
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href="/dashboard/history">Voir tout l'historique</Link>
                           </Button>
                         </div>
                       </CardContent>
