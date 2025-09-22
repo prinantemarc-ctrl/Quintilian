@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
           country: validCountries[0].toLowerCase(),
         })
 
-        if (initialSearchResults.length >= 3) {
+        if (initialSearchResults.length >= 1) {
           const homonymDetection = await detectHomonyms(initialSearchResults, query, userLanguage, userLanguage)
 
           if (homonymDetection.requires_identity_selection) {
@@ -76,6 +76,8 @@ export async function POST(request: NextRequest) {
               })),
             })
           }
+        } else {
+          console.log("[v0] No search results found for homonym detection")
         }
       } catch (error) {
         console.error("[v0] Homonym detection failed in press analysis:", error)

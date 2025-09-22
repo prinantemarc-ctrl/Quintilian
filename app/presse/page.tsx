@@ -305,8 +305,28 @@ export default function PressePage() {
 
       const result = await response.json()
       console.log("[v0] Press analysis completed:", result)
+      console.log("[v0] Press data received:", result)
 
-      setData(result)
+      if (result.requires_identity_selection && result.identified_entities) {
+        // Convert identified_entities to EntityOption format
+        const entityOptions = result.identified_entities.map((entity: string, index: number) => ({
+          id: `entity-${index}`,
+          name: entity,
+          description: entity,
+          type: "entity",
+          context: `Entité détectée dans les résultats de recherche`,
+        }))
+
+        setEntityOptions(entityOptions)
+        setShowDisambiguation(true)
+        setError(result.message || "Plusieurs identités détectées. Veuillez choisir celle qui vous intéresse.")
+      } else if (result.kpis && result.articles) {
+        // Normal result with data
+        setData(result)
+      } else {
+        // Unexpected result format
+        setError("Format de réponse inattendu")
+      }
     } catch (error) {
       console.error("[v0] Press analysis error:", error)
       setError("Une erreur est survenue lors de l'analyse. Veuillez réessayer.")
