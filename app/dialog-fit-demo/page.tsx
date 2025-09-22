@@ -206,7 +206,11 @@ Cette analyse complète démontre les capacités avancées du système DialogFit
   }
 
   const showLongContent = () => {
-    modal.openModal(demoContents.long, { autoSize: true })
+    const content = { ...demoContents.long }
+    if (!content.tabs) {
+      content.tabs = []
+    }
+    modal.openModal(content, { autoSize: true })
   }
 
   const showLoadingState = () => {
@@ -225,7 +229,11 @@ Cette analyse complète démontre les capacités avancées du système DialogFit
   }
 
   const showFullscreenContent = () => {
-    modal.openModal(demoContents.long, {
+    const content = { ...demoContents.long }
+    if (!content.tabs) {
+      content.tabs = []
+    }
+    modal.openModal(content, {
       variant: "fullscreen",
       allowFullscreen: true,
     })
