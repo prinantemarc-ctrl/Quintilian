@@ -24,6 +24,44 @@ const SUPPORTED_COUNTRIES = [
   "CD",
 ]
 
+function extractEntityName(entityDescription: string): string {
+  console.log(`[v0] Extracting entity name from: "${entityDescription}"`)
+
+  // Remove common prefixes and clean up
+  let cleaned = entityDescription.trim()
+
+  // Extract the main entity name before the first dash, colon, or description
+  const beforeDash = cleaned.split(" - ")[0].trim()
+  const beforeColon = beforeDash.split(" : ")[0].trim()
+
+  // Handle specific patterns
+  if (beforeColon.toLowerCase().includes("aleria")) {
+    // For Aleria variants, keep it simple
+    if (beforeColon.toLowerCase().includes("aleria.ai") || beforeColon.toLowerCase().includes("aleria ai")) {
+      cleaned = "Aleria AI"
+    } else if (beforeColon.toLowerCase().includes("aleria.com")) {
+      cleaned = "Aleria.com"
+    } else {
+      cleaned = "Aleria"
+    }
+  } else {
+    // For other entities, take the first meaningful part
+    cleaned = beforeColon
+      .replace(/^(PPRi\s+)/i, "") // Remove PPRi prefix
+      .split(/\s+(une?|des?|la|le|les)\s+/i)[0] // Remove articles and descriptions
+      .trim()
+  }
+
+  // Fallback to first word if still too long
+  if (cleaned.length > 50) {
+    cleaned = cleaned.split(" ")[0]
+  }
+
+  const result = cleaned || entityDescription.split(" ")[0]
+  console.log(`[v0] Extracted entity name: "${result}"`)
+  return result
+}
+
 export async function POST(request: NextRequest) {
   try {
     console.log("[v0] Presse API: Starting request processing")
@@ -55,13 +93,37 @@ export async function POST(request: NextRequest) {
     if (!selected_identity) {
       console.log("[v0] Checking for homonyms before press analysis...")
       try {
-        const initialSearchResults = await searchGoogle(`"${query}"`, {
-          language: userLanguage,
-          country: validCountries[0].toLowerCase(),
-        })
+        const allInitialResults: GoogleSearchResult[] = []
 
-        if (initialSearchResults.length >= 1) {
-          const homonymDetection = await detectHomonyms(initialSearchResults, query, userLanguage, userLanguage)
+        for (const countryCode of validCountries) {
+          const searchLanguage = getCountryLanguage(countryCode.toUpperCase())
+          console.log(`[v0] Collecting homonym detection data from ${countryCode} (${searchLanguage})`)
+
+          const countryResults = await searchGoogle(`"${query}"`, {
+            language: searchLanguage,
+            country: countryCode.toLowerCase(),
+          })
+
+          allInitialResults.push(...countryResults)
+
+          // Small delay between requests
+          if (validCountries.indexOf(countryCode) < validCountries.length - 1) {
+            await new Promise((resolve) => setTimeout(resolve, 1000))
+          }
+        }
+
+        console.log(
+          `[v0] Collected ${allInitialResults.length} total results from ${validCountries.length} countries for homonym detection`,
+        )
+
+        if (allInitialResults.length >= 1) {
+          const homonymDetection = await detectHomonyms(
+            allInitialResults,
+            query,
+            userLanguage,
+            userLanguage,
+            validCountries,
+          )
 
           if (homonymDetection.requires_identity_selection) {
             console.log("[v0] Homonyms detected in press analysis, requesting identity selection")
@@ -69,7 +131,7 @@ export async function POST(request: NextRequest) {
               requires_identity_selection: true,
               identified_entities: homonymDetection.identified_entities,
               message: homonymDetection.message,
-              search_results: initialSearchResults.slice(0, 10).map((item) => ({
+              search_results: allInitialResults.slice(0, 10).map((item) => ({
                 title: item.title,
                 link: item.link,
                 snippet: item.snippet,
@@ -77,150 +139,169 @@ export async function POST(request: NextRequest) {
             })
           }
         } else {
-          console.log("[v0] No search results found for homonym detection")
+          console.log("[v0] No search results found across all countries for homonym detection")
         }
       } catch (error) {
         console.error("[v0] Homonym detection failed in press analysis:", error)
       }
     } else {
       console.log("[v0] Using selected identity for press analysis:", selected_identity)
-      searchQuery = selected_identity
+      searchQuery = extractEntityName(selected_identity)
+      console.log("[v0] Extracted search query:", searchQuery)
     }
 
-    const countryResults = await Promise.all(
-      validCountries.map(async (countryCode) => {
-        const upperCountryCode = countryCode.toUpperCase()
-        console.log(`[v0] Processing press analysis for ${upperCountryCode}...`)
+    const countryResults = []
 
-        try {
-          const searchLanguage = getCountryLanguage(upperCountryCode)
+    for (let i = 0; i < validCountries.length; i++) {
+      const countryCode = validCountries[i]
+      const upperCountryCode = countryCode.toUpperCase()
+      console.log(`[v0] Processing press analysis for ${upperCountryCode} (${i + 1}/${validCountries.length})...`)
 
-          const baseQuery = `"${searchQuery}"`
+      try {
+        const searchLanguage = getCountryLanguage(upperCountryCode)
+        const baseQuery = `"${searchQuery}"`
+        const mediaSites = getCountryMediaSites(upperCountryCode)
+        const searches: string[] = []
 
-          const searches = [
-            `${baseQuery} ${getCountryMediaSites(upperCountryCode)}`,
-            `${baseQuery} site:gov OR site:org OR ${getNewsKeywords(searchLanguage)}`,
-            entityType
-              ? `${baseQuery} ${getEntityTypeKeywords(entityType, searchLanguage)}`
-              : `${baseQuery} news press`,
-          ].filter(Boolean)
+        // Add individual media site searches
+        mediaSites.forEach((site) => {
+          searches.push(`${baseQuery} ${site}`)
+        })
 
-          const searchResults: GoogleSearchResult[] = []
+        // Add other search types
+        searches.push(
+          // Government and organization sites
+          `${baseQuery} site:gov`,
+          `${baseQuery} site:org`,
+          // General news search with broader terms
+          `${baseQuery} news press media article report`,
+          // Entity-specific search if available
+          entityType
+            ? `${baseQuery} ${getEntityTypeKeywords(entityType, searchLanguage)}`
+            : `${baseQuery} technology AI artificial intelligence`,
+          // Broader search without site restrictions
+          `${baseQuery}`,
+        )
 
-          if (upperCountryCode === "CD") {
-            console.log(`[v0] CONGO DEBUG: Starting analysis for "${searchQuery}" in Congo`)
-            console.log(`[v0] CONGO DEBUG: Search language: ${searchLanguage}`)
-            console.log(`[v0] CONGO DEBUG: Media sites query: ${getCountryMediaSites(upperCountryCode)}`)
-            console.log(`[v0] CONGO DEBUG: Total searches planned: ${searches.length}`)
-          }
+        const searchResults: GoogleSearchResult[] = []
 
-          for (let i = 0; i < searches.length; i++) {
-            const searchQueryForCountry = searches[i]
-            console.log(`[v0] Search ${i + 1}/${searches.length} for ${upperCountryCode}: ${searchQueryForCountry}`)
+        if (upperCountryCode === "CD") {
+          console.log(`[v0] CONGO DEBUG: Starting analysis for "${searchQuery}" in Congo`)
+          console.log(`[v0] CONGO DEBUG: Search language: ${searchLanguage}`)
+          console.log(`[v0] CONGO DEBUG: Media sites query: ${mediaSites.join(" OR ")}`)
+          console.log(`[v0] CONGO DEBUG: Total searches planned: ${searches.length}`)
+        }
 
-            try {
-              const results = await searchGoogle(searchQueryForCountry, {
-                language: searchLanguage,
-                country: upperCountryCode.toLowerCase(),
-              })
+        for (let j = 0; j < searches.length; j++) {
+          const searchQueryForCountry = searches[j]
+          console.log(`[v0] Search ${j + 1}/${searches.length} for ${upperCountryCode}: ${searchQueryForCountry}`)
 
-              if (upperCountryCode === "CD") {
-                console.log(`[v0] CONGO DEBUG: Search ${i + 1} returned ${results.length} raw results`)
+          try {
+            const results = await searchGoogle(searchQueryForCountry, {
+              language: searchLanguage,
+              country: upperCountryCode.toLowerCase(),
+              maxResults: 15,
+            })
+
+            if (upperCountryCode === "CD") {
+              console.log(`[v0] CONGO DEBUG: Search ${j + 1} returned ${results.length} raw results`)
+              console.log(
+                `[v0] CONGO DEBUG: Raw results:`,
+                results.slice(0, 3).map((r) => ({ title: r.title, link: r.link })),
+              )
+            }
+
+            const filteredResults = results.filter((result) => isValidMediaSource(result.link || ""))
+
+            if (upperCountryCode === "CD") {
+              console.log(`[v0] CONGO DEBUG: Search ${j + 1} filtered to ${filteredResults.length} valid media results`)
+              if (filteredResults.length > 0) {
                 console.log(
-                  `[v0] CONGO DEBUG: Raw results:`,
-                  results.slice(0, 3).map((r) => ({ title: r.title, link: r.link })),
+                  `[v0] CONGO DEBUG: Filtered results:`,
+                  filteredResults.slice(0, 3).map((r) => ({ title: r.title, link: r.link })),
                 )
               }
+            }
 
-              const filteredResults = results.filter((result) => isValidMediaSource(result.link || ""))
+            searchResults.push(...filteredResults)
 
-              if (upperCountryCode === "CD") {
-                console.log(
-                  `[v0] CONGO DEBUG: Search ${i + 1} filtered to ${filteredResults.length} valid media results`,
-                )
-                if (filteredResults.length > 0) {
-                  console.log(
-                    `[v0] CONGO DEBUG: Filtered results:`,
-                    filteredResults.slice(0, 3).map((r) => ({ title: r.title, link: r.link })),
-                  )
-                }
-              }
-
-              searchResults.push(...filteredResults)
-
-              if (i < searches.length - 1) {
-                console.log("[v0] Waiting 2s before next search...")
-                await new Promise((resolve) => setTimeout(resolve, 2000))
-              }
-            } catch (error) {
-              console.error(`[v0] Search ${i + 1} failed for ${upperCountryCode}:`, error)
-              if (upperCountryCode === "CD") {
-                console.log(`[v0] CONGO DEBUG: Search ${i + 1} failed with error:`, error)
-              }
+            if (j < searches.length - 1) {
+              console.log("[v0] Waiting 3s before next search...")
+              await new Promise((resolve) => setTimeout(resolve, 3000))
+            }
+          } catch (error) {
+            console.error(`[v0] Search ${j + 1} failed for ${upperCountryCode}:`, error)
+            if (upperCountryCode === "CD") {
+              console.log(`[v0] CONGO DEBUG: Search ${j + 1} failed with error:`, error)
+            }
+            if (j < searches.length - 1) {
+              console.log("[v0] Waiting 2s after failed search...")
+              await new Promise((resolve) => setTimeout(resolve, 2000))
             }
           }
+        }
 
-          console.log(`[v0] Total filtered search results for ${upperCountryCode}: ${searchResults.length}`)
+        console.log(`[v0] Total filtered search results for ${upperCountryCode}: ${searchResults.length}`)
 
-          if (upperCountryCode === "CD") {
-            console.log(`[v0] CONGO DEBUG: Final summary for "${searchQuery}":`)
-            console.log(`[v0] CONGO DEBUG: - Total results found: ${searchResults.length}`)
-            console.log(
-              `[v0] CONGO DEBUG: - Results by credibility:`,
-              searchResults.map((r) => ({
-                source: getCleanSourceName(r.link || ""),
-                credibility: getSourceCredibility(r.link || ""),
-              })),
-            )
+        if (upperCountryCode === "CD") {
+          console.log(`[v0] CONGO DEBUG: Final summary for "${searchQuery}":`)
+          console.log(`[v0] CONGO DEBUG: - Total results found: ${searchResults.length}`)
+          console.log(
+            `[v0] CONGO DEBUG: - Results by credibility:`,
+            searchResults.map((r) => ({
+              source: getCleanSourceName(r.link || ""),
+              credibility: getSourceCredibility(r.link || ""),
+            })),
+          )
+        }
+
+        const hasInsufficientResults = searchResults.length < 2
+        const hasLowQualityResults =
+          searchResults.filter((result) => getSourceCredibility(result.link || "") > 70).length < 1
+
+        if (upperCountryCode === "CD") {
+          console.log(`[v0] CONGO DEBUG: Uncertainty check:`)
+          console.log(`[v0] CONGO DEBUG: - hasInsufficientResults (< 2): ${hasInsufficientResults}`)
+          console.log(`[v0] CONGO DEBUG: - hasLowQualityResults (< 1 with credibility > 70): ${hasLowQualityResults}`)
+          console.log(
+            `[v0] CONGO DEBUG: - High credibility sources count:`,
+            searchResults.filter((result) => getSourceCredibility(result.link || "") > 70).length,
+          )
+        }
+
+        let reputationAnalysis = null
+        if (searchResults.length > 0 && !hasInsufficientResults) {
+          console.log(`[v0] Starting reputation analysis for ${upperCountryCode}...`)
+          reputationAnalysis = await analyzeReputation(searchResults, searchQuery, "couverture presse", userLanguage)
+          console.log(`[v0] Reputation analysis completed for ${upperCountryCode}`)
+        }
+
+        const isUncertainAnalysis =
+          hasInsufficientResults ||
+          hasLowQualityResults ||
+          (reputationAnalysis && reputationAnalysis.presence_score < 0.15)
+
+        if (isUncertainAnalysis) {
+          const result = {
+            country: getCountryName(upperCountryCode, userLanguage),
+            countryCode: upperCountryCode,
+            flag: getCountryFlag(upperCountryCode),
+            articles: [],
+            kpis: {
+              totalArticles: 0,
+              uniqueOutlets: 0,
+              pressScore: 0,
+              tonalityScore: 0,
+            },
+            gptAnalysis: getUncertaintyMessage(
+              searchQuery,
+              getCountryName(upperCountryCode, userLanguage),
+              userLanguage,
+            ),
+            isUncertain: true,
           }
-
-          const hasInsufficientResults = searchResults.length < 2
-          const hasLowQualityResults =
-            searchResults.filter((result) => getSourceCredibility(result.link || "") > 70).length < 1
-
-          if (upperCountryCode === "CD") {
-            console.log(`[v0] CONGO DEBUG: Uncertainty check:`)
-            console.log(`[v0] CONGO DEBUG: - hasInsufficientResults (< 2): ${hasInsufficientResults}`)
-            console.log(`[v0] CONGO DEBUG: - hasLowQualityResults (< 1 with credibility > 70): ${hasLowQualityResults}`)
-            console.log(
-              `[v0] CONGO DEBUG: - High credibility sources count:`,
-              searchResults.filter((result) => getSourceCredibility(result.link || "") > 70).length,
-            )
-          }
-
-          let reputationAnalysis = null
-          if (searchResults.length > 0 && !hasInsufficientResults) {
-            console.log(`[v0] Starting reputation analysis for ${upperCountryCode}...`)
-            reputationAnalysis = await analyzeReputation(searchResults, searchQuery, "couverture presse", userLanguage)
-            console.log(`[v0] Reputation analysis completed for ${upperCountryCode}`)
-          }
-
-          const isUncertainAnalysis =
-            hasInsufficientResults ||
-            hasLowQualityResults ||
-            (reputationAnalysis && reputationAnalysis.presence_score < 0.15)
-
-          if (isUncertainAnalysis) {
-            return {
-              country: getCountryName(upperCountryCode, userLanguage),
-              countryCode: upperCountryCode,
-              flag: getCountryFlag(upperCountryCode),
-              articles: [],
-              kpis: {
-                totalArticles: 0,
-                uniqueOutlets: 0,
-                pressScore: 0,
-                tonalityScore: 0,
-              },
-              gptAnalysis: getUncertaintyMessage(
-                searchQuery,
-                getCountryName(upperCountryCode, userLanguage),
-                userLanguage,
-              ),
-              isUncertain: true,
-            }
-          }
-
+          countryResults.push(result)
+        } else {
           const presenceScore = reputationAnalysis
             ? Math.round(reputationAnalysis.presence_score * 100)
             : Math.max(40, Math.floor(Math.random() * 30) + 50)
@@ -232,7 +313,7 @@ export async function POST(request: NextRequest) {
                 ? Math.floor(Math.random() * 20) - 20
                 : Math.floor(Math.random() * 20) - 10
 
-          const articles = searchResults.slice(0, 10).map((result, index) => {
+          const articles = searchResults.slice(0, 15).map((result, index) => {
             const credibilityPercentage = getSourceCredibility(result.link || "")
             return {
               id: `article-${upperCountryCode}-${index}`,
@@ -255,7 +336,7 @@ export async function POST(request: NextRequest) {
             }
           })
 
-          return {
+          const result = {
             country: getCountryName(upperCountryCode, userLanguage),
             countryCode: upperCountryCode,
             flag: getCountryFlag(upperCountryCode),
@@ -269,12 +350,18 @@ export async function POST(request: NextRequest) {
             gptAnalysis: reputationAnalysis?.summary || "Analyse en cours...",
             isUncertain: false,
           }
-        } catch (error) {
-          console.error(`[v0] Error processing ${upperCountryCode}:`, error)
-          return generateCountryFallback(upperCountryCode, searchQuery, userLanguage)
+          countryResults.push(result)
         }
-      }),
-    )
+      } catch (error) {
+        console.error(`[v0] Error processing ${upperCountryCode}:`, error)
+        countryResults.push(generateCountryFallback(upperCountryCode, searchQuery, userLanguage))
+      }
+
+      if (i < validCountries.length - 1) {
+        console.log(`[v0] Waiting 5s before processing next country...`)
+        await new Promise((resolve) => setTimeout(resolve, 5000))
+      }
+    }
 
     const allArticles = countryResults.flatMap((result) => result.articles)
     const totalUniqueOutlets = new Set(allArticles.map((a) => a.source)).size
@@ -425,19 +512,26 @@ function getCountryLanguage(countryCode: string): string {
   return languageMap[countryCode] || "en"
 }
 
-function getCountryMediaSites(countryCode: string): string {
-  const mediaSites: { [key: string]: string } = {
-    FR: "site:lemonde.fr OR site:lefigaro.fr OR site:liberation.fr OR site:lesechos.fr OR site:franceinfo.fr",
-    GB: "site:bbc.com OR site:theguardian.com OR site:telegraph.co.uk OR site:independent.co.uk",
-    US: "site:nytimes.com OR site:washingtonpost.com OR site:reuters.com OR site:bloomberg.com OR site:cnn.com",
-    DE: "site:spiegel.de OR site:zeit.de OR site:faz.net OR site:sueddeutsche.de",
-    ES: "site:elpais.com OR site:elmundo.es OR site:abc.es",
-    IT: "site:corriere.it OR site:repubblica.it OR site:gazzetta.it",
-    AE: "site:thenational.ae OR site:gulfnews.com OR site:khaleejtimes.com",
-    SA: "site:arabnews.com OR site:saudigazette.com.sa",
-    CD: "site:radiookapi.net OR site:7sur7.cd OR site:actualite.cd OR site:lepotentiel.cd OR site:mediacongo.net OR site:congoactu.net",
+function getCountryMediaSites(countryCode: string): string[] {
+  const mediaSites: { [key: string]: string[] } = {
+    FR: ["site:lemonde.fr", "site:lefigaro.fr", "site:liberation.fr", "site:lesechos.fr", "site:franceinfo.fr"],
+    GB: ["site:bbc.com", "site:theguardian.com", "site:telegraph.co.uk", "site:independent.co.uk"],
+    US: ["site:nytimes.com", "site:washingtonpost.com", "site:reuters.com", "site:bloomberg.com", "site:cnn.com"],
+    DE: ["site:spiegel.de", "site:zeit.de", "site:faz.net", "site:sueddeutsche.de"],
+    ES: ["site:elpais.com", "site:elmundo.es", "site:abc.es"],
+    IT: ["site:corriere.it", "site:repubblica.it", "site:gazzetta.it"],
+    AE: ["site:thenational.ae", "site:gulfnews.com", "site:khaleejtimes.com"],
+    SA: ["site:arabnews.com", "site:saudigazette.com.sa"],
+    CD: [
+      "site:radiookapi.net",
+      "site:7sur7.cd",
+      "site:actualite.cd",
+      "site:lepotentiel.cd",
+      "site:mediacongo.net",
+      "site:congoactu.net",
+    ],
   }
-  return mediaSites[countryCode] || "news press media"
+  return mediaSites[countryCode] || ["news", "press", "media"]
 }
 
 function isValidMediaSource(url: string): boolean {

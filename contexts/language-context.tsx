@@ -21,7 +21,7 @@ const translations = {
 
     // GMI Page
     "gmi.title": "Intelligence Marché Global",
-    "gmi.subtitle": "Découvrez votre réputation dans le monde",
+    "gmi.subtitle": "Découvrez votre réputation",
     "gmi.description":
       "Analysez votre présence digitale dans jusqu'à 5 pays simultanément et découvrez où vous avez la meilleure réputation",
     "gmi.search_title": "Recherche à analyser",
@@ -160,6 +160,23 @@ const translations = {
     "example.adidas_weaknesses": "Faiblesses Adidas",
     "example.adidas_weakness1": "Innovation perçue comme moins disruptive",
     "example.adidas_weakness2": "Présence digitale moins agressive",
+
+    // Example Section - Updated with 4 analysis types
+    "example.discover_analysis_types": "Découvrez nos 4 types d'analyses",
+    "example.analysis_types_subtitle":
+      "Chaque analyse est conçue pour répondre à un besoin spécifique de votre stratégie de réputation digitale",
+    "example.simple_analysis_title": "Analyse de Réputation",
+    "example.simple_analysis_desc":
+      "Évaluez la présence, tonalité et la cohérence d'un message ou d'une idée reliée à votre marque",
+    "example.duel_analysis_title": "Comparaison Concurrentielle",
+    "example.duel_analysis_desc": "Comparez votre image en ligne à celle de votre concurrent",
+    "example.press_analysis_title": "Couverture Médiatique",
+    "example.press_analysis_desc": "Analysez votre présence dans les médias par pays et langue",
+    "example.world_reputation_title": "Réputation Mondiale",
+    "example.world_reputation_desc": "Voyez comment vous êtes perçu sur le web à travers le monde",
+    "example.try_analysis": "Essayer cette analyse",
+    "example.choose_analysis_cta": "Choisissez le type d'analyse qui correspond à vos besoins",
+    "example.start_analysis": "Commencer une analyse",
 
     // Pricing
     "pricing.title": "Tarifs simples et transparents",
@@ -419,7 +436,7 @@ const translations = {
       "Bénéficiez de votre dashboard analytics de votre réputation en ligne en temps réel",
     "solutions.essential_metrics": "Métriques Essentielles",
     "solutions.ai_presence": "Présence IA - Visibilité dans les réponses GPT et IA",
-    "solutions.seo_presence": "Présence SEO - Positionnement moteurs de recherche",
+    "solutions.seo_presence": "Présence SEO - Positionnement sur Google et moteurs de recherche",
     "solutions.press_impact": "Impact Presse - Couverture médiatique et mentions",
     "solutions.behavioral_analysis": "Analyse Comportementale",
     "solutions.social_presence": "Présence Réseaux Sociaux - Engagement et portée",
@@ -568,7 +585,7 @@ const translations = {
 
     // GMI Page
     "gmi.title": "Global Market Intelligence",
-    "gmi.subtitle": "Discover your reputation worldwide",
+    "gmi.subtitle": "Discover your reputation",
     "gmi.description":
       "Analyze your digital presence in up to 5 countries simultaneously and discover where you have the best reputation",
     "gmi.search_title": "Search to analyze",
@@ -705,6 +722,23 @@ const translations = {
     "example.adidas_weaknesses": "Adidas Weaknesses",
     "example.adidas_weakness1": "Innovation perceived as less disruptive",
     "example.adidas_weakness2": "Less aggressive digital presence",
+
+    // Example Section - Updated with 4 analysis types
+    "example.discover_analysis_types": "Discover our 4 types of analyses",
+    "example.analysis_types_subtitle":
+      "Each analysis is designed to meet a specific need of your digital reputation strategy",
+    "example.simple_analysis_title": "Reputation Analysis",
+    "example.simple_analysis_desc":
+      "Evaluate the presence, tone and coherence of a message or idea related to your brand",
+    "example.duel_analysis_title": "Competitive Comparison",
+    "example.duel_analysis_desc": "Compare your online image to that of your competitor",
+    "example.press_analysis_title": "Media Coverage",
+    "example.press_analysis_desc": "Analyze your presence in media by country and language",
+    "example.world_reputation_title": "Global Reputation",
+    "example.world_reputation_desc": "See how you are perceived on the web around the world",
+    "example.try_analysis": "Try this analysis",
+    "example.choose_analysis_cta": "Choose the type of analysis that fits your needs",
+    "example.start_analysis": "Start an analysis",
 
     // Pricing
     "pricing.title": "Simple and transparent pricing",
@@ -1106,7 +1140,7 @@ const translations = {
 
     // GMI Page
     "gmi.title": "Inteligencia de Mercado Global",
-    "gmi.subtitle": "Descubre tu reputación en el mundo",
+    "gmi.subtitle": "Descubre tu reputación",
     "gmi.description":
       "Analiza tu presencia digital en hasta 5 países simultáneamente y descubre dónde tienes la mejor reputación",
     "gmi.search_title": "Búsqueda a analizar",
@@ -1168,7 +1202,7 @@ const translations = {
     "hero.detailed_results": "Resultados detallados en 60 segundos",
 
     // Features Section
-    "features.title": "3 puntuaciones para entender tu impacto",
+    "features.title": "3 scores para entender tu impacto",
     "features.subtitle": "Análisis completo de tu presencia digital en segundos",
     "features.presence_title": "Puntuación de presencia",
     "features.presence_subtitle": "SEO + visibilidad GPT",
@@ -1243,6 +1277,23 @@ const translations = {
     "example.adidas_weaknesses": "Debilidades Adidas",
     "example.adidas_weakness1": "Innovación percibida como menos disruptiva",
     "example.adidas_weakness2": "Presencia digital menos agresiva",
+
+    // Example Section - Updated with 4 analysis types
+    "example.discover_analysis_types": "Descubre nuestros 4 tipos de análisis",
+    "example.analysis_types_subtitle":
+      "Cada análisis está diseñado para satisfacer una necesidad específica de tu estrategia de reputación digital",
+    "example.simple_analysis_title": "Análisis de Reputación",
+    "example.simple_analysis_desc":
+      "Evalúa la presencia, tono y coherencia de un mensaje o idea relacionada con tu marca",
+    "example.duel_analysis_title": "Comparación Competitiva",
+    "example.duel_analysis_desc": "Compara tu imagen en línea con la de tu competidor",
+    "example.press_analysis_title": "Cobertura Mediática",
+    "example.press_analysis_desc": "Analiza tu presencia en los medios por país e idioma",
+    "example.world_reputation_title": "Reputación Mundial",
+    "example.world_reputation_desc": "Ve cómo eres percibido en la web alrededor del mundo",
+    "example.try_analysis": "Probar este análisis",
+    "example.choose_analysis_cta": "Elige el tipo de análisis que se adapte a tus necesidades",
+    "example.start_analysis": "Comenzar un análisis",
 
     // Pricing
     "pricing.title": "Precios simples y transparentes",
@@ -1499,7 +1550,7 @@ const translations = {
     "solutions.dashboard_analytics_title": "Dashboard Analytics - Reputación en Tiempo Real",
     "solutions.dashboard_analytics_desc":
       "Benefíciate de tu dashboard analytics de tu reputación online en tiempo real",
-    "solutions.essential_metrics": "Métricas Esenciales",
+    "solutions.essential_metrics": "Métricas Essentielles",
     "solutions.ai_presence": "Presencia IA - Visibilidad en respuestas GPT e IA",
     "solutions.seo_presence": "Presencia SEO - Posicionamiento en motores de búsqueda",
     "solutions.press_impact": "Impacto Prensa - Cobertura mediática y menciones",

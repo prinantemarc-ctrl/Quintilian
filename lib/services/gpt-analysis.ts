@@ -424,6 +424,7 @@ export async function detectHomonyms(
   brand: string,
   language: string,
   presentationLanguage?: string,
+  countries?: string[],
 ): Promise<{
   requires_identity_selection: boolean
   identified_entities: string[]
@@ -433,7 +434,8 @@ export async function detectHomonyms(
 
   const responseLanguage = presentationLanguage || language
 
-  if (searchResults.length < 3) {
+  if (searchResults.length < 1) {
+    // lowered threshold from 3 to 1
     console.log("[v0] Not enough search results for homonym detection")
     return {
       requires_identity_selection: false,
@@ -446,7 +448,8 @@ export async function detectHomonyms(
     searchResults: searchResults.slice(0, 10),
     brand,
     language,
-    presentationLanguage: responseLanguage, // Include in cache key
+    presentationLanguage: responseLanguage,
+    countries: countries?.sort() || [], // Sort to ensure consistent cache key
     type: "homonym-detection",
   }
 
@@ -465,13 +468,15 @@ export async function detectHomonyms(
 
         const searchContext = searchResults
           .slice(0, 10)
-          .map((item, index) => `${index + 1}. **${item.title}**\\n   ${item.snippet}\\n   Source: ${item.link}`)
-          .join("\\n\\n")
+          .map((item, index) => `${index + 1}. **${item.title}**\n   ${item.snippet}\n   Source: ${item.link}`)
+          .join("\n\n")
 
-        const prompt = `Tu es un expert en analyse d'entités nommées. Analyse les résultats Google suivants pour "${brand}" et détermine s'il y a plusieurs identités distinctes (homonymies).
+        const prompt = `Tu es un expert en analyse d'entités nommées multilingue. Analyse les résultats Google suivants pour "${brand}" et détermine s'il y a plusieurs identités distinctes (homonymies).
 
-**Résultats Google à analyser (sources en ${language}):**
+**Résultats Google à analyser (sources multilingues):**
 ${searchContext}
+
+**IMPORTANT:** Ces résultats proviennent de recherches dans plusieurs pays/langues. Tu dois identifier les entités distinctes quelle que soit la langue des résultats.
 
 **Ta mission:**
 Détermine si "${brand}" fait référence à plusieurs personnes, entreprises ou entités distinctes dans ces résultats.
@@ -481,11 +486,14 @@ Détermine si "${brand}" fait référence à plusieurs personnes, entreprises ou
 - Différentes entreprises/organisations avec des noms similaires
 - Contextes géographiques ou sectoriels très différents
 - Mentions d'âges, professions, ou localisations contradictoires
+- Entités dans différentes langues/pays qui sont distinctes
 
 **Instructions:**
 - Si tu détectes clairement 2+ identités distinctes, réponds "OUI"
 - Si tous les résultats semblent parler de la même entité, réponds "NON"
 - En cas de doute, privilégie "NON"
+- Identifie les entités dans TOUTES les langues présentes dans les résultats
+- Décris chaque entité de manière claire et distinctive
 
 **Format de réponse JSON:**
 {

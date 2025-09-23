@@ -17,12 +17,18 @@ export interface SearchOptions {
 export async function searchGoogle(query: string, options: SearchOptions): Promise<GoogleSearchResult[]> {
   console.log("[v0] Starting Google search for:", query, options.country ? `(Country: ${options.country})` : "")
 
+  const sanitizedQuery = sanitizeSearchQuery(query)
+  if (!sanitizedQuery) {
+    console.log("[v0] Invalid or empty query after sanitization, using fallback")
+    return generateFallbackResults(options.country)
+  }
+
   const maxRetries = 3
   const baseDelay = 1000 // 1 second
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const apiKey = "AIzaSyAeDFbXJiE-KxRm867_XluumQOg51UknC0"
+      const apiKey = process.env.GOOGLE_API_KEY
       const cseId = process.env.GOOGLE_CSE_CX
 
       console.log("[v0] Using Google API key:", apiKey ? `${apiKey.substring(0, 10)}...` : "NOT FOUND")
@@ -33,14 +39,18 @@ export async function searchGoogle(query: string, options: SearchOptions): Promi
         return generateFallbackResults(options.country)
       }
 
-      let url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cseId}&q=${encodeURIComponent(query)}&num=${options.maxResults || 10}`
+      let url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cseId}&q=${encodeURIComponent(sanitizedQuery)}&num=${options.maxResults || 10}`
 
       if (options.country && options.country.length === 2) {
         const countryCode = options.country.toLowerCase()
-        url += `&gl=${countryCode}`
+        if (["fr", "us", "gb", "de", "es", "it", "ca", "au"].includes(countryCode)) {
+          url += `&gl=${countryCode}`
+        }
       }
 
       console.log("[v0] Making Google API request with geolocation:", options.country || "global")
+      console.log("[v0] Sanitized query:", sanitizedQuery)
+      console.log("[v0] Full URL (without key):", url.replace(apiKey, "***"))
 
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 15000) // Increased timeout
@@ -86,6 +96,48 @@ export async function searchGoogle(query: string, options: SearchOptions): Promi
   }
 
   return generateFallbackResults(options.country)
+}
+
+function sanitizeSearchQuery(query: string): string {
+  if (!query || typeof query !== "string") {
+    return ""
+  }
+
+  let sanitized = query.trim().replace(/\s+/g, " ")
+
+  // Truncate if too long
+  if (sanitized.length > 200) {
+    const words = sanitized.split(" ")
+    let truncated = ""
+    for (const word of words) {
+      if ((truncated + " " + word).length > 200) break
+      truncated += (truncated ? " " : "") + word
+    }
+    sanitized = truncated || words[0]
+  }
+
+  // Remove problematic characters but preserve Google operators
+  // Keep: letters, numbers, spaces, hyphens, periods, apostrophes, quotes, colons, parentheses
+  sanitized = sanitized.replace(/[^\w\s\-.'":()]/g, " ")
+
+  // Clean up multiple spaces
+  sanitized = sanitized.replace(/\s+/g, " ").trim()
+
+  // Fix broken site operators (site : domain -> site:domain)
+  sanitized = sanitized.replace(/site\s*:\s*/gi, "site:")
+
+  // Remove orphaned site: operators (site: without domain)
+  sanitized = sanitized.replace(/site:\s*(?=\s|$)/gi, "")
+
+  // Final cleanup
+  sanitized = sanitized.replace(/\s+/g, " ").trim()
+
+  if (sanitized.length < 2) {
+    return ""
+  }
+
+  console.log("[v0] Query sanitization:", query, "->", sanitized)
+  return sanitized
 }
 
 function generateFallbackResults(country?: string): GoogleSearchResult[] {
@@ -160,7 +212,6 @@ function generateFallbackResults(country?: string): GoogleSearchResult[] {
     ],
   }
 
-  // Get country-specific sources or default to generic ones
   const sources = countrySpecificSources[country || ""] || [
     {
       title: "Patrick Muyaya - Communications Minister",
@@ -174,9 +225,8 @@ function generateFallbackResults(country?: string): GoogleSearchResult[] {
     },
   ]
 
-  // Return 2-3 random sources from the country-specific list
   const shuffled = sources.sort(() => 0.5 - Math.random())
-  return shuffled.slice(0, Math.floor(Math.random() * 2) + 2) // 2-3 results
+  return shuffled.slice(0, Math.floor(Math.random() * 2) + 2)
 }
 
 export function formatSearchResultsForAnalysis(results: GoogleSearchResult[]): string {

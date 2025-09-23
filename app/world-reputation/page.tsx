@@ -166,10 +166,10 @@ export default function WorldReputationPage() {
           <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-4">
             {t("gmi.subtitle")}{" "}
             <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              {t("gmi.subtitle").includes("monde")
+              {t("gmi.subtitle") === "Découvrez votre réputation"
                 ? "dans le monde"
-                : t("gmi.subtitle").includes("worldwide")
-                  ? "worldwide"
+                : t("gmi.subtitle") === "Discover your reputation"
+                  ? "in the world"
                   : "en el mundo"}
             </span>
           </h1>

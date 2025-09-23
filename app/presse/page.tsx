@@ -18,7 +18,9 @@ import {
   Bot,
   AlertTriangle,
   RefreshCw,
+  Edit3,
 } from "lucide-react"
+import { Textarea } from "@/components/ui/textarea" // Added Textarea component
 
 const AVAILABLE_COUNTRIES = [
   { code: "FR", name: "France", flag: "🇫🇷" },
@@ -57,7 +59,7 @@ interface EntityOption {
   id: string
   name: string
   description: string
-  type: "company" | "person" | "location" | "organization"
+  type: "company" | "person" | "location" | "organization" | "entity" // Added 'entity' type
   context: string
 }
 
@@ -100,6 +102,9 @@ export default function PressePage() {
   const [selectedEntity, setSelectedEntity] = useState<EntityOption | null>(null)
   const [disambiguationLoading, setDisambiguationLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const [customEntity, setCustomEntity] = useState("")
+  const [showCustomInput, setShowCustomInput] = useState(false)
 
   useEffect(() => {
     if (data) {
@@ -184,6 +189,21 @@ export default function PressePage() {
       DE: 5,
       ES: 4,
     },
+  }
+
+  const handleCustomEntitySubmit = () => {
+    if (customEntity.trim()) {
+      const customEntityOption: EntityOption = {
+        id: "custom-entity",
+        name: customEntity.trim(),
+        description: customEntity.trim(),
+        type: "entity" as const,
+        context: "Entité personnalisée saisie manuellement",
+      }
+      handleEntitySelection(customEntityOption)
+      setCustomEntity("")
+      setShowCustomInput(false)
+    }
   }
 
   // Added disambiguation handler
@@ -610,6 +630,51 @@ export default function PressePage() {
                   </Button>
                 ))}
               </div>
+
+              <div className="mt-6 pt-4 border-t">
+                {!showCustomInput ? (
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowCustomInput(true)}
+                    className="w-full flex items-center gap-2"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    Préciser manuellement ce que je cherche
+                  </Button>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Edit3 className="w-4 h-4 text-primary" />
+                      <p className="font-medium">Précisez ce que vous cherchez :</p>
+                    </div>
+                    <Textarea
+                      placeholder="Ex: Aleria AI, entreprise d'intelligence artificielle, startup tech..."
+                      value={customEntity}
+                      onChange={(e) => setCustomEntity(e.target.value)}
+                      className="min-h-[80px]"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Soyez précis : nom de l'entreprise, secteur d'activité, localisation, etc.
+                    </p>
+                    <div className="flex gap-2">
+                      <Button onClick={handleCustomEntitySubmit} disabled={!customEntity.trim()} size="sm">
+                        Rechercher cette entité
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setShowCustomInput(false)
+                          setCustomEntity("")
+                        }}
+                      >
+                        Annuler
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="mt-4 pt-4 border-t">
                 <Button
                   variant="ghost"
