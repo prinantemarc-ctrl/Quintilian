@@ -1,6 +1,5 @@
 import { generateText } from "ai"
 import { openai } from "@ai-sdk/openai"
-import { EnhancedScoringEngine } from "./enhanced-scoring"
 
 export interface AnalysisScores {
   presence_score: number
@@ -19,8 +18,6 @@ export interface DetailedAnalysis extends AnalysisScores {
   tone_details?: string
   coherence_details?: string
 }
-
-const scoringEngine = new EnhancedScoringEngine()
 
 export async function analyzeGoogleResults(
   searchResults: any[],
@@ -151,7 +148,7 @@ export async function generateDetailedAnalysis(
     const prompt =
       analysisType === "duel"
         ? generateDuelAnalysisPrompt(brand, message, googleContent, language, responseLanguage)
-        : generateEnhancedSingleAnalysisPrompt(brand, message, googleContent, language, responseLanguage)
+        : generateSingleAnalysisPrompt(brand, message, googleContent, language, responseLanguage)
 
     const { text } = await generateText({
       model: openai("gpt-4o-mini"),
@@ -167,30 +164,21 @@ export async function generateDetailedAnalysis(
     }
 
     const parsedAnalysis = JSON.parse(cleanedText)
-
-    const enhancedAnalysis = await scoringEngine.enhanceAnalysis(parsedAnalysis, {
-      brand,
-      message,
-      googleResults,
-      language,
-      analysisType,
-    })
-
-    return normalizeAnalysisResponse(enhancedAnalysis)
+    return normalizeAnalysisResponse(parsedAnalysis)
   } catch (error) {
     console.error(`[v0] Detailed analysis error for ${brand}:`, error)
     return generateFallbackAnalysis()
   }
 }
 
-function generateEnhancedSingleAnalysisPrompt(
+function generateSingleAnalysisPrompt(
   brand: string,
   message: string,
   googleContent: string,
   language: string,
   responseLanguage: string,
 ): string {
-  return `Tu es un expert en analyse de réputation digitale avec des standards EXTRÊMEMENT ÉLEVÉS. Tu dois être IMPITOYABLE dans ton évaluation et ÉVITER ABSOLUMENT la zone 70-85 qui est trop moyenne.
+  return `Tu es un expert en analyse de réputation digitale. Compare l'analyse GPT indépendante avec les résultats Google pour évaluer "${brand}" selon 3 dimensions précises.
 
 **Message original:** "${message}"
 **Sources analysées:** Principalement en ${language}
@@ -198,45 +186,27 @@ function generateEnhancedSingleAnalysisPrompt(
 **Résultats Google (${googleContent.split("\\n\\n").length} sources) :**
 ${googleContent}
 
-**BARÈME DISCRIMINANT - SOIS RADICAL DANS TES SCORES:**
+**ÉVALUATION REQUISE - 3 DIMENSIONS CLÉS:**
 
-1. **PRÉSENCE DIGITALE** (presence_score 0-100):
-   - 90-100: Omniprésence exceptionnelle, leader incontournable
-   - 60-89: Présence notable mais pas dominante  
-   - 30-59: Présence faible, difficile à trouver
-   - 0-29: Quasi-invisible, inexistant digitalement
+1. **PRÉSENCE DIGITALE** (presence_score 0-100): Le sujet est-il facilement trouvable dans les résultats de recherche ? Évalue le volume, la qualité et la visibilité des mentions trouvées sur Google.
 
-2. **SENTIMENT GLOBAL** (tone_score 0-100):
-   - 90-100: Réputation exceptionnelle, unanimement admiré
-   - 60-89: Perception positive mais avec nuances
-   - 30-59: Perception mitigée, controverses notables
-   - 0-29: Réputation dégradée, perception négative
+2. **SENTIMENT GLOBAL** (tone_score 0-100): Que pensent globalement les gens de lui ? Qu'est-ce qui ressort : du positif ou du négatif ? Analyse le sentiment général qui se dégage des résultats Google et de ton analyse.
 
-3. **COHÉRENCE DU MESSAGE** (coherence_score 0-100):
-   - 90-100: Message parfaitement aligné avec la réalité
-   - 60-89: Cohérence correcte avec quelques écarts
-   - 30-59: Décalage notable entre message et réalité
-   - 0-29: Message complètement déconnecté de la réalité
-
-**RÈGLES IMPÉRATIVES:**
-- INTERDICTION FORMELLE de donner des scores entre 70-85
-- Si tu hésites entre deux zones, choisis TOUJOURS la plus basse
-- Justifie CHAQUE score avec des exemples précis
-- Sois SANS PITIÉ dans ton évaluation
-- Force la différenciation, évite les profils moyens
+3. **COHÉRENCE DU MESSAGE** (coherence_score 0-100): Le message entré par l'utilisateur correspond-il à l'image numérique du sujet ? Compare le message original avec ce qui ressort réellement des recherches.
 
 **RÉPONSE JSON REQUISE:**
 - presence_score (0-100): Score de présence digitale
-- tone_score (0-100): Score de sentiment 
-- coherence_score (0-100): Score de cohérence message/réalité
+- tone_score (0-100): Score de sentiment (0=très négatif, 50=neutre, 100=très positif)
+- coherence_score (0-100): Score de cohérence message/réalité digitale
 - tone_label: "très négatif", "négatif", "neutre", "positif", ou "très positif"
-- rationale: Justification IMPITOYABLE des 3 scores avec exemples concrets (4-5 phrases)
+- rationale: Justification détaillée des 3 scores avec exemples concrets (4-5 phrases)
 - google_summary: Résumé de ce que révèlent les résultats Google
 - gpt_summary: Ton analyse indépendante de cette entité
-- structured_conclusion: Conclusion en markdown (250-350 mots) structurée autour des 3 dimensions
+- structured_conclusion: Conclusion en markdown (250-350 mots) structurée autour des 3 dimensions avec recommandations
 - detailed_analysis: Analyse approfondie en markdown (400-500 mots) qui détaille chaque dimension
 
-Écris en ${responseLanguage}. Réponds uniquement avec du JSON valide, sans balises markdown.`
+Concentre-toi exclusivement sur ces 3 dimensions. Sois précis, factuel et actionnable. Écris en ${responseLanguage}.
+Réponds uniquement avec du JSON valide, sans balises markdown.`
 }
 
 function generateDuelAnalysisPrompt(
@@ -314,7 +284,7 @@ export async function analyzeReputation(
   searchResults: any[],
   query: string,
   context = "",
-  presentationLanguage = "fr",
+  presentationLanguage = "fr", // Renamed from userLanguage to presentationLanguage for clarity
 ): Promise<{
   score: number
   sentiment: string
@@ -342,20 +312,13 @@ export async function analyzeReputation(
       es: "Responde en español",
     }
 
-    const prompt = `Tu es un expert en analyse de réputation avec des standards EXTRÊMEMENT ÉLEVÉS. Analyse les résultats de recherche suivants concernant "${query}" ${context ? `dans le contexte de ${context}` : ""}.
+    const prompt = `Tu es un expert en analyse de réputation. Analyse les résultats de recherche suivants concernant "${query}" ${context ? `dans le contexte de ${context}` : ""}.
 
 **Résultats à analyser:**
 ${searchContext}
 
-**BARÈME DISCRIMINANT - ÉVITE LA ZONE 6-8:**
-- 9-10: Réputation exceptionnelle, référence absolue
-- 5-8: Réputation correcte mais perfectible
-- 2-4: Réputation problématique, risques identifiés  
-- 0-1: Réputation catastrophique, crise majeure
-
 **Instructions:**
-- Évalue la réputation sur une échelle de 0 à 10 avec des standards ÉLEVÉS
-- ÉVITE ABSOLUMENT la zone 6-8 qui est trop moyenne
+- Évalue la réputation sur une échelle de 0 à 10
 - Détermine le sentiment général (positive, negative, neutral, mixed)
 - Identifie 3-4 sujets clés qui ressortent
 - Signale les facteurs de risque potentiels
@@ -388,29 +351,13 @@ Réponds uniquement avec du JSON valide, sans formatage markdown.`
     }
 
     const analysis = JSON.parse(cleanedText)
-
-    const scoringContext = {
-      google_results_count: searchResults.length,
-      google_results_quality: searchResults.length > 0 ? 75 : 25,
-      temporal_distribution: [0, 0, 0, 0],
-      source_diversity: Math.min(
-        100,
-        (new Set(searchResults.map((r) => (r.link ? new URL(r.link).hostname : "unknown"))).size /
-          Math.max(1, searchResults.length)) *
-          100,
-      ),
-      content_consistency: 70,
-    }
-
-    const enhancedScore = EnhancedScoringEngine.applyDiscriminantCurve(analysis.score || 6.5, scoringContext)
-
     return {
-      score: enhancedScore,
+      score: analysis.score || 6.5,
       sentiment: analysis.sentiment || "neutral",
       summary: analysis.summary || "Analyse non disponible",
       keyTopics: analysis.keyTopics || [],
       riskFactors: analysis.riskFactors || [],
-      presence_score: analysis.presence_score || enhancedScore / 10,
+      presence_score: analysis.presence_score || analysis.score / 10,
     }
   } catch (error) {
     console.error("[v0] Reputation analysis error:", error)

@@ -197,6 +197,37 @@ export async function POST(request: NextRequest) {
     console.log("[v0] Analysis completed successfully in", processingTime, "ms")
     logApiResponse("ANALYZE", true, processingTime)
 
+    const fullResponseText = `ANALYSE DE MARQUE: ${brand}
+
+SCORES:
+- Présence digitale: ${detailedAnalysis.presence_score}/10
+- Tonalité: ${detailedAnalysis.tone_score}/10 (${detailedAnalysis.tone_label})
+- Cohérence: ${detailedAnalysis.coherence_score}/10
+
+RATIONALE:
+${detailedAnalysis.rationale}
+
+RÉSUMÉ GOOGLE:
+${googleSummary}
+
+ANALYSE GPT:
+${gptSummary}
+
+CONCLUSION STRUCTURÉE:
+${detailedAnalysis.structured_conclusion}
+
+ANALYSE DÉTAILLÉE:
+${detailedAnalysis.detailed_analysis}
+
+SOURCES:
+${sources.map((source, index) => `${index + 1}. ${source.title} - ${source.link}`).join("\n")}
+
+---
+Analyse générée le ${new Date().toLocaleString("fr-FR")}
+Temps de traitement: ${processingTime}ms
+Résultats Google: ${searchResults.length}
+`
+
     try {
       await logger.logSearch({
         type: "analyze",
@@ -213,12 +244,12 @@ export async function POST(request: NextRequest) {
         user_agent: request.headers.get("user-agent") || "",
         ip_address: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || undefined,
         identity: selected_identity || undefined,
+        full_response_text: fullResponseText,
         ...(user && { user_id: user.id }),
       })
       console.log("[v0] Search logged successfully for user:", user?.id || "anonymous")
     } catch (logError) {
       console.error("[v0] Failed to log search:", logError)
-      // Don't fail the request if logging fails
     }
 
     return createSuccessResponse(response, { processingTime })
@@ -239,6 +270,11 @@ export async function POST(request: NextRequest) {
         user_agent: request.headers.get("user-agent") || "",
         ip_address: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || undefined,
         error: error instanceof Error ? error.message : "Unknown error",
+        full_response_text: `ERREUR D'ANALYSE: ${body?.brand || "unknown"}
+
+Erreur: ${error instanceof Error ? error.message : "Unknown error"}
+Temps de traitement: ${processingTime}ms
+Date: ${new Date().toLocaleString("fr-FR")}`,
         ...(user && { user_id: user.id }),
       })
     } catch (logError) {

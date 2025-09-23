@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
             countryCode: upperCountryCode,
             flag: getCountryFlag(upperCountryCode),
             presence: analysis.presence_score,
-            sentiment: analysis.tone_score >= 60 ? "positive" : analysis.tone_score >= 40 ? "neutral" : "negative",
+            sentiment: analysis.tone_score,
             globalScore: Math.round((analysis.presence_score + analysis.tone_score) / 2),
             analysis: analysis.rationale,
             presenceRationale:
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
       countryResults.reduce((sum, result) => sum + result.globalScore, 0) / countryResults.length,
     )
 
-    const globalAnalysis = `${query} présente une réputation ${getDiscriminantScoreLabel(averageScore)} à l'international avec un score moyen de ${averageScore}/100 sur ${countryResults.length} pays analysés. L'analyse se base sur la présence digitale et le sentiment. ${bestCountry.country} représente le marché le plus favorable (${bestCountry.globalScore}/100) tandis que ${worstCountry.country} offre des opportunités d'amélioration (${worstCountry.globalScore}/100).`
+    const globalAnalysis = `${query} présente une réputation ${getScoreLabel(averageScore)} à l'international avec un score moyen de ${averageScore}/100 sur ${countryResults.length} pays analysés. L'analyse se base sur la présence digitale et le sentiment. ${bestCountry.country} représente le marché le plus favorable (${bestCountry.globalScore}/100) tandis que ${worstCountry.country} offre des opportunités d'amélioration (${worstCountry.globalScore}/100).`
 
     const processingTime = Date.now() - startTime
     console.log(`[v0] GMI Analysis completed in ${processingTime}ms`)
@@ -284,18 +284,16 @@ function getCountryLanguage(countryCode: string): string {
   return languageMap[countryCode] || "en"
 }
 
-function getDiscriminantScoreLabel(score: number): string {
-  if (score >= 90) {
-    return "exceptionnelle"
-  } else if (score >= 60) {
-    return "correcte"
-  } else if (score >= 30) {
-    return "problématique"
-  } else {
-    return "catastrophique"
-  }
-}
-
 function getScoreLabel(score: number): string {
-  return getDiscriminantScoreLabel(score)
+  if (score >= 85) {
+    return "excellente"
+  } else if (score >= 70) {
+    return "bonne"
+  } else if (score >= 55) {
+    return "moyenne"
+  } else if (score >= 40) {
+    return "mauvaise"
+  } else {
+    return "très mauvaise"
+  }
 }

@@ -11,7 +11,8 @@ import { Switch } from "@/components/ui/switch"
 import { AnalyticsCharts } from "@/components/admin/analytics-charts"
 import { AdvancedFilters } from "@/components/admin/advanced-filters"
 import { GeographicAnalysis } from "@/components/admin/geographic-analysis"
-import { AlertTriangle, Home, Moon, Sun, Activity, Globe, BarChart3, Database, Users, Zap } from "lucide-react"
+import { AlertTriangle, Home, Moon, Sun, Activity, Globe, BarChart3, Database, Users, Zap, Eye } from "lucide-react"
+import { SearchDetailsModal } from "@/components/admin/search-details-modal"
 
 interface SearchLog {
   id: string
@@ -417,6 +418,17 @@ export default function AdminPage() {
                       <div className="text-right text-sm text-muted-foreground">
                         <p>{new Date(log.timestamp).toLocaleString("fr-FR")}</p>
                         <p className="font-medium">{log.results.processing_time.toFixed(1)}s</p>
+                        <SearchDetailsModal
+                          searchId={log.id}
+                          query={log.query}
+                          type={log.type}
+                          timestamp={log.timestamp}
+                        >
+                          <Button variant="outline" size="sm" className="mt-2 bg-transparent">
+                            <Eye className="h-4 w-4 mr-2" />
+                            Détails
+                          </Button>
+                        </SearchDetailsModal>
                       </div>
                     </div>
 

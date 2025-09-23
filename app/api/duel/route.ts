@@ -4,7 +4,7 @@ import { generateText } from "ai"
 import { openai } from "@ai-sdk/openai"
 import { DuelAnalysisSchema } from "@/lib/schemas/api-validation"
 import { searchGoogle } from "@/lib/services/google-search"
-import { generateDetailedAnalysis, forceDuelDifferentiation } from "@/lib/services/gpt-analysis"
+import { generateDetailedAnalysis } from "@/lib/services/gpt-analysis"
 import {
   createSuccessResponse,
   createValidationErrorResponse,
@@ -12,7 +12,8 @@ import {
   logApiRequest,
   logApiResponse,
 } from "@/lib/utils/api-response"
-import { logger } from "@/lib/services/logger" // Ensure logger is imported
+import { logger } from "@/lib/logger" // Updated import path
+import { createClient } from "@/lib/supabase/server" // Added Supabase client for user auth
 
 async function generateComparison(
   brand1: string,
@@ -28,50 +29,37 @@ async function generateComparison(
 }> {
   console.log("[v0] Starting comparison generation")
 
-  const [adjustedBrand1Analysis, adjustedBrand2Analysis] = forceDuelDifferentiation(
-    brand1Analysis,
-    brand2Analysis,
-    brand1,
-    brand2,
-  )
-
   const brand1GlobalScore = Math.round(
-    (adjustedBrand1Analysis.presence_score +
-      adjustedBrand1Analysis.tone_score +
-      adjustedBrand1Analysis.coherence_score) /
-      3,
+    (brand1Analysis.presence_score + brand1Analysis.tone_score + brand1Analysis.coherence_score) / 3,
   )
   const brand2GlobalScore = Math.round(
-    (adjustedBrand2Analysis.presence_score +
-      adjustedBrand2Analysis.tone_score +
-      adjustedBrand2Analysis.coherence_score) /
-      3,
+    (brand2Analysis.presence_score + brand2Analysis.tone_score + brand2Analysis.coherence_score) / 3,
   )
 
   const scoreDiff = Math.abs(brand1GlobalScore - brand2GlobalScore)
-  const winner = brand1GlobalScore > brand2GlobalScore ? brand1 : brand2
+  let winner = brand1GlobalScore > brand2GlobalScore ? brand1 : brand2
 
-  console.log(
-    `[v0] Forced differentiation applied: ${brand1} (${brand1GlobalScore}) vs ${brand2} (${brand2GlobalScore})`,
-  )
+  if (scoreDiff <= 3) {
+    winner = "Match nul"
+  }
 
   const prompt = `Tu es un expert en analyse comparative. Compare "${brand1}" et "${brand2}" concernant "${message}" en ${language}.
 
 DONNÉES D'ANALYSE :
 
 **${brand1}** (Score global: ${brand1GlobalScore}/100) :
-- Présence digitale : ${adjustedBrand1Analysis.presence_score}/100 (${adjustedBrand1Analysis.presence_details})
-- Sentiment : ${adjustedBrand1Analysis.tone_score}/100 (${adjustedBrand1Analysis.tone_details}) (${adjustedBrand1Analysis.tone_label})
-- Cohérence : ${adjustedBrand1Analysis.coherence_score}/100 (${adjustedBrand1Analysis.coherence_details})
-- Résumé Google : ${adjustedBrand1Analysis.google_summary}
-- Résumé GPT : ${adjustedBrand1Analysis.gpt_summary}
+- Présence digitale : ${brand1Analysis.presence_score}/100 (${brand1Analysis.presence_details})
+- Sentiment : ${brand1Analysis.tone_score}/100 (${brand1Analysis.tone_details}) (${brand1Analysis.tone_label})
+- Cohérence : ${brand1Analysis.coherence_score}/100 (${brand1Analysis.coherence_details})
+- Résumé Google : ${brand1Analysis.google_summary}
+- Résumé GPT : ${brand1Analysis.gpt_summary}
 
 **${brand2}** (Score global: ${brand2GlobalScore}/100) :
-- Présence digitale : ${adjustedBrand2Analysis.presence_score}/100 (${adjustedBrand2Analysis.presence_details})
-- Sentiment : ${adjustedBrand2Analysis.tone_score}/100 (${adjustedBrand2Analysis.tone_details}) (${adjustedBrand2Analysis.tone_label})
-- Cohérence : ${adjustedBrand2Analysis.coherence_score}/100 (${adjustedBrand2Analysis.coherence_details})
-- Résumé Google : ${adjustedBrand2Analysis.google_summary}
-- Résumé GPT : ${adjustedBrand2Analysis.gpt_summary}
+- Présence digitale : ${brand2Analysis.presence_score}/100 (${brand2Analysis.presence_details})
+- Sentiment : ${brand2Analysis.tone_score}/100 (${brand2Analysis.tone_details}) (${brand2Analysis.tone_label})
+- Cohérence : ${brand2Analysis.coherence_score}/100 (${brand2Analysis.coherence_details})
+- Résumé Google : ${brand2Analysis.google_summary}
+- Résumé GPT : ${brand2Analysis.gpt_summary}
 
 Crée une comparaison détaillée en format Markdown avec :
 
@@ -118,7 +106,11 @@ Sois DIRECT et FACTUEL dans ta comparaison.`
     return {
       detailed_comparison: text,
       winner,
-      summary: `${brand1} (${brand1GlobalScore}/100) vs ${brand2} (${brand2GlobalScore}/100). ${winner} l'emporte avec ${scoreDiff} points d'avance.`,
+      summary: `${brand1} (${brand1GlobalScore}/100) vs ${brand2} (${brand2GlobalScore}/100). ${
+        winner === "Match nul"
+          ? "Scores très proches, match nul !"
+          : `${winner} l'emporte avec ${scoreDiff} points d'avance.`
+      }`,
     }
   } catch (error) {
     console.log("[v0] Comparison generation failed:", error)
@@ -135,9 +127,22 @@ export async function POST(request: NextRequest) {
   logApiRequest("DUEL", {})
 
   let body: any
+  let user: any = null // Added user variable for authentication
+
   try {
     body = await request.json()
     logApiRequest("DUEL", body)
+
+    try {
+      const supabase = await createClient()
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser()
+      user = authUser
+      console.log("[v0] User authenticated:", user?.id || "anonymous")
+    } catch (error) {
+      console.log("[v0] User not authenticated, continuing as anonymous")
+    }
 
     const { brand1, brand2, message, language, country } = DuelAnalysisSchema.parse(body)
 
@@ -177,29 +182,16 @@ export async function POST(request: NextRequest) {
 
     const comparison = await generateComparison(brand1, brand1Analysis, brand2, brand2Analysis, message, language)
 
-    const [adjustedBrand1Analysis, adjustedBrand2Analysis] = forceDuelDifferentiation(
-      brand1Analysis,
-      brand2Analysis,
-      brand1,
-      brand2,
-    )
-
     const brand1GlobalScore = Math.round(
-      (adjustedBrand1Analysis.presence_score +
-        adjustedBrand1Analysis.tone_score +
-        adjustedBrand1Analysis.coherence_score) /
-        3,
+      (brand1Analysis.presence_score + brand1Analysis.tone_score + brand1Analysis.coherence_score) / 3,
     )
     const brand2GlobalScore = Math.round(
-      (adjustedBrand2Analysis.presence_score +
-        adjustedBrand2Analysis.tone_score +
-        adjustedBrand2Analysis.coherence_score) /
-        3,
+      (brand2Analysis.presence_score + brand2Analysis.tone_score + brand2Analysis.coherence_score) / 3,
     )
 
     const result = {
       brand1_analysis: {
-        ...adjustedBrand1Analysis,
+        ...brand1Analysis,
         global_score: brand1GlobalScore,
         sources: brand1Results.slice(0, 5).map((item) => ({
           title: item.title || "Sans titre",
@@ -207,7 +199,7 @@ export async function POST(request: NextRequest) {
         })),
       },
       brand2_analysis: {
-        ...adjustedBrand2Analysis,
+        ...brand2Analysis,
         global_score: brand2GlobalScore,
         sources: brand2Results.slice(0, 5).map((item) => ({
           title: item.title || "Sans titre",
@@ -226,6 +218,52 @@ export async function POST(request: NextRequest) {
     console.log(`[v0] Winner: ${comparison.winner}`)
     console.log(`[v0] Scores: ${brand1} (${brand1GlobalScore}) vs ${brand2} (${brand2GlobalScore})`)
 
+    const fullResponseText = `DUEL COMPARATIF: ${brand1} vs ${brand2}
+
+VERDICT FINAL: ${comparison.winner}
+${comparison.summary}
+
+SCORES DÉTAILLÉS:
+
+${brand1}:
+- Présence digitale: ${brand1Analysis.presence_score}/10
+- Tonalité: ${brand1Analysis.tone_score}/10 (${brand1Analysis.tone_label})
+- Cohérence: ${brand1Analysis.coherence_score}/10
+- Score global: ${brand1GlobalScore}/10
+
+${brand2}:
+- Présence digitale: ${brand2Analysis.presence_score}/10
+- Tonalité: ${brand2Analysis.tone_score}/10 (${brand2Analysis.tone_label})
+- Cohérence: ${brand2Analysis.coherence_score}/10
+- Score global: ${brand2GlobalScore}/10
+
+ANALYSE DÉTAILLÉE ${brand1}:
+${brand1Analysis.detailed_analysis}
+
+ANALYSE DÉTAILLÉE ${brand2}:
+${brand2Analysis.detailed_analysis}
+
+COMPARAISON COMPLÈTE:
+${comparison.detailed_comparison}
+
+SOURCES ${brand1}:
+${brand1Results
+  .slice(0, 5)
+  .map((source, index) => `${index + 1}. ${source.title} - ${source.link}`)
+  .join("\n")}
+
+SOURCES ${brand2}:
+${brand2Results
+  .slice(0, 5)
+  .map((source, index) => `${index + 1}. ${source.title} - ${source.link}`)
+  .join("\n")}
+
+---
+Duel généré le ${new Date().toLocaleString("fr-FR")}
+Temps de traitement: ${processingTime}ms
+Résultats Google: ${brand1Results.length + brand2Results.length}
+`
+
     try {
       await logger.logSearch({
         type: "duel",
@@ -237,12 +275,14 @@ export async function POST(request: NextRequest) {
           presence_score: (brand1Analysis.presence_score + brand2Analysis.presence_score) / 2,
           sentiment_score: (brand1Analysis.tone_score + brand2Analysis.tone_score) / 2,
           coherence_score: (brand1Analysis.coherence_score + brand2Analysis.coherence_score) / 2,
-          processing_time: processingTime,
+          processing_time: processingTime / 1000, // Convert to seconds
           google_results_count: brand1Results.length + brand2Results.length,
           openai_tokens_used: undefined,
         },
         user_agent: request.headers.get("user-agent") || "",
         ip_address: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || undefined,
+        full_response_text: fullResponseText, // Added full response text
+        ...(user && { user_id: user.id }), // Added user_id if authenticated
       })
     } catch (logError) {
       console.error("[v0] Failed to log search:", logError)
@@ -262,12 +302,18 @@ export async function POST(request: NextRequest) {
         brand2: body?.brand2,
         language: body?.language || "fr",
         results: {
-          processing_time: processingTime,
+          processing_time: processingTime / 1000, // Convert to seconds
           google_results_count: 0,
         },
         user_agent: request.headers.get("user-agent") || "",
         ip_address: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || undefined,
         error: error instanceof Error ? error.message : "Unknown error",
+        full_response_text: `ERREUR DE DUEL: ${body?.brand1 || "unknown"} vs ${body?.brand2 || "unknown"}
+
+Erreur: ${error instanceof Error ? error.message : "Unknown error"}
+Temps de traitement: ${processingTime}ms
+Date: ${new Date().toLocaleString("fr-FR")}`, // Added full response text for errors
+        ...(user && { user_id: user.id }), // Added user_id if authenticated
       })
     } catch (logError) {
       console.error("[v0] Failed to log error:", logError)

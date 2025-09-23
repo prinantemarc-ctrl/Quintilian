@@ -39,8 +39,7 @@ export async function searchGoogle(query: string, options: SearchOptions): Promi
         return generateFallbackResults(options.country)
       }
 
-      const numResults = Math.min(options.maxResults || 10, 10)
-      let url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cseId}&q=${encodeURIComponent(sanitizedQuery)}&num=${numResults}`
+      let url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cseId}&q=${encodeURIComponent(sanitizedQuery)}&num=${options.maxResults || 10}`
 
       if (options.country && options.country.length === 2) {
         const countryCode = options.country.toLowerCase()

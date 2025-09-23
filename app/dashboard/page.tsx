@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { CreditDisplay } from "@/components/credits/credit-display"
 import { UsageTracker } from "@/components/paywall/usage-tracker"
+import { SearchDetailsModal } from "@/components/search-details-modal"
 import { BarChart3, TrendingUp, Users, Zap, ArrowRight, Calendar, Globe, Eye, Search, CreditCard } from "lucide-react"
 import Link from "next/link"
 
@@ -41,6 +42,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [expandedSearches, setExpandedSearches] = useState<Set<string>>(new Set())
+  const [selectedSearch, setSelectedSearch] = useState<SearchResult | null>(null)
   const supabase = createClient()
 
   const loadUserData = async (showRefreshLoader = false) => {
@@ -129,6 +131,10 @@ export default function DashboardPage() {
       newExpanded.add(searchId)
     }
     setExpandedSearches(newExpanded)
+  }
+
+  const openSearchDetails = (search: SearchResult) => {
+    setSelectedSearch(search)
   }
 
   if (isLoading) {
@@ -353,9 +359,15 @@ export default function DashboardPage() {
                             <Eye className="w-4 h-4" />
                             <span>Résultats disponibles</span>
                           </div>
-                          <Button variant="outline" size="sm" asChild>
-                            <Link href="/dashboard/history">Voir tout l'historique</Link>
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm" onClick={() => openSearchDetails(search)}>
+                              <Eye className="w-4 h-4 mr-2" />
+                              Voir l'analyse complète
+                            </Button>
+                            <Button variant="outline" size="sm" asChild>
+                              <Link href="/dashboard/history">Voir tout l'historique</Link>
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -366,6 +378,20 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* SearchDetailsModal */}
+      {selectedSearch && (
+        <SearchDetailsModal
+          isOpen={!!selectedSearch}
+          onClose={() => setSelectedSearch(null)}
+          searchId={selectedSearch.id}
+          query={selectedSearch.query}
+          competitorQuery={selectedSearch.competitor_query}
+          analysisType={selectedSearch.analysis_type || selectedSearch.type}
+          createdAt={selectedSearch.created_at}
+          scores={selectedSearch.scores}
+        />
+      )}
     </div>
   )
 }

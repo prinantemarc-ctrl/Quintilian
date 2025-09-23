@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
             countryCode: upperCountryCode,
             flag: getCountryFlag(upperCountryCode),
             score: Math.round((analysis.presence_score + analysis.tone_score) / 2),
-            sentiment: analysis.tone_score >= 60 ? "positive" : analysis.tone_score >= 40 ? "neutral" : "negative",
+            sentiment: analysis.tone_score >= 70 ? "positive" : analysis.tone_score >= 50 ? "neutral" : "negative",
             summary: analysis.rationale,
             articles: searchResults.slice(0, 8).map((result, index) => ({
               title: result.title || `Article ${index + 1}`,
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
               relevanceScore: Math.max(60, 90 - index * 5),
             })),
             keyTopics: analysis.presence_details ? [analysis.presence_details.slice(0, 50)] : ["presse", "médias"],
-            riskFactors: analysis.tone_score < 40 ? ["perception négative", "couverture défavorable"] : [],
+            riskFactors: analysis.tone_score < 50 ? ["perception négative", "couverture défavorable"] : [],
             presenceScore: analysis.presence_score,
             toneScore: analysis.tone_score,
             googleSummary: analysis.google_summary,
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
     )
 
     // Generate global press analysis
-    const globalAnalysis = `La couverture presse de "${query}" présente une réputation ${getDiscriminantScoreLabel(averageScore)} dans les médias internationaux avec un score moyen de ${averageScore}/100 sur ${countryResults.length} pays analysés. ${bestCountry.country} bénéficie de la meilleure couverture médiatique (${bestCountry.score}/100) tandis que ${worstCountry.country} présente des défis de communication (${worstCountry.score}/100). L'analyse révèle des variations dans la perception médiatique selon les régions.`
+    const globalAnalysis = `La couverture presse de "${query}" présente une réputation ${getScoreLabel(averageScore)} dans les médias internationaux avec un score moyen de ${averageScore}/100 sur ${countryResults.length} pays analysés. ${bestCountry.country} bénéficie de la meilleure couverture médiatique (${bestCountry.score}/100) tandis que ${worstCountry.country} présente des défis de communication (${worstCountry.score}/100). L'analyse révèle des variations dans la perception médiatique selon les régions.`
 
     const processingTime = Date.now() - startTime
     console.log(`[v0] Press Analysis completed in ${processingTime}ms`)
@@ -174,12 +174,12 @@ function generatePressFallback(countryCode: string, countryName: string, query: 
     countryCode: countryCode,
     flag: getCountryFlag(countryCode),
     score: finalScore,
-    sentiment: finalScore >= 60 ? "positive" : finalScore >= 40 ? "neutral" : "negative",
+    sentiment: finalScore >= 70 ? "positive" : finalScore >= 50 ? "neutral" : "negative",
     summary: `Analyse de démonstration de la couverture presse pour ${query} en ${countryName}. Les données réelles nécessitent une configuration API complète.`,
     articles: [
       {
         title: `${query} : Analyse de la couverture médiatique en ${countryName}`,
-        snippet: `Les médias de ${countryName} couvrent ${query} avec une approche ${finalScore >= 60 ? "positive" : "équilibrée"}.`,
+        snippet: `Les médias de ${countryName} couvrent ${query} avec une approche ${finalScore >= 70 ? "positive" : "équilibrée"}.`,
         url: "https://example.com/press1",
         source: "example.com",
         date: new Date().toISOString().split("T")[0],
@@ -273,18 +273,16 @@ function getCountryLanguage(countryCode: string): string {
   return languageMap[countryCode] || "en"
 }
 
-function getDiscriminantScoreLabel(score: number): string {
-  if (score >= 90) {
-    return "exceptionnelle"
-  } else if (score >= 60) {
-    return "correcte"
-  } else if (score >= 30) {
-    return "problématique"
-  } else {
-    return "catastrophique"
-  }
-}
-
 function getScoreLabel(score: number): string {
-  return getDiscriminantScoreLabel(score)
+  if (score >= 85) {
+    return "excellente"
+  } else if (score >= 70) {
+    return "bonne"
+  } else if (score >= 55) {
+    return "moyenne"
+  } else if (score >= 40) {
+    return "mauvaise"
+  } else {
+    return "très mauvaise"
+  }
 }

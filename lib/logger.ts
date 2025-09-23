@@ -29,6 +29,7 @@ export interface SearchLog {
   ip_address?: string
   error?: string
   user_id?: string // Ajout du user_id optionnel
+  full_response_text?: string // Ajout du full_response_text optionnel
 }
 
 class Logger {
@@ -74,6 +75,7 @@ class Logger {
         processing_time_ms: Math.round(log.results.processing_time * 1000), // Changed to processing_time_ms
         error_message: log.error || null, // Changed from 'error' to 'error_message'
         user_id: log.user_id || null, // Ajout du user_id dans l'insertion
+        full_response_text: log.full_response_text || null, // Ajout du full_response_text dans l'insertion
       })
 
       if (error) {
@@ -127,6 +129,7 @@ class Logger {
         ip_address: record.user_ip,
         error: record.error_message, // Changed from 'error' to 'error_message'
         user_id: record.user_id, // Ajout du user_id dans le mapping
+        full_response_text: record.full_response_text, // Ajout du full_response_text dans le mapping
       }))
     } catch (error) {
       console.error("[LOGGER] Database error:", error instanceof Error ? error.message : "Unknown error")
@@ -270,6 +273,7 @@ class Logger {
         "Google Results",
         "User IP",
         "User ID", // Ajout du user_id dans les headers
+        "Full Response Text", // Ajout du full_response_text dans les headers
       ]
 
       const csvRows = [
@@ -289,6 +293,7 @@ class Logger {
             row.google_results?.count || "",
             row.user_ip || "",
             row.user_id || "", // Ajout du user_id dans les données CSV
+            row.full_response_text ? `"${row.full_response_text.replace(/"/g, '""').replace(/\n/g, "\\n")}"` : "", // Ajout du full_response_text dans les données CSV
           ].join(","),
         ),
       ]
