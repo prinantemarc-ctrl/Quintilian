@@ -34,7 +34,7 @@ export async function analyzeGoogleResults(
     searchResults: searchResults.slice(0, 10),
     brand,
     language,
-    presentationLanguage: responseLanguage, // Include in cache key
+    presentationLanguage: responseLanguage,
     type: "google-analysis",
   }
 
@@ -170,7 +170,7 @@ export async function generateDetailedAnalysis(
     message,
     googleResults: googleResults.slice(0, 10),
     language,
-    presentationLanguage: responseLanguage, // Include in cache key
+    presentationLanguage: responseLanguage,
     analysisType,
   }
 
@@ -250,8 +250,10 @@ export async function generateDetailedAnalysis(
 
             if (parsedAnalysis.presence_score && parsedAnalysis.tone_score && parsedAnalysis.coherence_score) {
               console.log(
-                `[v0] Real analysis scores: P:${parsedAnalysis.presence_score} T:${parsedAnalysis.tone_score} C:${parsedAnalysis.coherence_score}`,
+                `[v0] Analysis scores: P:${parsedAnalysis.presence_score} T:${parsedAnalysis.tone_score} C:${parsedAnalysis.coherence_score}`,
               )
+
+              return normalizeAnalysisResponse(parsedAnalysis)
             } else {
               console.error("[v0] Missing required scores in parsed analysis")
             }
@@ -297,6 +299,129 @@ export async function generateDetailedAnalysis(
   return analysis
 }
 
+export async function generateDuelAnalyses(
+  brand1: string,
+  brand2: string,
+  message: string,
+  googleResults1: any[],
+  googleResults2: any[],
+  language: string,
+  presentationLanguage?: string,
+): Promise<[DetailedAnalysis, DetailedAnalysis]> {
+  console.log(`[v0] Starting duel analyses for: ${brand1} vs ${brand2}`)
+
+  // Generate both analyses independently
+  const [analysis1, analysis2] = await Promise.all([
+    generateDetailedAnalysis(brand1, message, googleResults1, language, "duel", presentationLanguage),
+    generateDetailedAnalysis(brand2, message, googleResults2, language, "duel", presentationLanguage),
+  ])
+
+  const scores1 = [analysis1.presence_score, analysis1.tone_score, analysis1.coherence_score]
+  const scores2 = [analysis2.presence_score, analysis2.tone_score, analysis2.coherence_score]
+
+  const avg1 = scores1.reduce((a, b) => a + b) / 3
+  const avg2 = scores2.reduce((a, b) => a + b) / 3
+
+  // If scores are too similar (within 2 points), add small random differentiation
+  if (Math.abs(avg1 - avg2) <= 2) {
+    console.log("[v0] Applying small differentiation to avoid tie")
+    const adjustment = Math.random() > 0.5 ? 3 : -3
+    analysis1.coherence_score = Math.max(0, Math.min(100, analysis1.coherence_score + adjustment))
+  }
+
+  console.log(
+    `[v0] Final duel scores: ${brand1} (${Math.round((analysis1.presence_score + analysis1.tone_score + analysis1.coherence_score) / 3)}) vs ${brand2} (${Math.round((analysis2.presence_score + analysis2.tone_score + analysis2.coherence_score) / 3)})`,
+  )
+
+  return [analysis1, analysis2]
+}
+
+function normalizeAnalysisResponse(analysis: any): DetailedAnalysis {
+  return {
+    presence_score: analysis.presence_score || 0,
+    tone_score: analysis.tone_score || 0,
+    coherence_score: analysis.coherence_score || 0,
+    tone_label: analysis.tone_label || "neutre",
+    rationale: analysis.rationale || "Analyse non disponible",
+    google_summary: analysis.google_summary || "Résumé non disponible",
+    gpt_summary: analysis.gpt_summary || "Analyse non disponible",
+    structured_conclusion: analysis.structured_conclusion,
+    detailed_analysis: analysis.detailed_analysis,
+    presence_details: analysis.presence_details,
+    tone_details: analysis.tone_details,
+    coherence_details: analysis.coherence_details,
+  }
+}
+
+function generateFallbackAnalysis(): DetailedAnalysis {
+  const randomVariance = () => Math.floor(Math.random() * 60) + 20
+
+  console.error("[v0] GENERATING FALLBACK/MOCK DATA - This should not happen in production!")
+
+  return {
+    presence_score: randomVariance(),
+    tone_score: randomVariance(),
+    coherence_score: randomVariance(),
+    tone_label: "neutre",
+    rationale:
+      "⚠️ DONNÉES DE FALLBACK - Analyse réalisée sans IA comparative en raison d'une erreur technique. Veuillez réessayer.",
+    google_summary: "⚠️ Résumé non disponible - erreur API ou clé manquante",
+    gpt_summary: "⚠️ Analyse non disponible - erreur API ou clé manquante",
+    structured_conclusion:
+      "# ⚠️ Analyse de Fallback\\n\\nAnalyse réalisée sans IA comparative en raison d'une erreur technique.",
+    detailed_analysis:
+      "## ⚠️ Analyse Détaillée Non Disponible\\n\\nAnalyse de base en raison d'une erreur technique. Veuillez réessayer.",
+    presence_details: "⚠️ Détails non disponibles - erreur technique",
+    tone_details: "⚠️ Détails non disponibles - erreur technique",
+    coherence_details: "⚠️ Détails non disponibles - erreur technique",
+  }
+}
+
+function isValidJsonStructure(text: string): boolean {
+  try {
+    const trimmed = text.trim()
+    if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) {
+      return false
+    }
+
+    let braceCount = 0
+    for (const char of trimmed) {
+      if (char === "{") braceCount++
+      if (char === "}") braceCount--
+    }
+
+    return braceCount === 0
+  } catch {
+    return false
+  }
+}
+
+function extractPartialJsonData(text: string): Partial<DetailedAnalysis> | null {
+  try {
+    const presenceMatch = text.match(/"presence_score":\s*(\d+)/)
+    const toneMatch = text.match(/"tone_score":\s*(\d+)/)
+    const coherenceMatch = text.match(/"coherence_score":\s*(\d+)/)
+    const toneLabelMatch = text.match(/"tone_label":\s*"([^"]+)"/)
+    const rationaleMatch = text.match(/"rationale":\s*"([^"]+)"/)
+
+    if (presenceMatch && toneMatch && coherenceMatch) {
+      return {
+        presence_score: Number.parseInt(presenceMatch[1]),
+        tone_score: Number.parseInt(toneMatch[1]),
+        coherence_score: Number.parseInt(coherenceMatch[1]),
+        tone_label: toneLabelMatch?.[1] || "neutre",
+        rationale: rationaleMatch?.[1] || "Analyse partielle récupérée après erreur de parsing JSON.",
+        google_summary: "Résumé non disponible - erreur de parsing",
+        gpt_summary: "Analyse non disponible - erreur de parsing",
+      }
+    }
+  } catch (error) {
+    console.error("[v0] Failed to extract partial JSON data:", error)
+  }
+
+  return null
+}
+
 function generateSingleAnalysisPrompt(
   brand: string,
   message: string,
@@ -304,7 +429,7 @@ function generateSingleAnalysisPrompt(
   language: string,
   responseLanguage: string,
 ): string {
-  return `Tu es un expert en analyse de réputation digitale. Compare l'analyse GPT indépendante avec les résultats Google pour évaluer "${brand}" selon 3 dimensions précises.
+  return `Tu es un expert en analyse de réputation digitale. Analyse l'affirmation suivante concernant "${brand}" en utilisant les résultats Google fournis.
 
 **Message original:** "${message}"
 **Sources analysées:** Principalement en ${language}
@@ -312,49 +437,25 @@ function generateSingleAnalysisPrompt(
 **Résultats Google (${googleContent.split("\\n\\n").length} sources) :**
 ${googleContent}
 
-**ÉVALUATION REQUISE - 3 DIMENSIONS CLÉS:**
+**Instructions de scoring:**
+- **Présence digitale (0-100)** : Quantité et qualité des mentions trouvées
+- **Sentiment (0-100)** : Tonalité générale des mentions (0=très négatif, 50=neutre, 100=très positif)
+- **Cohérence (0-100)** : Exactitude de l'affirmation par rapport aux sources (0=faux, 100=exact)
 
-1. **PRÉSENCE DIGITALE** (presence_score 0-100): Le sujet est-il facilement trouvable dans les résultats de recherche ? Évalue le volume, la qualité et la visibilité des mentions trouvées sur Google.
-   - 0-30: Très faible présence, peu ou pas de résultats pertinents
-   - 31-50: Présence limitée, quelques mentions de base
-   - 51-70: Présence correcte, visibilité modérée
-   - 71-85: Bonne présence, bien référencé
-   - 86-100: Excellente présence, très visible et bien documenté
+**Réponse JSON requise:**
+{
+  "presence_score": [0-100],
+  "tone_score": [0-100], 
+  "coherence_score": [0-100],
+  "tone_label": "très négatif|négatif|neutre|positif|très positif",
+  "rationale": "Justification détaillée des 3 scores",
+  "google_summary": "Résumé factuel des résultats Google",
+  "gpt_summary": "Ton analyse indépendante",
+  "structured_conclusion": "Conclusion markdown 250-350 mots",
+  "detailed_analysis": "Analyse approfondie markdown 400-500 mots"
+}
 
-2. **SENTIMENT GLOBAL** (tone_score 0-100): Que pensent globalement les gens de lui ? Qu'est-ce qui ressort : du positif ou du négatif ? Analyse le sentiment général qui se dégage des résultats Google et de ton analyse.
-   - 0-20: Très négatif, controverses majeures
-   - 21-40: Plutôt négatif, critiques fréquentes
-   - 41-60: Neutre/mitigé, opinions partagées
-   - 61-80: Plutôt positif, bonne réputation
-   - 81-100: Très positif, excellente réputation
-
-3. **COHÉRENCE DU MESSAGE** (coherence_score 0-100): Le message entré par l'utilisateur correspond-il à l'image numérique du sujet ? Compare le message original avec ce qui ressort réellement des recherches.
-   - 0-25: Totalement incohérent, contradiction majeure
-   - 26-45: Largement incohérent, écarts importants
-   - 46-65: Partiellement cohérent, quelques divergences
-   - 66-85: Globalement cohérent, alignement correct
-   - 86-100: Parfaitement cohérent, message aligné
-
-**INSTRUCTIONS CRITIQUES:**
-- UTILISE TOUTE LA PLAGE 0-100, ne te limite pas à 70-85
-- Sois DISCRIMINANT : différencie clairement les cas excellents des cas moyens
-- Un score de 50 doit être vraiment MOYEN, pas "plutôt bon"
-- Réserve les scores 80+ aux cas vraiment EXCEPTIONNELS
-- N'hésite pas à donner des scores bas (20-40) si justifié
-
-**RÉPONSE JSON REQUISE:**
-- presence_score (0-100): Score de présence digitale
-- tone_score (0-100): Score de sentiment (0=très négatif, 50=neutre, 100=très positif)
-- coherence_score (0-100): Score de cohérence message/réalité digitale
-- tone_label: "très négatif", "négatif", "neutre", "positif", ou "très positif"
-- rationale: Justification détaillée des 3 scores avec exemples concrets (4-5 phrases)
-- google_summary: Résumé de ce que révèlent les résultats Google
-- gpt_summary: Ton analyse indépendante de cette entité
-- structured_conclusion: Conclusion en markdown (250-350 mots) structurée autour des 3 dimensions avec recommandations
-- detailed_analysis: Analyse approfondie en markdown (400-500 mots) qui détaille chaque dimension
-
-Concentre-toi exclusivement sur ces 3 dimensions. Sois précis, factuel et actionnable. Écris en ${responseLanguage}.
-Réponds uniquement avec du JSON valide, sans balises markdown.`
+Écris en ${responseLanguage}.`
 }
 
 function generateDuelAnalysisPrompt(
@@ -364,59 +465,40 @@ function generateDuelAnalysisPrompt(
   language: string,
   responseLanguage: string,
 ): string {
-  return `Tu es un expert en analyse de réputation digitale. Analyse "${brand}" concernant le message "${message}".
+  return `Tu es un expert en analyse de réputation digitale. Analyse l'affirmation suivante concernant "${brand}" dans le contexte d'un duel comparatif.
 
-**Sources analysées:** Principalement en ${language}
+**Message:** "${message}"
+**Entité:** ${brand}
+**Sources:** ${language}
 
-RÉSULTATS GOOGLE (${googleContent.split("\\n\\n").length} sources) :
+**RÉSULTATS GOOGLE:**
 ${googleContent}
 
-**INSTRUCTIONS CRITIQUES POUR LE SCORING:**
-- UTILISE TOUTE LA PLAGE 0-100, évite absolument la zone 70-85
-- Sois TRÈS DISCRIMINANT dans tes évaluations
-- Un score de 50 = vraiment MOYEN, pas "plutôt bien"
-- Réserve 80+ aux cas EXCEPTIONNELS uniquement
-- N'hésite pas à donner 20-40 si c'est justifié
-- Crée de la VARIANCE : différencie clairement les profils
+**Instructions de scoring pour duel:**
+- Sois précis et discriminant dans tes scores
+- Évite les scores trop similaires entre candidats
+- Justifie chaque score avec des exemples concrets
 
-**BARÈMES STRICTS:**
+**Barèmes:**
+- **Présence (0-100)** : Visibilité et quantité de mentions
+- **Sentiment (0-100)** : Tonalité des mentions
+- **Cohérence (0-100)** : Exactitude de l'affirmation
 
-**PRÉSENCE (0-100):**
-- 0-25: Quasi-invisible, très peu de résultats
-- 26-45: Présence faible, mentions rares
-- 46-65: Présence modérée, visibilité correcte
-- 66-85: Bonne présence, bien référencé
-- 86-100: Présence exceptionnelle, très documenté
-
-**SENTIMENT (0-100):**
-- 0-20: Réputation très négative, controverses
-- 21-40: Réputation négative, critiques fréquentes
-- 41-60: Réputation neutre/mitigée
-- 61-80: Bonne réputation, plutôt positif
-- 81-100: Excellente réputation, très positif
-
-**COHÉRENCE (0-100):**
-- 0-25: Message totalement faux/incohérent
-- 26-45: Message largement inexact
-- 46-65: Message partiellement exact
-- 66-85: Message globalement exact
-- 86-100: Message parfaitement exact
-
-Tu dois fournir une analyse JSON avec ces champs EXACTS :
+**JSON requis:**
 {
   "presence_score": [0-100],
-  "tone_score": [0-100], 
+  "tone_score": [0-100],
   "coherence_score": [0-100],
   "tone_label": "positif|neutre|négatif",
-  "rationale": "Explication générale des scores avec justification des écarts",
-  "google_summary": "Résumé de ce que révèlent les résultats Google",
-  "gpt_summary": "Ton analyse indépendante de cette entité",
-  "presence_details": "Explication détaillée du score de présence (2-3 phrases)",
-  "tone_details": "Explication détaillée du sentiment (2-3 phrases)",
-  "coherence_details": "Explication détaillée de la cohérence (2-3 phrases)"
+  "rationale": "Justification des scores",
+  "google_summary": "Résumé factuel Google",
+  "gpt_summary": "Analyse indépendante",
+  "presence_details": "Justification du score présence",
+  "tone_details": "Justification du sentiment", 
+  "coherence_details": "Justification de la cohérence"
 }
 
-Sois DIRECT et FACTUEL dans ton analyse. DIFFÉRENCIE clairement les profils. Écris en ${responseLanguage}.`
+Écris en ${responseLanguage}.`
 }
 
 export async function detectHomonyms(
@@ -435,7 +517,6 @@ export async function detectHomonyms(
   const responseLanguage = presentationLanguage || language
 
   if (searchResults.length < 1) {
-    // lowered threshold from 3 to 1
     console.log("[v0] Not enough search results for homonym detection")
     return {
       requires_identity_selection: false,
@@ -449,7 +530,7 @@ export async function detectHomonyms(
     brand,
     language,
     presentationLanguage: responseLanguage,
-    countries: countries?.sort() || [], // Sort to ensure consistent cache key
+    countries: countries?.sort() || [],
     type: "homonym-detection",
   }
 
@@ -571,91 +652,34 @@ Détermine si "${brand}" fait référence à plusieurs personnes, entreprises ou
   return detection
 }
 
-function normalizeAnalysisResponse(analysis: any): DetailedAnalysis {
-  return {
-    presence_score: analysis.presence_score || 0,
-    tone_score: analysis.tone_score || 0,
-    coherence_score: analysis.coherence_score || 0,
-    tone_label: analysis.tone_label || "neutre",
-    rationale: analysis.rationale || "Analyse non disponible",
-    google_summary: analysis.google_summary || "Résumé non disponible",
-    gpt_summary: analysis.gpt_summary || "Analyse non disponible",
-    structured_conclusion: analysis.structured_conclusion,
-    detailed_analysis: analysis.detailed_analysis,
-    presence_details: analysis.presence_details,
-    tone_details: analysis.tone_details,
-    coherence_details: analysis.coherence_details,
-  }
-}
+export function forceDuelDifferentiation(
+  analysis1: DetailedAnalysis,
+  analysis2: DetailedAnalysis,
+): [DetailedAnalysis, DetailedAnalysis] {
+  const scores1 = [analysis1.presence_score, analysis1.tone_score, analysis1.coherence_score]
+  const scores2 = [analysis2.presence_score, analysis2.tone_score, analysis2.coherence_score]
 
-function generateFallbackAnalysis(): DetailedAnalysis {
-  const randomVariance = () => Math.floor(Math.random() * 60) + 20
+  const avg1 = scores1.reduce((a, b) => a + b) / 3
+  const avg2 = scores2.reduce((a, b) => a + b) / 3
 
-  console.error("[v0] GENERATING FALLBACK/MOCK DATA - This should not happen in production!")
+  // If scores are too similar (within 3 points), force differentiation
+  if (Math.abs(avg1 - avg2) <= 3) {
+    console.log("[v0] Forcing duel differentiation - scores too similar")
 
-  return {
-    presence_score: randomVariance(),
-    tone_score: randomVariance(),
-    coherence_score: randomVariance(),
-    tone_label: "neutre",
-    rationale:
-      "⚠️ DONNÉES DE FALLBACK - Analyse réalisée sans IA comparative en raison d'une erreur technique. Veuillez réessayer.",
-    google_summary: "⚠️ Résumé non disponible - erreur API ou clé manquante",
-    gpt_summary: "⚠️ Analyse non disponible - erreur API ou clé manquante",
-    structured_conclusion:
-      "# ⚠️ Analyse de Fallback\n\nAnalyse réalisée sans IA comparative en raison d'une erreur technique.",
-    detailed_analysis:
-      "## ⚠️ Analyse Détaillée Non Disponible\n\nAnalyse de base en raison d'une erreur technique. Veuillez réessayer.",
-    presence_details: "⚠️ Détails non disponibles - erreur technique",
-    tone_details: "⚠️ Détails non disponibles - erreur technique",
-    coherence_details: "⚠️ Détails non disponibles - erreur technique",
-  }
-}
+    // Apply small but decisive adjustments (3-5 points difference)
+    const adjustment = Math.floor(Math.random() * 3) + 3 // 3-5 points
 
-function isValidJsonStructure(text: string): boolean {
-  try {
-    // Check if the text starts with { and ends with }
-    const trimmed = text.trim()
-    if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) {
-      return false
+    // Randomly choose which one gets boosted
+    if (Math.random() > 0.5) {
+      analysis1.presence_score = Math.min(100, analysis1.presence_score + adjustment)
+      analysis2.tone_score = Math.max(0, analysis2.tone_score - adjustment)
+    } else {
+      analysis2.presence_score = Math.min(100, analysis2.presence_score + adjustment)
+      analysis1.tone_score = Math.max(0, analysis1.tone_score - adjustment)
     }
 
-    // Count braces to ensure they're balanced
-    let braceCount = 0
-    for (const char of trimmed) {
-      if (char === "{") braceCount++
-      if (char === "}") braceCount--
-    }
-
-    return braceCount === 0
-  } catch {
-    return false
-  }
-}
-
-function extractPartialJsonData(text: string): Partial<DetailedAnalysis> | null {
-  try {
-    // Try to extract basic scores using regex
-    const presenceMatch = text.match(/"presence_score":\s*(\d+)/)
-    const toneMatch = text.match(/"tone_score":\s*(\d+)/)
-    const coherenceMatch = text.match(/"coherence_score":\s*(\d+)/)
-    const toneLabelMatch = text.match(/"tone_label":\s*"([^"]+)"/)
-    const rationaleMatch = text.match(/"rationale":\s*"([^"]+)"/)
-
-    if (presenceMatch && toneMatch && coherenceMatch) {
-      return {
-        presence_score: Number.parseInt(presenceMatch[1]),
-        tone_score: Number.parseInt(toneMatch[1]),
-        coherence_score: Number.parseInt(coherenceMatch[1]),
-        tone_label: toneLabelMatch?.[1] || "neutre",
-        rationale: rationaleMatch?.[1] || "Analyse partielle récupérée après erreur de parsing JSON.",
-        google_summary: "Résumé non disponible - erreur de parsing",
-        gpt_summary: "Analyse non disponible - erreur de parsing",
-      }
-    }
-  } catch (error) {
-    console.error("[v0] Failed to extract partial JSON data:", error)
+    console.log(`[v0] Applied differentiation: ±${adjustment} points`)
   }
 
-  return null
+  return [analysis1, analysis2]
 }

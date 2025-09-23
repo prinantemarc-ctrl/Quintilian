@@ -4,7 +4,7 @@ import { generateText } from "ai"
 import { openai } from "@ai-sdk/openai"
 import { DuelAnalysisSchema } from "@/lib/schemas/api-validation"
 import { searchGoogle } from "@/lib/services/google-search"
-import { generateDetailedAnalysis } from "@/lib/services/gpt-analysis"
+import { generateDetailedAnalysis, forceDuelDifferentiation } from "@/lib/services/gpt-analysis"
 import {
   createSuccessResponse,
   createValidationErrorResponse,
@@ -28,37 +28,50 @@ async function generateComparison(
 }> {
   console.log("[v0] Starting comparison generation")
 
+  const [adjustedBrand1Analysis, adjustedBrand2Analysis] = forceDuelDifferentiation(
+    brand1Analysis,
+    brand2Analysis,
+    brand1,
+    brand2,
+  )
+
   const brand1GlobalScore = Math.round(
-    (brand1Analysis.presence_score + brand1Analysis.tone_score + brand1Analysis.coherence_score) / 3,
+    (adjustedBrand1Analysis.presence_score +
+      adjustedBrand1Analysis.tone_score +
+      adjustedBrand1Analysis.coherence_score) /
+      3,
   )
   const brand2GlobalScore = Math.round(
-    (brand2Analysis.presence_score + brand2Analysis.tone_score + brand2Analysis.coherence_score) / 3,
+    (adjustedBrand2Analysis.presence_score +
+      adjustedBrand2Analysis.tone_score +
+      adjustedBrand2Analysis.coherence_score) /
+      3,
   )
 
   const scoreDiff = Math.abs(brand1GlobalScore - brand2GlobalScore)
-  let winner = brand1GlobalScore > brand2GlobalScore ? brand1 : brand2
+  const winner = brand1GlobalScore > brand2GlobalScore ? brand1 : brand2
 
-  if (scoreDiff <= 3) {
-    winner = "Match nul"
-  }
+  console.log(
+    `[v0] Forced differentiation applied: ${brand1} (${brand1GlobalScore}) vs ${brand2} (${brand2GlobalScore})`,
+  )
 
   const prompt = `Tu es un expert en analyse comparative. Compare "${brand1}" et "${brand2}" concernant "${message}" en ${language}.
 
 DONNÉES D'ANALYSE :
 
 **${brand1}** (Score global: ${brand1GlobalScore}/100) :
-- Présence digitale : ${brand1Analysis.presence_score}/100 (${brand1Analysis.presence_details})
-- Sentiment : ${brand1Analysis.tone_score}/100 (${brand1Analysis.tone_details}) (${brand1Analysis.tone_label})
-- Cohérence : ${brand1Analysis.coherence_score}/100 (${brand1Analysis.coherence_details})
-- Résumé Google : ${brand1Analysis.google_summary}
-- Résumé GPT : ${brand1Analysis.gpt_summary}
+- Présence digitale : ${adjustedBrand1Analysis.presence_score}/100 (${adjustedBrand1Analysis.presence_details})
+- Sentiment : ${adjustedBrand1Analysis.tone_score}/100 (${adjustedBrand1Analysis.tone_details}) (${adjustedBrand1Analysis.tone_label})
+- Cohérence : ${adjustedBrand1Analysis.coherence_score}/100 (${adjustedBrand1Analysis.coherence_details})
+- Résumé Google : ${adjustedBrand1Analysis.google_summary}
+- Résumé GPT : ${adjustedBrand1Analysis.gpt_summary}
 
 **${brand2}** (Score global: ${brand2GlobalScore}/100) :
-- Présence digitale : ${brand2Analysis.presence_score}/100 (${brand2Analysis.presence_details})
-- Sentiment : ${brand2Analysis.tone_score}/100 (${brand2Analysis.tone_details}) (${brand2Analysis.tone_label})
-- Cohérence : ${brand2Analysis.coherence_score}/100 (${brand2Analysis.coherence_details})
-- Résumé Google : ${brand2Analysis.google_summary}
-- Résumé GPT : ${brand2Analysis.gpt_summary}
+- Présence digitale : ${adjustedBrand2Analysis.presence_score}/100 (${adjustedBrand2Analysis.presence_details})
+- Sentiment : ${adjustedBrand2Analysis.tone_score}/100 (${adjustedBrand2Analysis.tone_details}) (${adjustedBrand2Analysis.tone_label})
+- Cohérence : ${adjustedBrand2Analysis.coherence_score}/100 (${adjustedBrand2Analysis.coherence_details})
+- Résumé Google : ${adjustedBrand2Analysis.google_summary}
+- Résumé GPT : ${adjustedBrand2Analysis.gpt_summary}
 
 Crée une comparaison détaillée en format Markdown avec :
 
@@ -105,11 +118,7 @@ Sois DIRECT et FACTUEL dans ta comparaison.`
     return {
       detailed_comparison: text,
       winner,
-      summary: `${brand1} (${brand1GlobalScore}/100) vs ${brand2} (${brand2GlobalScore}/100). ${
-        winner === "Match nul"
-          ? "Scores très proches, match nul !"
-          : `${winner} l'emporte avec ${scoreDiff} points d'avance.`
-      }`,
+      summary: `${brand1} (${brand1GlobalScore}/100) vs ${brand2} (${brand2GlobalScore}/100). ${winner} l'emporte avec ${scoreDiff} points d'avance.`,
     }
   } catch (error) {
     console.log("[v0] Comparison generation failed:", error)
@@ -168,16 +177,29 @@ export async function POST(request: NextRequest) {
 
     const comparison = await generateComparison(brand1, brand1Analysis, brand2, brand2Analysis, message, language)
 
+    const [adjustedBrand1Analysis, adjustedBrand2Analysis] = forceDuelDifferentiation(
+      brand1Analysis,
+      brand2Analysis,
+      brand1,
+      brand2,
+    )
+
     const brand1GlobalScore = Math.round(
-      (brand1Analysis.presence_score + brand1Analysis.tone_score + brand1Analysis.coherence_score) / 3,
+      (adjustedBrand1Analysis.presence_score +
+        adjustedBrand1Analysis.tone_score +
+        adjustedBrand1Analysis.coherence_score) /
+        3,
     )
     const brand2GlobalScore = Math.round(
-      (brand2Analysis.presence_score + brand2Analysis.tone_score + brand2Analysis.coherence_score) / 3,
+      (adjustedBrand2Analysis.presence_score +
+        adjustedBrand2Analysis.tone_score +
+        adjustedBrand2Analysis.coherence_score) /
+        3,
     )
 
     const result = {
       brand1_analysis: {
-        ...brand1Analysis,
+        ...adjustedBrand1Analysis,
         global_score: brand1GlobalScore,
         sources: brand1Results.slice(0, 5).map((item) => ({
           title: item.title || "Sans titre",
@@ -185,7 +207,7 @@ export async function POST(request: NextRequest) {
         })),
       },
       brand2_analysis: {
-        ...brand2Analysis,
+        ...adjustedBrand2Analysis,
         global_score: brand2GlobalScore,
         sources: brand2Results.slice(0, 5).map((item) => ({
           title: item.title || "Sans titre",
