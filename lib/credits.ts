@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma"
+import { createClient } from "@/lib/supabase/server"
 
 export interface CreditTransaction {
   id: string
@@ -18,37 +18,28 @@ export interface UserCredits {
 
 export class CreditManager {
   static async getUserCredits(userId: string): Promise<UserCredits> {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { credits: true },
-    })
+    const supabase = await createClient()
 
-    if (!user) {
+    const { data: user, error } = await supabase.from("User").select("credits").eq("id", userId).single()
+
+    if (error || !user) {
       throw new Error("Utilisateur non trouvé")
     }
 
-    const usedCredits = await prisma.creditLedger.aggregate({
-      where: {
-        userId,
-        type: "usage",
-      },
-      _sum: {
-        amount: true,
-      },
-    })
+    const { data: usedCreditsData } = await supabase
+      .from("CreditLedger")
+      .select("delta")
+      .eq("userId", userId)
+      .like("reason", "%usage%")
 
-    const purchasedCredits = await prisma.creditLedger.aggregate({
-      where: {
-        userId,
-        type: "purchase",
-      },
-      _sum: {
-        amount: true,
-      },
-    })
+    const { data: purchasedCreditsData } = await supabase
+      .from("CreditLedger")
+      .select("delta")
+      .eq("userId", userId)
+      .like("reason", "%purchase%")
 
-    const totalCredits = purchasedCredits._sum.amount || 0
-    const used = Math.abs(usedCredits._sum.amount || 0)
+    const totalCredits = purchasedCreditsData?.reduce((sum, record) => sum + (record.delta || 0), 0) || 0
+    const used = Math.abs(usedCreditsData?.reduce((sum, record) => sum + (record.delta || 0), 0) || 0)
     const remaining = totalCredits - used
 
     return {
@@ -60,27 +51,27 @@ export class CreditManager {
   }
 
   static async addCredits(userId: string, amount: number, description: string): Promise<void> {
-    await prisma.$transaction(async (tx) => {
-      // Ajouter les crédits à l'utilisateur
-      await tx.user.update({
-        where: { id: userId },
-        data: {
-          credits: {
-            increment: amount,
-          },
-        },
-      })
+    const supabase = await createClient()
 
-      // Enregistrer la transaction
-      await tx.creditLedger.create({
-        data: {
-          userId,
-          amount,
-          type: "purchase",
-          description,
-        },
-      })
+    const { data: currentUser } = await supabase.from("User").select("credits").eq("id", userId).single()
+
+    const newCredits = (currentUser?.credits || 0) + amount
+
+    const { error: updateError } = await supabase.rpc("add_user_credits", {
+      p_user_id: userId,
+      p_amount: amount,
+      p_description: description,
     })
+
+    if (updateError) {
+      // Fallback to manual transaction
+      await supabase.from("User").update({ credits: newCredits }).eq("id", userId)
+      await supabase.from("CreditLedger").insert({
+        userId,
+        delta: amount,
+        reason: `purchase: ${description}`,
+      })
+    }
   }
 
   static async useCredits(userId: string, amount: number, description: string): Promise<boolean> {
@@ -90,45 +81,44 @@ export class CreditManager {
       return false
     }
 
-    await prisma.$transaction(async (tx) => {
-      // Décrémenter les crédits
-      await tx.user.update({
-        where: { id: userId },
-        data: {
-          credits: {
-            decrement: amount,
-          },
-        },
-      })
+    const supabase = await createClient()
 
-      // Enregistrer l'utilisation
-      await tx.creditLedger.create({
-        data: {
-          userId,
-          amount: -amount,
-          type: "usage",
-          description,
-        },
-      })
+    const newCredits = userCredits.remainingCredits - amount
+
+    const { error: updateError } = await supabase.from("User").update({ credits: newCredits }).eq("id", userId)
+
+    if (updateError) throw updateError
+
+    const { error: ledgerError } = await supabase.from("CreditLedger").insert({
+      userId,
+      delta: -amount,
+      reason: `usage: ${description}`,
     })
+
+    if (ledgerError) throw ledgerError
 
     return true
   }
 
   static async getCreditHistory(userId: string): Promise<CreditTransaction[]> {
-    const transactions = await prisma.creditLedger.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      take: 50,
-    })
+    const supabase = await createClient()
 
-    return transactions.map((t) => ({
+    const { data: transactions, error } = await supabase
+      .from("CreditLedger")
+      .select("*")
+      .eq("userId", userId)
+      .order("createdAt", { ascending: false })
+      .limit(50)
+
+    if (error) throw error
+
+    return (transactions || []).map((t) => ({
       id: t.id,
       userId: t.userId,
-      amount: t.amount,
-      type: t.type as "purchase" | "usage" | "refund",
-      description: t.description,
-      createdAt: t.createdAt,
+      amount: t.delta,
+      type: t.reason.includes("purchase") ? "purchase" : t.reason.includes("usage") ? "usage" : "refund",
+      description: t.reason,
+      createdAt: new Date(t.createdAt),
     }))
   }
 
