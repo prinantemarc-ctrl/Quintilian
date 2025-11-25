@@ -1,7 +1,5 @@
 import type { NextRequest } from "next/server"
 import { z } from "zod"
-import { generateText } from "ai"
-import { openai } from "@ai-sdk/openai"
 import { DuelAnalysisSchema } from "@/lib/schemas/api-validation"
 import { searchGoogle } from "@/lib/services/google-search"
 import { generateDetailedAnalysis } from "@/lib/services/gpt-analysis"
@@ -14,6 +12,23 @@ import {
 } from "@/lib/utils/api-response"
 import { logger } from "@/lib/logger" // Updated import path
 import { createClient } from "@/lib/supabase/server" // Added Supabase client for user auth
+
+function cleanMarkdownFormatting(text: string): string {
+  return (
+    text
+      // Remove emojis
+      .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, "")
+      // Remove markdown bold but keep the text
+      .replace(/\*\*([^*]+)\*\*/g, "$1")
+      // Remove markdown headers but keep the text
+      .replace(/^#{1,6}\s+/gm, "")
+      // Clean up multiple spaces
+      .replace(/ +/g, " ")
+      // Normalize line breaks (keep double line breaks)
+      .replace(/\n{3,}/g, "\n\n")
+      .trim()
+  )
+}
 
 async function generateComparison(
   brand1: string,
@@ -47,64 +62,97 @@ async function generateComparison(
 
 DONNÉES D'ANALYSE :
 
-**${brand1}** (Score global: ${brand1GlobalScore}/100) :
+${brand1} (Score global: ${brand1GlobalScore}/100) :
 - Présence digitale : ${brand1Analysis.presence_score}/100 (${brand1Analysis.presence_details})
 - Sentiment : ${brand1Analysis.tone_score}/100 (${brand1Analysis.tone_details}) (${brand1Analysis.tone_label})
 - Cohérence : ${brand1Analysis.coherence_score}/100 (${brand1Analysis.coherence_details})
-- Résumé Google : ${brand1Analysis.google_summary}
-- Résumé GPT : ${brand1Analysis.gpt_summary}
 
-**${brand2}** (Score global: ${brand2GlobalScore}/100) :
+${brand2} (Score global: ${brand2GlobalScore}/100) :
 - Présence digitale : ${brand2Analysis.presence_score}/100 (${brand2Analysis.presence_details})
 - Sentiment : ${brand2Analysis.tone_score}/100 (${brand2Analysis.tone_details}) (${brand2Analysis.tone_label})
 - Cohérence : ${brand2Analysis.coherence_score}/100 (${brand2Analysis.coherence_details})
-- Résumé Google : ${brand2Analysis.google_summary}
-- Résumé GPT : ${brand2Analysis.gpt_summary}
 
-Crée une comparaison détaillée en format Markdown avec :
+STRUCTURE EXACTE (N'utilise AUCUN symbole markdown, juste du texte simple avec sauts de ligne) :
 
-# ⚔️ **DUEL COMPARATIF**
+[VERDICT]
+${winner} remporte cette confrontation. Justification en 2-3 phrases courtes et percutantes basées sur les données.
 
-## **🏆 VERDICT FINAL**
-[Annonce du gagnant avec justification]
+[PRÉSENCE DIGITALE]
+Comparaison objective des scores de présence. 2 phrases max.
 
-## **📊 COMPARAISON DÉTAILLÉE**
+[SENTIMENT PUBLIC]
+Analyse des perceptions et tonalités. 2 phrases max.
 
-### **🔍 Présence Digitale**
-[Comparaison des scores de présence]
+[COHÉRENCE]
+Évaluation de l'alignement avec le message. 2 phrases max.
 
-### **💭 Sentiment Public**
-[Comparaison des réputations]
+[FORCES ${brand1.toUpperCase()}]
+- Point fort 1
+- Point fort 2
+- Point fort 3
 
-### **⚖️ Cohérence Message**
-[Évaluation de l'alignement avec le message]
+[FAIBLESSES ${brand1.toUpperCase()}]
+- Faiblesse 1
+- Faiblesse 2
 
-## **🎯 POINTS FORTS ET FAIBLESSES**
+[FORCES ${brand2.toUpperCase()}]
+- Point fort 1
+- Point fort 2
+- Point fort 3
 
-### **${brand1}**
-**Forces :** [Points forts]
-**Faiblesses :** [Points faibles]
+[FAIBLESSES ${brand2.toUpperCase()}]
+- Faiblesse 1
+- Faiblesse 2
 
-### **${brand2}**
-**Forces :** [Points forts]
-**Faiblesses :** [Points faibles]
+[RECOMMANDATIONS]
+Conseils concrets et actionnables. 3-4 phrases maximum.
 
-## **📈 RECOMMANDATIONS**
-[Recommandations pour chaque marque]
-
-Sois DIRECT et FACTUEL dans ta comparaison.`
+RÈGLES :
+- N'utilise AUCUN **, ##, emoji
+- Texte simple, factuel, professionnel
+- Sépare chaque section par une ligne vide
+- Phrases courtes et percutantes
+- Utilise EXACTEMENT les marqueurs [SECTION] fournis`
 
   try {
-    const { text } = await generateText({
-      model: openai("gpt-4o-mini"),
-      prompt,
-      temperature: 0.3,
+    const apiKey = process.env.OPENAI_API_KEY
+    if (!apiKey) {
+      throw new Error("OPENAI_API_KEY not found")
+    }
+
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        temperature: 0.3,
+      }),
     })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error("[v0] OpenAI API error:", response.status, errorText)
+      throw new Error(`OpenAI API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const rawText = data.choices[0].message.content
+
+    const cleanedText = cleanMarkdownFormatting(rawText)
 
     console.log("[v0] Comparison generated successfully")
 
     return {
-      detailed_comparison: text,
+      detailed_comparison: cleanedText,
       winner,
       summary: `${brand1} (${brand1GlobalScore}/100) vs ${brand2} (${brand2GlobalScore}/100). ${
         winner === "Match nul"
@@ -113,9 +161,9 @@ Sois DIRECT et FACTUEL dans ta comparaison.`
       }`,
     }
   } catch (error) {
-    console.log("[v0] Comparison generation failed:", error)
+    console.error("[v0] Comparison generation failed:", error)
     return {
-      detailed_comparison: "# ❌ **ERREUR DE COMPARAISON**\n\nImpossible de générer la comparaison.",
+      detailed_comparison: "[ERREUR]\n\nImpossible de générer la comparaison détaillée.",
       winner: "Erreur",
       summary: "Erreur lors de la comparaison",
     }
@@ -146,7 +194,12 @@ export async function POST(request: NextRequest) {
 
     const { brand1, brand2, message, language, country } = DuelAnalysisSchema.parse(body)
 
-    console.log(`[v0] Processing duel: ${brand1} vs ${brand2}`, country ? `(Country: ${country})` : "")
+    const hasMessage = message && message.trim().length > 0
+    console.log(
+      `[v0] Processing duel: ${brand1} vs ${brand2}`,
+      country ? `(Country: ${country})` : "",
+      hasMessage ? `(Message: ${message})` : "(No message)",
+    )
 
     const apiKey = process.env.OPENAI_API_KEY
     if (!apiKey) {
@@ -182,30 +235,40 @@ export async function POST(request: NextRequest) {
 
     const comparison = await generateComparison(brand1, brand1Analysis, brand2, brand2Analysis, message, language)
 
-    const brand1GlobalScore = Math.round(
-      (brand1Analysis.presence_score + brand1Analysis.tone_score + brand1Analysis.coherence_score) / 3,
-    )
-    const brand2GlobalScore = Math.round(
-      (brand2Analysis.presence_score + brand2Analysis.tone_score + brand2Analysis.coherence_score) / 3,
-    )
+    const brand1GlobalScore = hasMessage
+      ? Math.round((brand1Analysis.presence_score + brand1Analysis.tone_score + brand1Analysis.coherence_score) / 3)
+      : Math.round((brand1Analysis.presence_score + brand1Analysis.tone_score) / 2)
+
+    const brand2GlobalScore = hasMessage
+      ? Math.round((brand2Analysis.presence_score + brand2Analysis.tone_score + brand2Analysis.coherence_score) / 3)
+      : Math.round((brand2Analysis.presence_score + brand2Analysis.tone_score) / 2)
 
     const result = {
+      brand1_name: brand1,
+      brand2_name: brand2,
+      has_message: hasMessage,
       brand1_analysis: {
         ...brand1Analysis,
         global_score: brand1GlobalScore,
-        sources: brand1Results.slice(0, 5).map((item) => ({
-          title: item.title || "Sans titre",
-          link: item.link || "#",
-        })),
+        // Supprimer coherence_score si pas de message
+        ...(hasMessage ? {} : { coherence_score: null, coherence_details: null }),
       },
       brand2_analysis: {
         ...brand2Analysis,
         global_score: brand2GlobalScore,
-        sources: brand2Results.slice(0, 5).map((item) => ({
-          title: item.title || "Sans titre",
-          link: item.link || "#",
-        })),
+        // Supprimer coherence_score si pas de message
+        ...(hasMessage ? {} : { coherence_score: null, coherence_details: null }),
       },
+      brand1_sources: brand1Results.map((item) => ({
+        title: item.title || "Sans titre",
+        link: item.link || "#",
+        snippet: item.snippet || "",
+      })),
+      brand2_sources: brand2Results.map((item) => ({
+        title: item.title || "Sans titre",
+        link: item.link || "#",
+        snippet: item.snippet || "",
+      })),
       winner: comparison.winner,
       score_difference: Math.abs(brand1GlobalScore - brand2GlobalScore),
       detailed_comparison: comparison.detailed_comparison,

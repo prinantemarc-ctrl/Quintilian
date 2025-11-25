@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { BarChart3, Swords, Globe, Users } from "lucide-react"
+import { BarChart3, Swords } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import Link from "next/link"
 
@@ -28,24 +28,6 @@ export function ExampleSection() {
       bgColor: "bg-red-50",
       borderColor: "border-red-200",
     },
-    {
-      icon: Globe,
-      title: t("example.press_analysis_title"),
-      description: t("example.press_analysis_desc"),
-      href: "/presse",
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-      borderColor: "border-green-200",
-    },
-    {
-      icon: Users,
-      title: t("example.world_reputation_title"),
-      description: t("example.world_reputation_desc"),
-      href: "/world-reputation",
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-      borderColor: "border-purple-200",
-    },
   ]
 
   return (
@@ -58,7 +40,7 @@ export function ExampleSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-12">
           {analysisTypes.map((analysis, index) => (
             <Card
               key={index}

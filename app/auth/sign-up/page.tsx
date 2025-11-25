@@ -63,7 +63,7 @@ export default function SignUpPage() {
         <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Créer un compte</CardTitle>
-            <CardDescription>Rejoignez Quintilian pour accéder à vos analyses</CardDescription>
+            <CardDescription>Rejoignez MAK-IA pour accéder à vos analyses</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSignUp} className="space-y-4">

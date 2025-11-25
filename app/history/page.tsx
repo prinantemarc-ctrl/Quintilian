@@ -53,7 +53,7 @@ export default function HistoryPage() {
     const url = URL.createObjectURL(dataBlob)
     const link = document.createElement("a")
     link.href = url
-    link.download = `quintilian-history-${new Date().toISOString().split("T")[0]}.json`
+    link.download = `mak-ia-history-${new Date().toISOString().split("T")[0]}.json`
     link.click()
     URL.revokeObjectURL(url)
   }

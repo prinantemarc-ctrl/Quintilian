@@ -20,12 +20,12 @@ export function DuelAnalysisForm() {
   const [showModal, setShowModal] = useState(false)
 
   const handleAnalyze = () => {
-    if (formData.brand1.trim() && formData.brand2.trim() && formData.message.trim()) {
+    if (formData.brand1.trim() && formData.brand2.trim()) {
       setShowModal(true)
     }
   }
 
-  const isFormValid = formData.brand1.trim() && formData.brand2.trim() && formData.message.trim()
+  const isFormValid = formData.brand1.trim() && formData.brand2.trim()
 
   return (
     <>
@@ -61,7 +61,7 @@ export function DuelAnalysisForm() {
 
             <div className="space-y-2">
               <Label htmlFor="message" className="text-sm font-semibold">
-                Message à analyser
+                Message à analyser <span className="text-gray-500 font-normal text-xs">(optionnel)</span>
               </Label>
               <Textarea
                 id="message"

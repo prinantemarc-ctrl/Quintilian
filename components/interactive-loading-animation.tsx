@@ -1,12 +1,8 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
-import { Search, Brain, BarChart3, Zap, Globe, CheckCircle2 } from "lucide-react"
+import { Search, Brain, BarChart3, Globe, CheckCircle2, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface LoadingStep {
@@ -39,7 +35,7 @@ export function InteractiveLoadingAnimation({
       label: "Recherche Google",
       description: "Analyse de votre présence digitale",
       icon: <Search className="w-5 h-5" />,
-      color: "bg-blue-500",
+      color: "bg-red-500",
       duration: 30,
       completed: false,
       active: true,
@@ -49,17 +45,17 @@ export function InteractiveLoadingAnimation({
       label: "Extraction de données",
       description: "Collecte des informations pertinentes",
       icon: <Globe className="w-5 h-5" />,
-      color: "bg-green-500",
+      color: "bg-red-400",
       duration: 25,
       completed: false,
       active: false,
     },
     {
       id: "analysis",
-      label: "Analyse GPT",
+      label: "Analyse IA", // Renamed from "Analyse GPT" to "Analyse IA"
       description: "Traitement intelligent des données",
       icon: <Brain className="w-5 h-5" />,
-      color: "bg-purple-500",
+      color: "bg-red-600",
       duration: 35,
       completed: false,
       active: false,
@@ -69,7 +65,7 @@ export function InteractiveLoadingAnimation({
       label: "Calcul des scores",
       description: "Génération des métriques finales",
       icon: <BarChart3 className="w-5 h-5" />,
-      color: "bg-orange-500",
+      color: "bg-red-700",
       duration: 10,
       completed: false,
       active: false,
@@ -80,11 +76,11 @@ export function InteractiveLoadingAnimation({
 
   useEffect(() => {
     if (isLoading) {
-      const newParticles = Array.from({ length: 12 }, (_, i) => ({
+      const newParticles = Array.from({ length: 20 }, (_, i) => ({
         id: i,
         x: Math.random() * 100,
         y: Math.random() * 100,
-        delay: Math.random() * 2,
+        delay: Math.random() * 3,
       }))
       setParticles(newParticles)
     }
@@ -110,16 +106,15 @@ export function InteractiveLoadingAnimation({
   if (!isLoading) return null
 
   return (
-    <div className="relative py-12 px-6">
+    <div className="relative py-12 px-6 min-h-[600px]">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {particles.map((particle) => (
           <div
             key={particle.id}
-            className="absolute w-2 h-2 bg-primary/20 rounded-full animate-pulse"
+            className="absolute w-1 h-1 bg-red-500/30 rounded-full"
             style={{
               left: `${particle.x}%`,
               top: `${particle.y}%`,
-              animationDelay: `${particle.delay}s`,
               animation: `float 4s ease-in-out infinite ${particle.delay}s`,
             }}
           />
@@ -128,27 +123,26 @@ export function InteractiveLoadingAnimation({
 
       <div className="max-w-2xl mx-auto space-y-8 relative z-10">
         <div className="text-center space-y-4">
-          <div className="relative">
-            <div className="w-20 h-20 mx-auto bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center animate-pulse">
-              <Zap className="w-8 h-8 text-white" />
+          <div className="relative inline-block">
+            <div className="w-24 h-24 mx-auto bg-gradient-to-br from-red-600 to-red-900 rounded-full flex items-center justify-center">
+              <Loader2 className="w-10 h-10 text-white animate-spin" />
             </div>
-            <div className="absolute -inset-2 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full animate-ping" />
+            <div className="absolute -inset-3 bg-red-500/20 rounded-full animate-pulse" />
           </div>
 
           <div>
-            <h3 className="text-2xl font-bold mb-2">Analyse en cours...</h3>
-            <p className="text-muted-foreground">Notre IA analyse votre présence digitale en temps réel</p>
+            <h3 className="text-3xl font-bold mb-2 text-white uppercase tracking-wider">Analyse en cours</h3>
+            <p className="text-gray-400">Le système MAK-IA analyse votre présence digitale</p>
           </div>
 
           <div className="space-y-3">
-            <div className="flex justify-between text-sm text-muted-foreground">
-              <span>Progression</span>
+            <div className="flex justify-between text-sm text-gray-500 font-mono">
+              <span>PROGRESSION</span>
               <span>{Math.round(progress)}%</span>
             </div>
-            <div className="relative">
-              <Progress value={progress} className="h-4 bg-muted/50" />
+            <div className="relative h-3 bg-zinc-900 border border-red-900/50 rounded-full overflow-hidden">
               <div
-                className="absolute top-0 left-0 h-4 bg-gradient-to-r from-primary via-accent to-primary rounded-full transition-all duration-500 ease-out"
+                className="absolute top-0 left-0 h-full bg-gradient-to-r from-red-600 via-red-500 to-red-600 transition-all duration-500 ease-out"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -157,91 +151,91 @@ export function InteractiveLoadingAnimation({
 
         <div className="space-y-4">
           {steps.map((step, index) => (
-            <Card
+            <div
               key={step.id}
               className={cn(
-                "transition-all duration-500 transform",
-                step.active && "scale-105 shadow-lg border-primary/50",
-                step.completed && "bg-green-50 border-green-200",
+                "border rounded-lg transition-all duration-500 p-6",
+                step.active && "border-red-500/70 bg-red-950/20 shadow-lg shadow-red-500/10 scale-105",
+                step.completed && "border-green-500/50 bg-green-950/20",
+                !step.active && !step.completed && "border-white/10 bg-zinc-900/50",
               )}
             >
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <div
-                      className={cn(
-                        "w-12 h-12 rounded-full flex items-center justify-center text-white transition-all duration-500",
-                        step.completed ? "bg-green-500" : step.active ? step.color : "bg-muted",
-                      )}
-                    >
-                      {step.completed ? (
-                        <CheckCircle2 className="w-6 h-6" />
-                      ) : step.active ? (
-                        <div className="animate-spin">{step.icon}</div>
-                      ) : (
-                        step.icon
-                      )}
-                    </div>
-
-                    {step.active && (
-                      <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-accent/30 rounded-full animate-pulse" />
-                    )}
-                  </div>
-
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-1">
-                      <h4
-                        className={cn(
-                          "font-semibold transition-colors duration-300",
-                          step.completed ? "text-green-700" : step.active ? "text-primary" : "text-muted-foreground",
-                        )}
-                      >
-                        {step.label}
-                      </h4>
-
-                      <Badge
-                        variant={step.completed ? "default" : step.active ? "secondary" : "outline"}
-                        className={cn(
-                          "text-xs",
-                          step.completed && "bg-green-100 text-green-800 border-green-200",
-                          step.active && "bg-primary/10 text-primary border-primary/20",
-                        )}
-                      >
-                        {step.completed ? "Terminé" : step.active ? "En cours" : "En attente"}
-                      </Badge>
-                    </div>
-
-                    <p
-                      className={cn(
-                        "text-sm transition-colors duration-300",
-                        step.completed ? "text-green-600" : step.active ? "text-foreground" : "text-muted-foreground",
-                      )}
-                    >
-                      {step.description}
-                    </p>
-
-                    {step.active && (
-                      <div className="mt-3">
-                        <Progress value={((progress % 25) / 25) * 100} className="h-2" />
-                      </div>
-                    )}
-                  </div>
-
+              <div className="flex items-center gap-4">
+                <div className="relative flex-shrink-0">
                   <div
                     className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300",
-                      step.completed
-                        ? "bg-green-100 text-green-700"
-                        : step.active
-                          ? "bg-primary/10 text-primary"
-                          : "bg-muted text-muted-foreground",
+                      "w-12 h-12 rounded-full flex items-center justify-center text-white transition-all duration-500",
+                      step.completed ? "bg-green-600" : step.active ? step.color : "bg-zinc-800",
                     )}
                   >
-                    {index + 1}
+                    {step.completed ? (
+                      <CheckCircle2 className="w-6 h-6" />
+                    ) : step.active ? (
+                      <div className="animate-spin">{step.icon}</div>
+                    ) : (
+                      step.icon
+                    )}
                   </div>
+
+                  {step.active && <div className="absolute -inset-1 bg-red-500/30 rounded-full animate-pulse" />}
                 </div>
-              </CardContent>
-            </Card>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-1">
+                    <h4
+                      className={cn(
+                        "font-bold text-lg transition-colors duration-300",
+                        step.completed ? "text-green-400" : step.active ? "text-red-400" : "text-gray-600",
+                      )}
+                    >
+                      {step.label}
+                    </h4>
+
+                    <span
+                      className={cn(
+                        "text-xs uppercase font-mono px-2 py-0.5 rounded border",
+                        step.completed && "bg-green-950/50 text-green-400 border-green-500/50",
+                        step.active && "bg-red-950/50 text-red-400 border-red-500/50",
+                        !step.active && !step.completed && "bg-zinc-900 text-gray-600 border-white/10",
+                      )}
+                    >
+                      {step.completed ? "✓ Terminé" : step.active ? "● En cours" : "○ En attente"}
+                    </span>
+                  </div>
+
+                  <p
+                    className={cn(
+                      "text-sm transition-colors duration-300",
+                      step.completed ? "text-green-300/70" : step.active ? "text-gray-300" : "text-gray-600",
+                    )}
+                  >
+                    {step.description}
+                  </p>
+
+                  {step.active && (
+                    <div className="mt-3 h-1.5 bg-zinc-900 border border-red-900/50 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-300"
+                        style={{ width: `${((progress % 25) / 25) * 100}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div
+                  className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold font-mono transition-all duration-300 flex-shrink-0",
+                    step.completed
+                      ? "bg-green-950/50 text-green-400 border border-green-500/50"
+                      : step.active
+                        ? "bg-red-950/50 text-red-400 border border-red-500/50"
+                        : "bg-zinc-900 text-gray-600 border border-white/10",
+                  )}
+                >
+                  {index + 1}
+                </div>
+              </div>
+            </div>
           ))}
         </div>
 
@@ -250,8 +244,8 @@ export function InteractiveLoadingAnimation({
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="w-3 h-3 bg-primary rounded-full animate-bounce"
-                style={{ animationDelay: `${i * 0.2}s` }}
+                className="w-2 h-2 bg-red-500 rounded-full animate-bounce"
+                style={{ animationDelay: `${i * 0.15}s` }}
               />
             ))}
           </div>
@@ -261,12 +255,12 @@ export function InteractiveLoadingAnimation({
       <style jsx>{`
         @keyframes float {
           0%, 100% {
-            transform: translateY(0px) rotate(0deg);
-            opacity: 0.7;
+            transform: translateY(0px) translateX(0px);
+            opacity: 0.3;
           }
           50% {
-            transform: translateY(-20px) rotate(180deg);
-            opacity: 1;
+            transform: translateY(-30px) translateX(10px);
+            opacity: 0.8;
           }
         }
       `}</style>

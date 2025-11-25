@@ -89,7 +89,7 @@ async function searchGoogleCustom(options: GMISearchOptions): Promise<GMISearchR
     const response = await fetch(url.toString(), {
       signal: controller.signal,
       headers: {
-        "User-Agent": "Quintilian-Index-GMI/1.0",
+        "User-Agent": "MAK-IA-GMI/1.0",
       },
     })
 

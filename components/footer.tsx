@@ -18,7 +18,7 @@ export function Footer() {
         <div className="grid md:grid-cols-4 gap-8">
           {/* Logo & Description */}
           <div className="space-y-4">
-            <h3 className="text-xl font-bold">QUINTILIAN INDEX</h3>
+            <h3 className="text-xl font-bold">MAK-IA</h3>
             <p className="text-sm opacity-90">{t("footer.description")}</p>
           </div>
 
@@ -80,8 +80,8 @@ export function Footer() {
             <h4 className="font-semibold">{t("footer.contact_title")}</h4>
             <div className="text-sm space-y-2">
               <p>
-                <a href="mailto:contact@seogptscore.com" className="opacity-90 hover:opacity-100 transition-opacity">
-                  contact@quintilian.app
+                <a href="mailto:contact@mak-ia.com" className="opacity-90 hover:opacity-100 transition-opacity">
+                  contact@mak-ia.com
                 </a>
               </p>
               <p className="opacity-90">{t("footer.support")}</p>
@@ -90,7 +90,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-primary-foreground/20 mt-8 pt-8 text-center">
-          <p className="text-sm opacity-90">© 2025 Quintilian App</p>
+          <p className="text-sm opacity-90">© 2025 MAK-IA</p>
         </div>
       </div>
     </footer>

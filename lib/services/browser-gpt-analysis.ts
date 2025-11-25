@@ -1,5 +1,4 @@
 import { generateText } from "ai"
-import { openai } from "@ai-sdk/openai"
 
 export interface AnalysisScores {
   presence_score: number
@@ -17,6 +16,14 @@ export interface DetailedAnalysis extends AnalysisScores {
   presence_details?: string
   tone_details?: string
   coherence_details?: string
+}
+
+export interface PressAnalysisResult {
+  sentiment: string
+  score: number
+  summary: string
+  keyTopics?: string[]
+  riskFactors?: string[]
 }
 
 export async function analyzeGoogleResults(
@@ -55,7 +62,7 @@ ${searchContext}
 Réponds uniquement avec le résumé, sans formatage markdown.`
 
     const { text } = await generateText({
-      model: openai("gpt-4o-mini"),
+      model: "openai/gpt-4o-mini",
       prompt: prompt,
       temperature: 0.3,
     })
@@ -105,7 +112,7 @@ Une analyse de 4-5 phrases qui ressemble à un rapport d'expert en réputation, 
 Écris en ${responseLanguage}. Réponds uniquement avec ton analyse, sans formatage markdown.`
 
     const { text } = await generateText({
-      model: openai("gpt-4o-mini"),
+      model: "openai/gpt-4o-mini",
       prompt: prompt,
       temperature: 0.3,
     })
@@ -151,7 +158,7 @@ export async function generateDetailedAnalysis(
         : generateSingleAnalysisPrompt(brand, message, googleContent, language, responseLanguage)
 
     const { text } = await generateText({
-      model: openai("gpt-4o-mini"),
+      model: "openai/gpt-4o-mini",
       prompt: prompt,
       temperature: 0.3,
     })
@@ -338,7 +345,7 @@ Réponds en JSON avec cette structure exacte:
 Réponds uniquement avec du JSON valide, sans formatage markdown.`
 
     const { text } = await generateText({
-      model: openai("gpt-4o-mini"),
+      model: "openai/gpt-4o-mini",
       prompt: prompt,
       temperature: 0.3,
     })
@@ -384,5 +391,233 @@ function generateReputationFallback(query: string, presentationLanguage = "fr") 
     keyTopics: ["réputation", "perception publique", "image de marque"],
     riskFactors: scores[randomIndex] < 6 ? ["perception négative"] : [],
     presence_score: scores[randomIndex] / 10,
+  }
+}
+
+export async function analyzePressCoverage(
+  brand: string,
+  articles: any[],
+  language = "fr",
+): Promise<PressAnalysisResult> {
+  console.log(`[v0] Starting press coverage analysis for: ${brand}`)
+
+  try {
+    const apiKey = process.env.OPENAI_API_KEY
+    if (!apiKey) {
+      return {
+        sentiment: "neutral",
+        score: 5,
+        summary: "Analyse de couverture de presse non disponible - clé API manquante.",
+      }
+    }
+
+    const articleContext = articles
+      .slice(0, 10)
+      .map((item, index) => `${index + 1}. **${item.title}**\\n   ${item.snippet}\\n   Source: ${item.link}`)
+      .join("\\n\\n")
+
+    const prompt = `Tu es un expert en analyse de couverture de presse. Analyse les 10 premiers articles suivants concernant "${brand}" et fournis un résumé synthétique et intelligible.
+
+**Articles à analyser (sources en ${language}):**
+${articleContext}
+
+**Instructions:**
+- Évalue la réputation sur une échelle de 0 à 10
+- Détermine le sentiment général (positive, negative, neutral, mixed)
+- Identifie 3-4 sujets clés qui ressortent
+- Signale les facteurs de risque potentiels
+- Fais un résumé de 2-3 phrases
+- Réponds uniquement avec du JSON valide, sans formatage markdown.`
+
+    const { text } = await generateText({
+      model: "openai/gpt-4o-mini",
+      prompt: prompt,
+      temperature: 0.3,
+    })
+
+    console.log(`[v0] Press coverage analysis completed for ${brand}`)
+
+    let cleanedText = text.trim()
+    if (cleanedText.startsWith("```json")) {
+      cleanedText = cleanedText.replace(/^```json\\s*/, "").replace(/\\s*```$/, "")
+    }
+
+    const parsedAnalysis = JSON.parse(cleanedText)
+    return {
+      sentiment: parsedAnalysis.sentiment || "neutral",
+      score: parsedAnalysis.score || 5,
+      summary: parsedAnalysis.summary || "Analyse non disponible",
+      keyTopics: parsedAnalysis.keyTopics || [],
+      riskFactors: parsedAnalysis.riskFactors || [],
+    }
+  } catch (error) {
+    console.error(`[v0] Press coverage analysis error for ${brand}:`, error)
+    return {
+      sentiment: "neutral",
+      score: 5,
+      summary: "Analyse de couverture de presse non disponible - erreur technique.",
+    }
+  }
+}
+
+export async function comparePressCoverage(
+  brand1: string,
+  articles1: any[],
+  brand2: string,
+  articles2: any[],
+  language = "fr",
+): Promise<string> {
+  console.log(`[v0] Starting press coverage comparison between ${brand1} and ${brand2}`)
+
+  try {
+    const apiKey = process.env.OPENAI_API_KEY
+    if (!apiKey) {
+      return "Comparaison de couverture de presse non disponible - clé API manquante."
+    }
+
+    const articleContext1 = articles1
+      .slice(0, 10)
+      .map((item, index) => `${index + 1}. **${item.title}**\\n   ${item.snippet}\\n   Source: ${item.link}`)
+      .join("\\n\\n")
+
+    const articleContext2 = articles2
+      .slice(0, 10)
+      .map((item, index) => `${index + 1}. **${item.title}**\\n   ${item.snippet}\\n   Source: ${item.link}`)
+      .join("\\n\\n")
+
+    const prompt = `Tu es un expert en analyse de couverture de presse. Compare les 10 premiers articles de "${brand1}" avec ceux de "${brand2}" et fournis une analyse comparative.
+
+**Articles de ${brand1} (${articleContext1.split("\\n\\n").length} sources) :**
+${articleContext1}
+
+**Articles de ${brand2} (${articleContext2.split("\\n\\n").length} sources) :**
+${articleContext2}
+
+**Instructions:**
+- Compare les sentiments généraux entre les deux marques
+- Identifie les différences clés dans la couverture de presse
+- Signale les facteurs de risque potentiels pour chaque marque
+- Fais un résumé de 4-5 phrases qui synthétise les principales différences et conclusions
+- Réponds uniquement avec le résumé, sans formatage markdown.`
+
+    const { text } = await generateText({
+      model: "openai/gpt-4o-mini",
+      prompt: prompt,
+      temperature: 0.3,
+    })
+
+    console.log(`[v0] Press coverage comparison completed between ${brand1} and ${brand2}`)
+    return text.trim()
+  } catch (error) {
+    console.error(`[v0] Press coverage comparison error between ${brand1} and ${brand2}:`, error)
+    return "Erreur lors de la comparaison de couverture de presse."
+  }
+}
+
+export async function analyzeArticleSentiment(
+  articleTitle: string,
+  articleSnippet: string,
+  brand: string,
+  language = "fr",
+): Promise<{ sentiment: "positive" | "neutral" | "negative"; score: number; rationale: string }> {
+  console.log(`[v0] Starting sentiment analysis for article: ${articleTitle}`)
+
+  try {
+    const apiKey = process.env.OPENAI_API_KEY
+    if (!apiKey) {
+      return {
+        sentiment: "neutral",
+        score: 5,
+        rationale: "Analyse de sentiment de l'article non disponible - clé API manquante.",
+      }
+    }
+
+    const prompt = `Tu es un expert en analyse de sentiment. Analyse l'article suivant concernant "${brand}" et évalue son sentiment.
+
+**Titre de l'article:** "${articleTitle}"
+**Contenu de l'article:** "${articleSnippet}"
+
+**Instructions:**
+- Évalue le sentiment de l'article sur une échelle de 0 à 100
+- Détermine le sentiment général (positive, negative, neutral)
+- Fournis une justification détaillée de 2-3 phrases pour le sentiment évalué
+- Réponds uniquement avec du JSON valide, sans formatage markdown.`
+
+    const { text } = await generateText({
+      model: "openai/gpt-4o-mini",
+      prompt: prompt,
+      temperature: 0.2,
+    })
+
+    console.log(`[v0] Sentiment analysis completed for article: ${articleTitle}`)
+
+    let cleanedText = text.trim()
+    if (cleanedText.startsWith("```json")) {
+      cleanedText = cleanedText.replace(/^```json\\s*/, "").replace(/\\s*```$/, "")
+    }
+
+    const parsedAnalysis = JSON.parse(cleanedText)
+    return {
+      sentiment: parsedAnalysis.sentiment || "neutral",
+      score: parsedAnalysis.score || 50,
+      rationale: parsedAnalysis.rationale || "Analyse non disponible",
+    }
+  } catch (error) {
+    console.error(`[v0] Sentiment analysis error for article: ${articleTitle}:`, error)
+    return {
+      sentiment: "neutral",
+      score: 50,
+      rationale: "Analyse de sentiment de l'article non disponible - erreur technique.",
+    }
+  }
+}
+
+export async function generatePressInsights(
+  brand: string,
+  sentimentData: { positive: number; neutral: number; negative: number },
+  topArticles: any[],
+  language = "fr",
+): Promise<string> {
+  console.log(`[v0] Starting press insights generation for: ${brand}`)
+
+  try {
+    const apiKey = process.env.OPENAI_API_KEY
+    if (!apiKey) {
+      return "Insights de presse non disponibles - clé API manquante."
+    }
+
+    const articleContext = topArticles
+      .slice(0, 5)
+      .map((item, index) => `${index + 1}. **${item.title}**\\n   ${item.snippet}\\n   Source: ${item.link}`)
+      .join("\\n\\n")
+
+    const prompt = `Tu es un expert en analyse de presse. Génère des insights sur la couverture de presse de "${brand}" basée sur les sentiments évalués et les articles les plus pertinents.
+
+**Données de sentiment:**
+- Positif: ${sentimentData.positive}
+- Neutre: ${sentimentData.neutral}
+- Négatif: ${sentimentData.negative}
+
+**Articles les plus pertinents (${articleContext.split("\\n\\n").length} sources) :**
+${articleContext}
+
+**Instructions:**
+- Fournis des insights factuels et pertinents sur la couverture de presse de "${brand}"
+- Concentre-toi sur les tendances sentimentales et les sujets clés
+- Propose des recommandations basées sur ces insights
+- Fais un résumé de 4-5 phrases qui synthétise les principaux points
+- Réponds uniquement avec le résumé, sans formatage markdown.`
+
+    const { text } = await generateText({
+      model: "openai/gpt-4o-mini",
+      prompt: prompt,
+      temperature: 0.4,
+    })
+
+    console.log(`[v0] Press insights generation completed for ${brand}`)
+    return text.trim()
+  } catch (error) {
+    console.error(`[v0] Press insights generation error for ${brand}:`, error)
+    return "Erreur lors de la génération des insights de presse."
   }
 }

@@ -25,7 +25,7 @@ const translations = {
     analysisSubtitle:
       "Notre technologie scrute l'ensemble de votre écosystème digital pour vous révéler votre véritable image en ligne.",
     quintilianQuote:
-      "« Aujourd'hui, quand on cherche une information, on ne se limite plus au moteur de recherche classique. On interroge aussi les grands modèles d'intelligence artificielle, qui deviennent une nouvelle porte d'entrée vers le savoir. Or, ces deux sources donnent des visions différentes : l'une reflète ce qui existe réellement en ligne, l'autre reflète ce qui est perçu et structuré dans sa mémoire. Quintilian combine les deux pour révéler ce que \"le web\" pense vraiment de vous. Le système délivre trois scores clairs : présence, sentiment et cohérence. »",
+      "« Aujourd'hui, quand on cherche une information, on ne se limite plus au moteur de recherche classique. On interroge aussi les grands modèles d'intelligence artificielle, qui deviennent une nouvelle porte d'entrée vers le savoir. Or, ces deux sources donnent des visions différentes : l'une reflète ce qui existe réellement en ligne, l'autre reflète ce qui est perçu et structuré dans sa mémoire. MAK-IA combine les deux pour révéler ce que \"le web\" pense vraiment de vous. Le système délivre trois scores clairs : présence, sentiment et cohérence. »",
     searchEngines: "Moteurs de recherche",
     seo: "(SEO)",
     searchEnginesDesc: "Analyse complète de votre visibilité sur Google, Bing et autres moteurs de recherche",
@@ -53,7 +53,7 @@ const translations = {
     methodologyTagline: "A unique methodology, a robust algorithm",
     analysisSubtitle: "Our technology scans your entire digital ecosystem to reveal your true online image.",
     quintilianQuote:
-      '« Today, when we search for information, we no longer limit ourselves to classic search engines. We also query large artificial intelligence models, which are becoming a new gateway to knowledge. However, these two sources give different visions: one reflects what actually exists online, the other reflects what is perceived and structured in its memory. Quintilian combines both to reveal what "the web" really thinks of you. The system delivers three clear scores: presence, sentiment and coherence. »',
+      '« Today, when we search for information, we no longer limit ourselves to classic search engines. We also query large artificial intelligence models, which are becoming a new gateway to knowledge. However, these two sources give different visions: one reflects what actually exists online, the other reflects what is perceived and structured in its memory. MAK-IA combines both to reveal what "the web" really thinks of you. The system delivers three clear scores: presence, sentiment and coherence. »',
     searchEngines: "Search engines",
     seo: "(SEO)",
     searchEnginesDesc: "Complete analysis of your visibility on Google, Bing and other search engines",
@@ -82,7 +82,7 @@ const translations = {
     analysisSubtitle:
       "Nuestra tecnología escanea todo tu ecosistema digital para revelarte tu verdadera imagen en línea.",
     quintilianQuote:
-      '« Hoy, cuando buscamos información, ya no nos limitamos a los motores de búsqueda clásicos. También consultamos grandes modelos de inteligencia artificial, que se están convirtiendo en una nueva puerta de entrada al conocimiento. Sin embargo, estas dos fuentes dan visiones diferentes: una refleja lo que realmente existe en línea, la otra refleja lo que se percibe y estructura en su memoria. Quintilian combina ambas para revelar lo que "la web" realmente piensa de ti. El sistema entrega tres puntuaciones claras: presencia, sentimiento y coherencia. »',
+      '« Hoy, cuando buscamos información, ya no nos limitamos a los motores de búsqueda clásicos. También consultamos grandes modelos de inteligencia artificial, que se están convirtiendo en una nueva puerta de entrada al conocimiento. Sin embargo, estas dos fuentes dan visiones diferentes: una refleja lo que realmente existe en línea, la otra refleja lo que se percibe y estructura en su memoria. MAK-IA combina ambas para revelar lo que "la web" realmente piensa de ti. El sistema entrega tres puntuaciones claras: presencia, sentimiento y coherencia. »',
     searchEngines: "Motores de búsqueda",
     seo: "(SEO)",
     searchEnginesDesc: "Análisis completo de tu visibilidad en Google, Bing y otros motores de búsqueda",

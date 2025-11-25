@@ -21,7 +21,7 @@ export default function DashboardLayout({
             <div className="mr-4 flex">
               <Link href="/dashboard" className="mr-6 flex items-center space-x-2">
                 <BookOpen className="h-6 w-6" />
-                <span className="font-bold">Quintilian</span>
+                <span className="font-bold">MAK-IA</span>
               </Link>
             </div>
             <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">

@@ -152,7 +152,7 @@ async function searchGoogleCustomSearch(options: PressSearchOptions): Promise<Pr
     const response = await fetch(url.toString(), {
       signal: controller.signal,
       headers: {
-        "User-Agent": "Quintilian-Index-Press/1.0",
+        "User-Agent": "MAK-IA-Press/1.0",
       },
     })
 

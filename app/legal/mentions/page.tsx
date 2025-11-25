@@ -22,10 +22,10 @@ export default function MentionsLegalesPage() {
             <section className="mb-8">
               <h2 className="text-xl font-semibold mb-4">{t("legal.editor_info")}</h2>
               <p>
-                <strong>Quintilian App</strong>
+                <strong>MAK-IA</strong>
               </p>
               <p>{t("legal.company_address")}</p>
-              <p>Email: contact@quintilian.app</p>
+              <p>Email: contact@mak-ia.com</p>
             </section>
 
             <section className="mb-8">

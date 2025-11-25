@@ -55,7 +55,7 @@ export default function LoginPage() {
         <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Connexion</CardTitle>
-            <CardDescription>Connectez-vous à votre compte Quintilian</CardDescription>
+            <CardDescription>Connectez-vous à votre compte MAK-IA</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">

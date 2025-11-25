@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!result) {
     return {
-      title: "Résultat non trouvé - Quintilian",
+      title: "Résultat non trouvé - MAK-IA",
       description: "Ce résultat d'analyse n'existe pas ou a expiré.",
     }
   }
@@ -23,13 +23,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   )
 
   return {
-    title: `Analyse SEO de ${result.brand} - Score: ${globalScore}/100 - Quintilian`,
+    title: `Analyse SEO de ${result.brand} - Score: ${globalScore}/100 - MAK-IA`,
     description: `Découvrez l'analyse SEO complète de ${result.brand} : présence digitale, sentiment et cohérence. Score global: ${globalScore}/100.`,
     openGraph: {
       title: `Analyse SEO de ${result.brand} - Score: ${globalScore}/100`,
       description: `Découvrez l'analyse SEO complète de ${result.brand}. Score global: ${globalScore}/100`,
       type: "website",
-      url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://quintilian.vercel.app"}/shared/${id}`,
+      url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://mak-ia.com"}/shared/${id}`,
     },
     twitter: {
       card: "summary_large_image",

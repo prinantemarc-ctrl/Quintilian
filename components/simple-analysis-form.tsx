@@ -14,17 +14,17 @@ export function SimpleAnalysisForm() {
   const [formData, setFormData] = useState({
     brand: "",
     message: "",
-    language: "",
+    language: "fr", // Default language to 'fr'
   })
   const [showModal, setShowModal] = useState(false)
 
   const handleAnalyze = () => {
-    if (formData.brand.trim() && formData.message.trim() && formData.language) {
+    if (formData.brand.trim()) {
       setShowModal(true)
     }
   }
 
-  const isFormValid = formData.brand.trim() && formData.message.trim() && formData.language
+  const isFormValid = formData.brand.trim()
 
   return (
     <>
@@ -34,7 +34,7 @@ export function SimpleAnalysisForm() {
             <div className="space-y-2">
               <Label htmlFor="brand" className="text-sm font-semibold flex items-center gap-2">
                 <Target className="w-4 h-4 text-primary" />
-                Nom ou marque à analyser
+                Nom ou marque à analyser <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="brand"
@@ -48,11 +48,11 @@ export function SimpleAnalysisForm() {
             <div className="space-y-2">
               <Label htmlFor="message" className="text-sm font-semibold flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-primary" />
-                Message à analyser
+                Message à analyser <span className="text-muted-foreground text-xs">(optionnel)</span>
               </Label>
               <Textarea
                 id="message"
-                placeholder="Ex: Leader de l'innovation technologique"
+                placeholder="Ex: Leader de l'innovation technologique (laissez vide pour une analyse générale)"
                 value={formData.message}
                 onChange={(e) => setFormData((prev) => ({ ...prev, message: e.target.value }))}
                 className="min-h-[100px] text-base resize-none"
@@ -61,7 +61,7 @@ export function SimpleAnalysisForm() {
 
             <div className="space-y-2">
               <Label htmlFor="language" className="text-sm font-semibold">
-                Langue d'analyse
+                Langue d'analyse <span className="text-muted-foreground text-xs">(optionnel)</span>
               </Label>
               <Select
                 value={formData.language}

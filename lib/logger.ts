@@ -46,7 +46,7 @@ class Logger {
       const { error } = await supabase.from("search_logs").insert({
         id: log.id,
         created_at: log.timestamp.toISOString(),
-        analysis_type: log.type, // Changed from 'type' to 'analysis_type'
+        analysis_type: log.type,
         query: log.query,
         competitor_query: log.brand2 || null,
         language: log.language || "fr",
@@ -57,25 +57,29 @@ class Logger {
           tokens_used: log.results.openai_tokens_used,
         },
         scores: {
-          presence_score: log.results.presence_score,
-          sentiment_score: log.results.sentiment_score,
-          coherence_score: log.results.coherence_score,
+          presence_score: log.results.presence_score ? Math.round(log.results.presence_score) : null,
+          sentiment_score: log.results.sentiment_score ? Math.round(log.results.sentiment_score) : null,
+          coherence_score: log.results.coherence_score ? Math.round(log.results.coherence_score) : null,
           overall_score:
-            ((log.results.presence_score || 0) +
-              (log.results.sentiment_score || 0) +
-              (log.results.coherence_score || 0)) /
-            3,
+            log.results.presence_score && log.results.sentiment_score && log.results.coherence_score
+              ? Math.round(
+                  ((log.results.presence_score || 0) +
+                    (log.results.sentiment_score || 0) +
+                    (log.results.coherence_score || 0)) /
+                    3,
+                )
+              : null,
         },
-        presence_score: log.results.presence_score,
-        sentiment_score: log.results.sentiment_score,
-        coherence_score: log.results.coherence_score,
+        presence_score: log.results.presence_score ? Math.round(log.results.presence_score) : null,
+        sentiment_score: log.results.sentiment_score ? Math.round(log.results.sentiment_score) : null,
+        coherence_score: log.results.coherence_score ? Math.round(log.results.coherence_score) : null,
         user_ip: log.ip_address,
         user_agent: log.user_agent,
         session_id: log.identity || null,
-        processing_time_ms: Math.round(log.results.processing_time * 1000), // Changed to processing_time_ms
-        error_message: log.error || null, // Changed from 'error' to 'error_message'
-        user_id: log.user_id || null, // Ajout du user_id dans l'insertion
-        full_response_text: log.full_response_text || null, // Ajout du full_response_text dans l'insertion
+        processing_time_ms: Math.round(log.results.processing_time * 1000),
+        error_message: log.error || null,
+        user_id: log.user_id || null,
+        full_response_text: log.full_response_text || null,
       })
 
       if (error) {
@@ -111,7 +115,7 @@ class Logger {
       return data.map((record) => ({
         id: record.id,
         timestamp: new Date(record.created_at),
-        type: record.analysis_type as "analyze" | "duel", // Changed from 'type' to 'analysis_type'
+        type: record.analysis_type as "analyze" | "duel",
         query: record.query,
         identity: record.session_id,
         brand1: record.query,
@@ -121,15 +125,15 @@ class Logger {
           presence_score: record.presence_score || record.scores?.presence_score,
           sentiment_score: record.sentiment_score || record.scores?.sentiment_score,
           coherence_score: record.coherence_score || record.scores?.coherence_score,
-          processing_time: (record.processing_time_ms || 0) / 1000, // Convert from ms to seconds
+          processing_time: (record.processing_time_ms || 0) / 1000,
           google_results_count: record.google_results?.count || 0,
           openai_tokens_used: record.gpt_analysis?.tokens_used,
         },
         user_agent: record.user_agent || "",
         ip_address: record.user_ip,
-        error: record.error_message, // Changed from 'error' to 'error_message'
-        user_id: record.user_id, // Ajout du user_id dans le mapping
-        full_response_text: record.full_response_text, // Ajout du full_response_text dans le mapping
+        error: record.error_message,
+        user_id: record.user_id,
+        full_response_text: record.full_response_text,
       }))
     } catch (error) {
       console.error("[LOGGER] Database error:", error instanceof Error ? error.message : "Unknown error")
@@ -165,7 +169,7 @@ class Logger {
         .select("*", { count: "exact", head: true })
         .gte("created_at", thisMonth.toISOString())
 
-      const { data: typeData } = await supabase.from("search_logs").select("analysis_type") // Changed from 'type' to 'analysis_type'
+      const { data: typeData } = await supabase.from("search_logs").select("analysis_type")
 
       const byType =
         typeData?.reduce(
@@ -189,7 +193,7 @@ class Logger {
 
       const { data: processingData } = await supabase
         .from("search_logs")
-        .select("processing_time_ms") // Changed from 'processing_time' to 'processing_time_ms'
+        .select("processing_time_ms")
         .not("processing_time_ms", "is", null)
 
       const avgProcessingTime = processingData?.length
@@ -199,7 +203,7 @@ class Logger {
       const { count: errorCount } = await supabase
         .from("search_logs")
         .select("*", { count: "exact", head: true })
-        .not("error_message", "is", null) // Changed from 'error' to 'error_message'
+        .not("error_message", "is", null)
 
       const { data: userIdData } = await supabase.from("search_logs").select("user_id")
       const byUserId =
@@ -221,7 +225,7 @@ class Logger {
           duel: byType.duel || 0,
         },
         byLanguage,
-        avgProcessingTime: avgProcessingTime / 1000, // Convert from ms to seconds
+        avgProcessingTime: avgProcessingTime / 1000,
         errors: errorCount || 0,
         byUserId,
       }
@@ -272,8 +276,8 @@ class Logger {
         "Processing Time (ms)",
         "Google Results",
         "User IP",
-        "User ID", // Ajout du user_id dans les headers
-        "Full Response Text", // Ajout du full_response_text dans les headers
+        "User ID",
+        "Full Response Text",
       ]
 
       const csvRows = [
@@ -282,18 +286,18 @@ class Logger {
           [
             row.id,
             new Date(row.created_at).toLocaleString(),
-            row.analysis_type, // Changed from 'type' to 'analysis_type'
+            row.analysis_type,
             `"${row.query.replace(/"/g, '""')}"`,
             row.competitor_query ? `"${row.competitor_query.replace(/"/g, '""')}"` : "",
             row.scores?.overall_score || "",
             row.presence_score || "",
             row.sentiment_score || "",
             row.coherence_score || "",
-            row.processing_time_ms || "", // Changed to processing_time_ms
+            row.processing_time_ms || "",
             row.google_results?.count || "",
             row.user_ip || "",
-            row.user_id || "", // Ajout du user_id dans les données CSV
-            row.full_response_text ? `"${row.full_response_text.replace(/"/g, '""').replace(/\n/g, "\\n")}"` : "", // Ajout du full_response_text dans les données CSV
+            row.user_id || "",
+            row.full_response_text ? `"${row.full_response_text.replace(/"/g, '""').replace(/\n/g, "\\n")}"` : "",
           ].join(","),
         ),
       ]

@@ -26,7 +26,7 @@ export default function DuelPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (formData.brand1.trim() && formData.brand2.trim() && formData.message.trim()) {
+    if (formData.brand1.trim() && formData.brand2.trim()) {
       setShowModal(true)
     }
   }
@@ -88,7 +88,7 @@ export default function DuelPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="message" className="text-sm font-medium">
-                    {t("hero.message_label")}
+                    {t("hero.message_label")} <span className="text-muted-foreground text-xs">(optionnel)</span>
                   </Label>
                   <Textarea
                     id="message"
@@ -96,7 +96,6 @@ export default function DuelPage() {
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     className="min-h-[100px] border-primary/20 focus:border-primary"
-                    required
                   />
                 </div>
 

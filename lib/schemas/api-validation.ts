@@ -1,8 +1,8 @@
 import { z } from "zod"
 
 export const BaseAnalysisSchema = z.object({
-  message: z.string().min(1, "Le message est requis"),
-  language: z.string().min(1, "La langue est requise"),
+  message: z.string().optional().default(""),
+  language: z.string().optional().default("fr"),
   country: z.string().optional(),
 })
 

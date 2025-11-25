@@ -4,7 +4,7 @@ import { SingleAnalysisSchema } from "@/lib/schemas/api-validation"
 import { searchGoogle, clearGoogleSearchCache } from "@/lib/services/google-search"
 import {
   analyzeGoogleResults,
-  independentGPTAnalysis,
+  independentAIAnalysis, // Fixed import to use correct alias name
   generateDetailedAnalysis,
   detectHomonyms,
 } from "@/lib/services/gpt-analysis"
@@ -45,18 +45,25 @@ export async function POST(request: NextRequest) {
 
     console.log("[v0] Parsing request body")
     const parsedData = SingleAnalysisSchema.parse(body)
-    let { brand, message, language, country, selected_identity, search_results } = parsedData
+    let { brand, message = "", language = "fr", country, selected_identity, search_results } = parsedData
+
+    const hasMessage = message && message.trim().length > 0
 
     const userLanguage = request.headers.get("accept-language")?.split(",")[0]?.split("-")[0] || "fr"
-    console.log("[v0] Analysis language:", language, "| Presentation language:", userLanguage)
+    console.log(
+      "[v0] Analysis language:",
+      language,
+      "| Presentation language:",
+      userLanguage,
+      "| Has message:",
+      hasMessage,
+    )
 
     console.log("[v0] Processing brand:", brand, country ? `(Country: ${country})` : "")
 
-    // If we have a selected identity, use the provided search results
     let searchResults = search_results || []
 
     if (!selected_identity) {
-      // Step 1: Search Google
       console.log("[v0] Step 1: Starting Google search")
       try {
         searchResults = await searchGoogle(brand, { language, country })
@@ -91,9 +98,9 @@ export async function POST(request: NextRequest) {
       }
 
       if (searchResults.length >= 3) {
-        console.log("[v0] Step 1.5: Checking for homonyms")
+        console.log("[v0] Step 1.5: Checking for homonyms with search context")
         try {
-          const homonymDetection = await detectHomonyms(searchResults, brand, language, userLanguage)
+          const homonymDetection = await detectHomonyms(brand, searchResults, language, userLanguage)
 
           if (homonymDetection.requires_identity_selection) {
             console.log("[v0] Homonyms detected, requesting identity selection")
@@ -110,16 +117,13 @@ export async function POST(request: NextRequest) {
           }
         } catch (error) {
           console.error("[v0] Homonym detection failed:", error)
-          // Continue with normal analysis if homonym detection fails
         }
       }
     } else {
       console.log("[v0] Using selected identity:", selected_identity)
-      // Modify the brand for analysis to include the selected identity context
       brand = selected_identity
     }
 
-    // Step 2: Analyze Google results
     console.log("[v0] Step 2: Starting Google results analysis")
     let googleSummary = "Résumé Google non disponible"
     try {
@@ -134,58 +138,83 @@ export async function POST(request: NextRequest) {
       console.error("[v0] Google analysis failed:", error)
     }
 
-    // Step 3: Independent GPT analysis
-    console.log("[v0] Step 3: Starting independent GPT analysis")
-    let gptSummary = "Analyse GPT non disponible"
+    console.log("[v0] Step 3: Starting independent IA analysis") // Updated log message
+    let aiSummary = "Analyse IA non disponible" // Renamed variable
     try {
-      gptSummary = await independentGPTAnalysis(brand, message, language, userLanguage)
-      console.log("[v0] GPT analysis completed")
+      aiSummary = await independentAIAnalysis(brand, message, language, userLanguage) // Using correct function name
+      console.log("[v0] IA analysis completed") // Updated log message
     } catch (error) {
-      console.error("[v0] GPT analysis failed:", error)
+      console.error("[v0] IA analysis failed:", error) // Updated log message
     }
 
-    // Step 4: Generate detailed comparative analysis
     console.log("[v0] Step 4: Starting detailed analysis")
     let detailedAnalysis
     try {
-      detailedAnalysis = await generateDetailedAnalysis(brand, message, searchResults, language, "single", userLanguage)
+      detailedAnalysis = await generateDetailedAnalysis(
+        brand,
+        message,
+        searchResults,
+        language,
+        "single",
+        userLanguage,
+        hasMessage, // Pass flag to indicate if message was provided
+      )
       console.log("[v0] Detailed analysis completed")
     } catch (error) {
       console.error("[v0] Detailed analysis failed:", error)
       detailedAnalysis = {
-        presence_score: searchResults.length > 0 ? 50 : 10, // Lower score when no Google results
+        presence_score: searchResults.length > 0 ? 50 : 10,
         tone_score: 50,
-        coherence_score: 50,
+        coherence_score: hasMessage ? 50 : null, // No coherence score without message
         tone_label: "neutre",
         rationale:
           searchResults.length > 0
             ? "Analyse de base en raison d'erreurs techniques."
-            : "Analyse limitée - aucun résultat Google disponible pour évaluer la présence digitale.",
+            : "Analyse limitée - aucun résultat Google disponible.",
         google_summary: googleSummary,
-        gpt_summary: gptSummary,
+        gpt_summary: aiSummary, // Using renamed variable but keeping API field name for compatibility
         structured_conclusion: "# Analyse Technique\n\nAnalyse réalisée avec des données limitées.",
         detailed_analysis: "## Résultats\n\nAnalyse de base fournie.",
+        key_takeaway: hasMessage ? undefined : "Analyse générale basée sur la présence digitale.",
+        risks: hasMessage ? undefined : [],
+        strengths: hasMessage ? undefined : [],
       }
     }
 
     console.log("[v0] Formatting response")
-    // Format sources
-    const sources = searchResults.slice(0, 5).map((item) => ({
+    const sources = searchResults.slice(0, 10).map((item) => ({
       title: item.title || "Sans titre",
       link: item.link || "#",
+      snippet: item.snippet || "", // Include snippet for more context
     }))
 
+    let globalScore: number
+    if (hasMessage) {
+      // With message: average of all 3 scores
+      globalScore = Math.round(
+        (detailedAnalysis.presence_score + detailedAnalysis.tone_score + (detailedAnalysis.coherence_score || 0)) / 3,
+      )
+    } else {
+      // Without message: average of only presence and tone
+      globalScore = Math.round((detailedAnalysis.presence_score + detailedAnalysis.tone_score) / 2)
+    }
+
     const response = {
+      global_score: globalScore,
       presence_score: detailedAnalysis.presence_score,
       tone_score: detailedAnalysis.tone_score,
-      coherence_score: detailedAnalysis.coherence_score,
+      coherence_score: hasMessage ? detailedAnalysis.coherence_score : null, // Null if no message
       tone_label: detailedAnalysis.tone_label,
       rationale: detailedAnalysis.rationale,
       sources,
       google_summary: googleSummary,
-      gpt_summary: gptSummary,
+      gpt_summary: aiSummary, // Keeping API field name for backward compatibility
       structured_conclusion: detailedAnalysis.structured_conclusion,
       detailed_analysis: detailedAnalysis.detailed_analysis,
+      key_takeaway: detailedAnalysis.key_takeaway,
+      risks: detailedAnalysis.risks || [],
+      strengths: detailedAnalysis.strengths || [],
+      has_message: hasMessage,
       _cache_stats: {
         search: searchCache.getStats(),
         analysis: analysisCache.getStats(),
@@ -202,7 +231,8 @@ export async function POST(request: NextRequest) {
 SCORES:
 - Présence digitale: ${detailedAnalysis.presence_score}/10
 - Tonalité: ${detailedAnalysis.tone_score}/10 (${detailedAnalysis.tone_label})
-- Cohérence: ${detailedAnalysis.coherence_score}/10
+- Cohérence: ${detailedAnalysis.coherence_score ? detailedAnalysis.coherence_score + "/10" : "N/A"}
+- Global: ${globalScore}/100
 
 RATIONALE:
 ${detailedAnalysis.rationale}
@@ -210,8 +240,8 @@ ${detailedAnalysis.rationale}
 RÉSUMÉ GOOGLE:
 ${googleSummary}
 
-ANALYSE GPT:
-${gptSummary}
+ANALYSE IA: // Updated label in log
+${aiSummary}
 
 CONCLUSION STRUCTURÉE:
 ${detailedAnalysis.structured_conclusion}

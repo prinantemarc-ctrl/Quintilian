@@ -1,5 +1,3 @@
-import { generateText } from "ai"
-import { openai } from "@ai-sdk/openai"
 import { CACHE_TTL, analysisCache } from "@/lib/cache"
 
 export interface AnalysisScores {
@@ -18,6 +16,55 @@ export interface DetailedAnalysis extends AnalysisScores {
   presence_details?: string
   tone_details?: string
   coherence_details?: string
+  key_takeaway?: string
+  risks?: string[]
+  strengths?: string[]
+}
+
+const apiKey = process.env.OPENAI_API_KEY
+if (!apiKey) {
+  console.error("[v0] OPENAI_API_KEY is missing!")
+} else {
+  console.log("[v0] OPENAI_API_KEY found:", `${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length - 4)}`)
+}
+
+async function callOpenAI(
+  messages: { role: string; content: string }[],
+  options: {
+    temperature?: number
+    max_tokens?: number
+    response_format?: { type: string }
+  } = {},
+) {
+  const apiKey = process.env.OPENAI_API_KEY
+
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY environment variable is not set")
+  }
+
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      messages,
+      temperature: options.temperature ?? 0.3,
+      max_tokens: options.max_tokens ?? 500,
+      response_format: options.response_format,
+    }),
+  })
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    console.error("[v0] OpenAI API error:", response.status, errorText)
+    throw new Error(`OpenAI API error: ${response.status}`)
+  }
+
+  const data = await response.json()
+  return data.choices[0]?.message?.content || ""
 }
 
 export async function analyzeGoogleResults(
@@ -34,7 +81,7 @@ export async function analyzeGoogleResults(
     searchResults: searchResults.slice(0, 10),
     brand,
     language,
-    presentationLanguage: responseLanguage, // Include in cache key
+    presentationLanguage: responseLanguage,
     type: "google-analysis",
   }
 
@@ -42,15 +89,10 @@ export async function analyzeGoogleResults(
     cacheKey,
     async () => {
       try {
-        const apiKey = process.env.OPENAI_API_KEY
-        if (!apiKey) {
-          return "Résumé Google non disponible - clé API manquante."
-        }
-
         const searchContext = searchResults
           .slice(0, 10)
-          .map((item, index) => `${index + 1}. **${item.title}**\\n   ${item.snippet}\\n   Source: ${item.link}`)
-          .join("\\n\\n")
+          .map((item) => `**${item.title}**\n   ${item.snippet}\n   Source: ${item.link}`)
+          .join("\n\n")
 
         const prompt = `Tu es un expert en analyse de contenu web. Analyse les 10 premiers résultats Google suivants concernant "${brand}" et fournis un résumé synthétique et intelligible.
 
@@ -66,16 +108,19 @@ ${searchContext}
 
 Réponds uniquement avec le résumé, sans formatage markdown.`
 
-        const { text } = await generateText({
-          model: openai("gpt-4o-mini"),
-          prompt: prompt,
+        console.log("[v0] Calling OpenAI API for Google results analysis...")
+
+        const text = await callOpenAI([{ role: "user", content: prompt }], {
           temperature: 0.3,
+          max_tokens: 500,
         })
 
+        console.log("[v0] OpenAI response length:", text.length)
         console.log("[v0] Google results analysis completed")
         return text.trim()
       } catch (error) {
         console.error("[v0] Google results analysis error:", error)
+        console.error("[v0] Error message:", error instanceof Error ? error.message : String(error))
         return "Erreur lors de l'analyse des résultats Google."
       }
     },
@@ -95,51 +140,49 @@ export async function independentGPTAnalysis(
   language: string,
   presentationLanguage?: string,
 ): Promise<string> {
-  console.log("[v0] Starting independent GPT analysis")
+  console.log("[v0] Starting independent IA analysis") // Updated log message
 
   const responseLanguage = presentationLanguage || language
 
-  const cacheKey = { brand, message, language, presentationLanguage: responseLanguage, type: "independent-gpt" }
+  const cacheKey = {
+    brand,
+    message,
+    language,
+    presentationLanguage: responseLanguage,
+    type: "independent-gpt",
+  }
 
   const { data: analysis, fromCache } = await analysisCache.getOrSet(
     cacheKey,
     async () => {
       try {
-        const apiKey = process.env.OPENAI_API_KEY
-        if (!apiKey) {
-          return "Analyse GPT non disponible - clé API manquante."
-        }
+        const prompt = `Tu es un expert en analyse de réputation en ligne. Sans effectuer de recherches externes, analyse le contexte suivant et fournis une évaluation objective.
 
-        const prompt = `Tu es un analyste en réputation digitale utilisant l'intelligence artificielle pour évaluer des affirmations. Tu travailles pour une plateforme d'analyse de réputation en ligne.
+**Entité à analyser:** "${brand}"
+**Contexte utilisateur:** "${message}"
+**Langue du contexte:** ${language}
 
-**Entité analysée:** ${brand}
-**Affirmation à évaluer:** "${message}"
-**Contexte d'analyse:** Sources principalement en ${language}
+**Instructions:**
+- Base ton analyse uniquement sur tes connaissances préalables et le contexte fourni
+- Fournis une perspective neutre et équilibrée
+- Identifie les forces et faiblesses potentielles de réputation
+- Mentionne les risques ou opportunités éventuels
+- Réponds en ${responseLanguage}
 
-**Ta mission:**
-Produis une analyse de réputation IA qui évalue cette affirmation concernant ${brand}. Ton analyse doit :
+Réponds avec un paragraphe analytique de 4-5 phrases, sans formatage markdown.`
 
-- Évaluer la véracité et la pertinence de l'affirmation basée sur tes données d'entraînement
-- Analyser les implications pour la réputation de l'entité
-- Identifier les nuances et contextes importants
-- Fournir une perspective équilibrée et factuelle
-- Utiliser un ton professionnel d'analyste en réputation
+        console.log("[v0] Calling OpenAI API for independent GPT analysis...")
 
-**Format attendu:**
-Une analyse de 4-5 phrases qui ressemble à un rapport d'expert en réputation, pas à une réponse directe à une question. Évite les formulations comme "à ma connaissance" ou "selon mes informations". Présente plutôt les faits comme une analyse professionnelle.
-
-Écris en ${responseLanguage}. Réponds uniquement avec ton analyse, sans formatage markdown.`
-
-        const { text } = await generateText({
-          model: openai("gpt-4o-mini"),
-          prompt: prompt,
-          temperature: 0.3,
+        const text = await callOpenAI([{ role: "user", content: prompt }], {
+          temperature: 0.5,
+          max_tokens: 500,
         })
 
-        console.log("[v0] Independent GPT analysis completed")
+        console.log("[v0] GPT analysis completed")
         return text.trim()
       } catch (error) {
         console.error("[v0] Independent GPT analysis error:", error)
+        console.error("[v0] Error message:", error instanceof Error ? error.message : String(error))
         return "Erreur lors de l'analyse GPT indépendante."
       }
     },
@@ -147,11 +190,13 @@ Une analyse de 4-5 phrases qui ressemble à un rapport d'expert en réputation, 
   )
 
   if (fromCache) {
-    console.log("[v0] Using cached independent GPT analysis")
+    console.log("[v0] Using cached GPT analysis")
   }
 
   return analysis
 }
+
+export const independentAIAnalysis = independentGPTAnalysis
 
 export async function generateDetailedAnalysis(
   brand: string,
@@ -160,130 +205,260 @@ export async function generateDetailedAnalysis(
   language: string,
   analysisType: "single" | "duel" = "single",
   presentationLanguage?: string,
-): Promise<DetailedAnalysis> {
-  console.log(`[v0] Starting detailed analysis for: ${brand}`)
+  hasMessage = true,
+): Promise<
+  DetailedAnalysis & {
+    key_takeaway?: string
+    risks?: string[]
+    strengths?: string[]
+  }
+> {
+  console.log(`[v0] Starting detailed analysis generation for: ${brand}`)
 
   const responseLanguage = presentationLanguage || language
 
   const cacheKey = {
     brand,
     message,
-    googleResults: googleResults.slice(0, 10),
+    googleResults: googleResults.slice(0, 10).map((r) => ({ title: r.title, link: r.link })),
     language,
-    presentationLanguage: responseLanguage, // Include in cache key
     analysisType,
+    presentationLanguage: responseLanguage,
+    hasMessage,
+    type: "detailed-analysis-v4", // Updated cache version for new detailed analysis format
   }
 
-  const { data: analysis, fromCache } = await analysisCache.getOrSet(
+  const { data: analysisResult, fromCache } = await analysisCache.getOrSet(
     cacheKey,
     async () => {
       try {
-        const apiKey = process.env.OPENAI_API_KEY
-        if (!apiKey) {
-          console.error("[v0] CRITICAL: No OpenAI API key found - this will cause mock data!")
-          console.error("[v0] Please check OPENAI_API_KEY environment variable")
-          return generateFallbackAnalysis()
+        console.log("[v0] Google results count:", googleResults.length)
+        if (googleResults.length > 0) {
+          console.log("[v0] First Google result:", googleResults[0].title)
         }
-
-        console.log("[v0] OpenAI API key found, proceeding with real analysis")
 
         const googleContent = googleResults
           .slice(0, 10)
-          .map((item, index) => {
+          .map((item) => {
             const title = item.title || "Sans titre"
             const snippet = item.snippet || "Pas de description"
-            return `${index + 1}. ${title}\\n   ${snippet}`
+            return `**${title}**\n   ${snippet}\n   ${item.link}`
           })
-          .join("\\n\\n")
+          .join("\n\n")
 
-        console.log(`[v0] Google results count: ${googleResults.length}`)
-        console.log(`[v0] First Google result:`, googleResults[0]?.title || "No results")
+        let prompt: string
 
-        const prompt =
-          analysisType === "duel"
-            ? generateDuelAnalysisPrompt(brand, message, googleContent, language, responseLanguage)
-            : generateSingleAnalysisPrompt(brand, message, googleContent, language, responseLanguage)
+        if (hasMessage) {
+          prompt = `Tu es un analyste OSINT opérationnel spécialisé en intelligence digitale. Target: "${brand}". Langue de sortie: ${responseLanguage}.
 
-        console.log("[v0] Calling OpenAI for detailed analysis")
+**INTEL SOURCES (en ${language}):**
+${googleContent}
 
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 45000)
+**HYPOTHÈSE À VÉRIFIER:** "${message}"
 
-        try {
-          const { text } = await generateText({
-            model: openai("gpt-4o-mini"),
-            prompt: prompt,
-            temperature: 0.3,
-            maxTokens: 2000,
-            abortSignal: controller.signal,
-          })
+**⚠️ PROTOCOLE: Ne référence JAMAIS les sources par numéro. Utilise: "selon les renseignements recueillis", "l'analyse OSINT révèle", "les traces numériques montrent", "selon les données crawlées", "les sources ouvertes indiquent".**
 
-          clearTimeout(timeoutId)
-          console.log(`[v0] Detailed analysis completed for ${brand}`)
-          console.log("[v0] Raw OpenAI response length:", text.length)
+**VECTEURS D'ANALYSE:**
 
-          let cleanedText = text.trim()
-          if (cleanedText.startsWith("```json")) {
-            cleanedText = cleanedText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
-          }
+1. **EMPREINTE NUMÉRIQUE (score/100)**: Visibilité cross-platform, diversité des vecteurs d'exposition, autorité des domaines indexés
+2. **SENTIMENT GLOBAL (score/100)**: Polarisation de l'opinion (hostile=0, neutre=50, favorable=100)
+3. **ALIGNEMENT INTEL (score/100)**: Corrélation entre hypothèse et data crawlée
 
-          if (!isValidJsonStructure(cleanedText)) {
-            console.error("[v0] JSON appears to be truncated or malformed")
-            console.error("[v0] Text length:", cleanedText.length)
-            console.error("[v0] First 500 chars:", cleanedText.substring(0, 500))
-            console.error("[v0] Last 500 chars:", cleanedText.substring(cleanedText.length - 500))
+**RAPPORT EXÉCUTIF (structured_conclusion) - 3-4 sections markdown, 150+ mots/section:**
 
-            const partialAnalysis = extractPartialJsonData(cleanedText)
-            if (partialAnalysis) {
-              console.log("[v0] Using partial analysis data")
-              return normalizeAnalysisResponse(partialAnalysis)
-            }
+## Empreinte Numérique
+Mapping détaillé de la présence: vecteurs identifiés (encyclopédies en ligne, médias mainstream/alternatifs, plateformes officielles, réseaux sociaux, forums), autorité PageRank des domaines, distribution géographique, timestamps de publication. Identification des canaux dominants et zones aveugles. Langage opérationnel, pas de numérotation de sources.
 
-            console.error("[v0] Falling back to mock data due to JSON validation failure")
-            return generateFallbackAnalysis()
-          }
+## Polarisation du Sentiment
+Analyse comportementale approfondie avec cas d'usage concrets (pas de "source X"): distribution hostile/neutre/favorable avec patterns extraits du crawl, triggers émotionnels identifiés, analyse des narratives, évolution temporelle, divergences entre communication officielle et perception communautaire.
 
-          let parsedAnalysis
-          try {
-            parsedAnalysis = JSON.parse(cleanedText)
-            console.log("[v0] Successfully parsed JSON response")
+## Risques et Atouts Stratégiques
+Atouts: Leviers réputationnels (leadership sectoriel, expertise reconnue, capital communautaire, achievements documentés, couverture médiatique positive)
+Risques: Menaces réputationnelles (controverses actives, critiques récurrentes, compétition agressive, vulnérabilités de communication)
 
-            if (parsedAnalysis.presence_score && parsedAnalysis.tone_score && parsedAnalysis.coherence_score) {
-              console.log(
-                `[v0] Real analysis scores: P:${parsedAnalysis.presence_score} T:${parsedAnalysis.tone_score} C:${parsedAnalysis.coherence_score}`,
-              )
-            } else {
-              console.error("[v0] Missing required scores in parsed analysis")
-            }
-          } catch (parseError) {
-            console.error("[v0] JSON parsing failed:", parseError)
-            console.error("[v0] Raw text that failed to parse (first 1000 chars):", cleanedText.substring(0, 1000))
+**ANALYSE TERRAIN (detailed_analysis) - 3 sections obligatoires, 200+ mots/section:**
 
-            const partialAnalysis = extractPartialJsonData(cleanedText)
-            if (partialAnalysis) {
-              console.log("[v0] Using partial analysis data after parse error")
-              return normalizeAnalysisResponse(partialAnalysis)
-            }
+## Analyse OSINT des Résultats Crawlés
+Dissection méthodique des traces web de manière FLUIDE et PROFESSIONNELLE:
+- **Classification**: Typologie (Wikipédia, médias tier-1/tier-2, presse spécialisée, sites officiels, social platforms, underground forums)
+- **Trustrank**: Crédibilité des domaines (mentionne "sources haute autorité", "médias vérifiés", "plateformes tier-1")
+- **Freshness**: Fraîcheur temporelle des traces
+- **Sémantique**: Keywords dominants, clusters thématiques
+- **Narratives**: Storytelling détecté, convergences/contradictions
+- **Anomalies**: Patterns suspects, contradictions, data gaps
+- **Géolocalisation**: Distribution géo et linguistique des sources
+**PROTOCOLE: Nomme les sources par type (ex: "Wikipédia révèle", "les médias sportifs couvrent"), JAMAIS par index numérique.**
 
-            console.error("[v0] Falling back to mock data due to JSON parse error")
-            return generateFallbackAnalysis()
-          }
+## Projection IA Générative
+Perception algorithmique par les LLMs (ChatGPT, Claude, Gemini, Perplexity):
+- Knowledge base des IA
+- Sources primaires exploitées par les modèles
+- Biais de représentation potentiels
+- Risques de hallucination/désinformation
+- Opportunités d'optimisation SEO-IA
+- Recommandations actionnables
 
-          return normalizeAnalysisResponse(parsedAnalysis)
-        } catch (openaiError) {
-          clearTimeout(timeoutId)
-          console.error("[v0] OpenAI API call failed:", openaiError)
-          console.error("[v0] Error details:", {
-            message: openaiError.message,
-            name: openaiError.name,
-            stack: openaiError.stack?.substring(0, 500),
-          })
-          console.error("[v0] Falling back to mock data due to OpenAI API error")
-          return generateFallbackAnalysis()
+## Vue Stratégique OSINT Complète
+Synthèse globale avec méthodologie renseignement open source:
+- Cartographie exhaustive de la surface d'attaque digitale
+- Forces structurelles et avantages tactiques
+- Vulnérabilités systémiques et vecteurs d'attaque
+- Benchmarking contextuel si applicable
+- Détection de signaux faibles et tendances émergentes
+- Forecast réputationnel
+- Recommandations stratégiques opérationnelles
+
+**OUTPUT JSON:**
+{
+  "presence_score": <0-100>,
+  "tone_score": <0-100>,
+  "coherence_score": <0-100>,
+  "tone_label": "<positif|neutre|négatif>",
+  "rationale": "<synthèse analytique 4-5 phrases, langage renseignement>",
+  "google_summary": "<rapport factuel avec données concrètes, SANS numéros (100+ mots)>",
+  "gpt_summary": "<analyse contextuelle intel, SANS numéros (100+ mots)>",
+  "structured_conclusion": "<markdown ##, MINIMUM 450 mots, SANS numéros>",
+  "detailed_analysis": "<markdown 3 sections, MINIMUM 600 mots, SANS numéros>"
+}
+
+**RÈGLES D'ENGAGEMENT:**
+- INTERDIT: "(source 1)", "(sources 2, 5)", numérotation quelconque
+- OBLIGATOIRE: Langage OSINT/renseignement underground pro - "traces", "vecteurs", "intel", "crawl", "surface d'attaque", "signaux"
+- Style: Analyste stratégique, pas académique
+- Précision, données factuelles, approche terrain
+- MINIMUM 750 mots detailed_analysis, 450 structured_conclusion
+
+Réponds UNIQUEMENT avec le JSON, sans backticks.`
+        } else {
+          prompt = `Tu es un analyste OSINT opérationnel en intelligence digitale. Mission: profiling de "${brand}". Output en ${responseLanguage}.
+
+**DONNÉES CRAWLÉES (en ${language}):**
+${googleContent}
+
+**⚠️ PROTOCOLE: Jamais de numéros de sources. Utilise: "les renseignements collectés", "l'OSINT révèle", "selon les traces crawlées", "les données ouvertes montrent", "les plateformes indexées indiquent".**
+
+**VECTEURS D'ANALYSE (SANS hypothèse à vérifier):**
+
+1. **EMPREINTE DIGITALE (score/100)**: Présence cross-platform, diversité des vecteurs, autorité domain, couverture médiatique
+2. **POLARISATION GLOBALE (score/100)**: Sentiment agrégé (hostile=0, neutre=50, favorable=100)
+3. **PAS DE SCORE D'ALIGNEMENT** (pas d'hypothèse à checker)
+
+**ÉLÉMENTS TACTIQUES:**
+- **key_takeaway**: UNE phrase percutante résumant l'essentiel (max 20 mots)
+- **risks**: 3 menaces réputationnelles factuelles (courts, précis)
+- **strengths**: 3 atouts stratégiques factuels (courts, précis)
+
+**RAPPORT EXÉCUTIF (structured_conclusion) - 3 sections markdown, 150+ mots/section:**
+
+## Empreinte Digitale
+Audit approfondi de la visibilité: typologie des traces (encyclopédies type Wikipédia, médias mainstream/alternatifs, plateformes officielles, réseaux sociaux, forums), autorité des domaines, couverture géographique, freshness temporelle. Analyse des vecteurs dominants et blind spots. **Langage opérationnel, pas de numéros.**
+
+## Polarisation du Sentiment
+Analyse comportementale avec cas concrets (jamais "source X"): distribution hostile/neutre/favorable, triggers émotionnels, narratives détectées, controverses vs consensus, comparaison communication officielle vs perception communautaire.
+
+## Briefing Stratégique
+Synthèse consolidée: identité et positionnement, atouts (leadership, expertise, notoriété), vulnérabilités (controverses, critiques, failles), recommandations, forecast. **Nomme les sources par type, jamais par index.**
+
+**ANALYSE TERRAIN (detailed_analysis) - 3 sections obligatoires, 250+ mots/section:**
+
+## Analyse OSINT des Sources Crawlées
+Approche méthodique renseignement sur les résultats, langage NATUREL:
+- **Classification**: Catégorisation (Wikipédia, médias tier-1/2, presse spécialisée, plateformes officielles, social media, underground)
+- **Trustrank**: Fiabilité des domaines (utilise "sources haute autorité", "plateformes vérifiées")
+- **Freshness**: Récence des traces
+- **Sémantique**: Keywords, clusters thématiques
+- **Storytelling**: Narratives, convergences/divergences
+- **Anomalies**: Patterns suspects, contradictions, gaps
+- **Distribution**: Géographique, linguistique, segmentation audience
+**Réfère aux sources par nature (ex: "Wikipédia documente", "les médias rapportent"), JAMAIS par numéro.**
+
+## Projection IA Générative
+Perception de la target par les LLMs (ChatGPT, Claude, Gemini, Perplexity):
+- Synthèse knowledge base IA
+- Sources primaires LLM
+- Biais de représentation potentiels
+- Risques informationnels (hallucinations)
+- Optimisations possibles
+- Actions recommandées
+
+## Vue Stratégique Complète OSINT
+Synthèse globale avec méthodologie renseignement rigoureus:
+- Cartographie complète surface digitale
+- Forces structurelles et avantages compétitifs
+- Vulnérabilités et vecteurs d'attaque
+- Benchmarking contextuel si pertinent
+- Signaux faibles et tendances émergentes
+- Forecast trajectoire
+- Recommandations stratégiques actionnables
+
+**OUTPUT JSON:**
+{
+  "presence_score": <0-100>,
+  "tone_score": <0-100>,
+  "coherence_score": null,
+  "tone_label": "<positif|neutre|négatif>",
+  "rationale": "<synthèse narrative PRÉCISE, langage renseignement, 4-5 phrases>",
+  "google_summary": "<rapport factuel avec NOMS, FAITS, DATES, SANS numéros (150+ mots)>",
+  "gpt_summary": "<analyse contextuelle approfondie, SANS numéros (150+ mots)>",
+  "structured_conclusion": "<markdown ##, MINIMUM 450 mots, SANS numéros>",
+  "detailed_analysis": "<markdown 3 sections complètes, MINIMUM 750 mots, SANS numéros>",
+  "key_takeaway": "<phrase percutante (15-20 mots max)>",
+  "risks": ["<risque 1>", "<risque 2>", "<risque 3>"],
+  "strengths": ["<force 1>", "<force 2>", "<force 3>"]
+}
+
+**RÈGLES D'ENGAGEMENT:**
+- INTERDIT: "(source 1)", "(sources 2, 5, 9)", numérotation
+- OBLIGATOIRE: Langage OSINT/underground pro - "traces", "vecteurs", "intel", "crawl", "surface d'attaque", "signaux"
+- Style: Analyste renseignement, pas académique
+- Précision, données factuelles, approche terrain
+- MINIMUM 750 mots detailed_analysis, 450 structured_conclusion
+
+JSON pur sans backticks`
+        }
+
+        console.log("[v0] Calling OpenAI API for detailed analysis...")
+        console.log("[v0] Prompt length:", prompt.length)
+
+        const text = await callOpenAI([{ role: "user", content: prompt }], {
+          temperature: 0.3,
+          max_tokens: 4000, // Increased token limit to allow longer, more detailed analyses
+          response_format: { type: "json_object" }, // Added response_format to force valid JSON output
+        })
+
+        console.log("[v0] OpenAI response length:", text.length)
+
+        let cleanedText = text.trim()
+        if (cleanedText.startsWith("```json")) {
+          cleanedText = cleanedText.replace(/^```json\n?/, "").replace(/\n?```$/, "")
+        } else if (cleanedText.startsWith("```")) {
+          cleanedText = cleanedText.replace(/^```\n?/, "").replace(/\n?```$/, "")
+        }
+
+        const parsed = JSON.parse(cleanedText)
+
+        console.log("[v0] Detailed analysis completed")
+
+        return {
+          presence_score: parsed.presence_score || 50,
+          tone_score: parsed.tone_score || 50,
+          coherence_score: hasMessage ? parsed.coherence_score || 50 : null,
+          tone_label: parsed.tone_label || "neutre",
+          rationale: parsed.rationale || "Analyse complète disponible.",
+          google_summary: parsed.google_summary || "",
+          gpt_summary: parsed.gpt_summary || "",
+          structured_conclusion: parsed.structured_conclusion,
+          detailed_analysis: parsed.detailed_analysis,
+          presence_details: parsed.presence_details,
+          tone_details: parsed.tone_details,
+          coherence_details: parsed.coherence_details,
+          key_takeaway: !hasMessage ? parsed.key_takeaway : undefined,
+          risks: !hasMessage ? parsed.risks : undefined,
+          strengths: !hasMessage ? parsed.strengths : undefined,
         }
       } catch (error) {
-        console.error(`[v0] Detailed analysis error for ${brand}:`, error)
-        console.error("[v0] Falling back to mock data due to general error")
+        console.error("[v0] Detailed analysis error:", error)
+        console.log("[v0] Falling back to mock data due to error")
         return generateFallbackAnalysis()
       }
     },
@@ -291,274 +466,126 @@ export async function generateDetailedAnalysis(
   )
 
   if (fromCache) {
-    console.log(`[v0] Using cached detailed analysis for ${brand}`)
+    console.log("[v0] Using cached detailed analysis")
   }
 
-  return analysis
-}
-
-function generateSingleAnalysisPrompt(
-  brand: string,
-  message: string,
-  googleContent: string,
-  language: string,
-  responseLanguage: string,
-): string {
-  return `Tu es un expert en analyse de réputation digitale. Compare l'analyse GPT indépendante avec les résultats Google pour évaluer "${brand}" selon 3 dimensions précises.
-
-**Message original:** "${message}"
-**Sources analysées:** Principalement en ${language}
-
-**Résultats Google (${googleContent.split("\\n\\n").length} sources) :**
-${googleContent}
-
-**ÉVALUATION REQUISE - 3 DIMENSIONS CLÉS:**
-
-1. **PRÉSENCE DIGITALE** (presence_score 0-100): Le sujet est-il facilement trouvable dans les résultats de recherche ? Évalue le volume, la qualité et la visibilité des mentions trouvées sur Google.
-   - 0-30: Très faible présence, peu ou pas de résultats pertinents
-   - 31-50: Présence limitée, quelques mentions de base
-   - 51-70: Présence correcte, visibilité modérée
-   - 71-85: Bonne présence, bien référencé
-   - 86-100: Excellente présence, très visible et bien documenté
-
-2. **SENTIMENT GLOBAL** (tone_score 0-100): Que pensent globalement les gens de lui ? Qu'est-ce qui ressort : du positif ou du négatif ? Analyse le sentiment général qui se dégage des résultats Google et de ton analyse.
-   - 0-20: Très négatif, controverses majeures
-   - 21-40: Plutôt négatif, critiques fréquentes
-   - 41-60: Neutre/mitigé, opinions partagées
-   - 61-80: Plutôt positif, bonne réputation
-   - 81-100: Très positif, excellente réputation
-
-3. **COHÉRENCE DU MESSAGE** (coherence_score 0-100): Le message entré par l'utilisateur correspond-il à l'image numérique du sujet ? Compare le message original avec ce qui ressort réellement des recherches.
-   - 0-25: Totalement incohérent, contradiction majeure
-   - 26-45: Largement incohérent, écarts importants
-   - 46-65: Partiellement cohérent, quelques divergences
-   - 66-85: Globalement cohérent, alignement correct
-   - 86-100: Parfaitement cohérent, message aligné
-
-**INSTRUCTIONS CRITIQUES:**
-- UTILISE TOUTE LA PLAGE 0-100, ne te limite pas à 70-85
-- Sois DISCRIMINANT : différencie clairement les cas excellents des cas moyens
-- Un score de 50 doit être vraiment MOYEN, pas "plutôt bon"
-- Réserve les scores 80+ aux cas vraiment EXCEPTIONNELS
-- N'hésite pas à donner des scores bas (20-40) si justifié
-
-**RÉPONSE JSON REQUISE:**
-- presence_score (0-100): Score de présence digitale
-- tone_score (0-100): Score de sentiment (0=très négatif, 50=neutre, 100=très positif)
-- coherence_score (0-100): Score de cohérence message/réalité digitale
-- tone_label: "très négatif", "négatif", "neutre", "positif", ou "très positif"
-- rationale: Justification détaillée des 3 scores avec exemples concrets (4-5 phrases)
-- google_summary: Résumé de ce que révèlent les résultats Google
-- gpt_summary: Ton analyse indépendante de cette entité
-- structured_conclusion: Conclusion en markdown (250-350 mots) structurée autour des 3 dimensions avec recommandations
-- detailed_analysis: Analyse approfondie en markdown (400-500 mots) qui détaille chaque dimension
-
-Concentre-toi exclusivement sur ces 3 dimensions. Sois précis, factuel et actionnable. Écris en ${responseLanguage}.
-Réponds uniquement avec du JSON valide, sans balises markdown.`
-}
-
-function generateDuelAnalysisPrompt(
-  brand: string,
-  message: string,
-  googleContent: string,
-  language: string,
-  responseLanguage: string,
-): string {
-  return `Tu es un expert en analyse de réputation digitale. Analyse "${brand}" concernant le message "${message}".
-
-**Sources analysées:** Principalement en ${language}
-
-RÉSULTATS GOOGLE (${googleContent.split("\\n\\n").length} sources) :
-${googleContent}
-
-**INSTRUCTIONS CRITIQUES POUR LE SCORING:**
-- UTILISE TOUTE LA PLAGE 0-100, évite absolument la zone 70-85
-- Sois TRÈS DISCRIMINANT dans tes évaluations
-- Un score de 50 = vraiment MOYEN, pas "plutôt bien"
-- Réserve 80+ aux cas EXCEPTIONNELS uniquement
-- N'hésite pas à donner 20-40 si c'est justifié
-- Crée de la VARIANCE : différencie clairement les profils
-
-**BARÈMES STRICTS:**
-
-**PRÉSENCE (0-100):**
-- 0-25: Quasi-invisible, très peu de résultats
-- 26-45: Présence faible, mentions rares
-- 46-65: Présence modérée, visibilité correcte
-- 66-85: Bonne présence, bien référencé
-- 86-100: Présence exceptionnelle, très documenté
-
-**SENTIMENT (0-100):**
-- 0-20: Réputation très négative, controverses
-- 21-40: Réputation négative, critiques fréquentes
-- 41-60: Réputation neutre/mitigée
-- 61-80: Bonne réputation, plutôt positif
-- 81-100: Excellente réputation, très positif
-
-**COHÉRENCE (0-100):**
-- 0-25: Message totalement faux/incohérent
-- 26-45: Message largement inexact
-- 46-65: Message partiellement exact
-- 66-85: Message globalement exact
-- 86-100: Message parfaitement exact
-
-Tu dois fournir une analyse JSON avec ces champs EXACTS :
-{
-  "presence_score": [0-100],
-  "tone_score": [0-100], 
-  "coherence_score": [0-100],
-  "tone_label": "positif|neutre|négatif",
-  "rationale": "Explication générale des scores avec justification des écarts",
-  "google_summary": "Résumé de ce que révèlent les résultats Google",
-  "gpt_summary": "Ton analyse indépendante de cette entité",
-  "presence_details": "Explication détaillée du score de présence (2-3 phrases)",
-  "tone_details": "Explication détaillée du sentiment (2-3 phrases)",
-  "coherence_details": "Explication détaillée de la cohérence (2-3 phrases)"
-}
-
-Sois DIRECT et FACTUEL dans ton analyse. DIFFÉRENCIE clairement les profils. Écris en ${responseLanguage}.`
+  return analysisResult
 }
 
 export async function detectHomonyms(
-  searchResults: any[],
   brand: string,
+  searchResults: any[],
   language: string,
   presentationLanguage?: string,
-  countries?: string[],
 ): Promise<{
   requires_identity_selection: boolean
-  identified_entities: string[]
-  message: string
+  identified_entities?: any[]
+  message?: string
 }> {
-  console.log("[v0] Starting homonym detection for:", brand)
-
   const responseLanguage = presentationLanguage || language
 
-  if (searchResults.length < 1) {
-    // lowered threshold from 3 to 1
-    console.log("[v0] Not enough search results for homonym detection")
-    return {
-      requires_identity_selection: false,
-      identified_entities: [],
-      message: "",
-    }
-  }
-
   const cacheKey = {
-    searchResults: searchResults.slice(0, 10),
     brand,
+    searchResults: searchResults.slice(0, 8).map((r) => ({ title: r.title, snippet: r.snippet })),
     language,
     presentationLanguage: responseLanguage,
-    countries: countries?.sort() || [], // Sort to ensure consistent cache key
-    type: "homonym-detection",
+    type: "homonym-detection-v3", // Updated cache version
   }
 
-  const { data: detection, fromCache } = await analysisCache.getOrSet(
+  const { data: result, fromCache } = await analysisCache.getOrSet(
     cacheKey,
     async () => {
       try {
-        const apiKey = process.env.OPENAI_API_KEY
-        if (!apiKey) {
-          return {
-            requires_identity_selection: false,
-            identified_entities: [],
-            message: "",
-          }
+        if (!Array.isArray(searchResults) || searchResults.length < 3) {
+          console.log("[v0] Not enough search results for disambiguation")
+          return { requires_identity_selection: false }
         }
 
         const searchContext = searchResults
-          .slice(0, 10)
-          .map((item, index) => `${index + 1}. **${item.title}**\n   ${item.snippet}\n   Source: ${item.link}`)
+          .slice(0, 8)
+          .map((item) => `**${item.title}**\n   ${item.snippet || ""}`)
           .join("\n\n")
 
-        const prompt = `Tu es un expert en analyse d'entités nommées multilingue. Analyse les résultats Google suivants pour "${brand}" et détermine s'il y a plusieurs identités distinctes (homonymies).
+        const prompt = `Tu es un expert en désambiguïsation d'entités. Analyse les résultats de recherche suivants pour "${brand}".
 
-**Résultats Google à analyser (sources multilingues):**
+**Résultats de recherche:**
 ${searchContext}
 
-**IMPORTANT:** Ces résultats proviennent de recherches dans plusieurs pays/langues. Tu dois identifier les entités distinctes quelle que soit la langue des résultats.
+**Mission:**
+1. Identifie SI "${brand}" semble être un NOM DE PERSONNE (prénom + nom)
+2. Si c'est une personne, propose TOUJOURS 2-3 options de confirmation même s'il semble y avoir une seule entité claire
+3. Si ce n'est PAS une personne (entreprise, produit, lieu), vérifie l'homonymie
 
-**Ta mission:**
-Détermine si "${brand}" fait référence à plusieurs personnes, entreprises ou entités distinctes dans ces résultats.
-
-**Critères pour détecter une homonymie:**
-- Plusieurs personnes différentes avec le même nom
-- Différentes entreprises/organisations avec des noms similaires
-- Contextes géographiques ou sectoriels très différents
-- Mentions d'âges, professions, ou localisations contradictoires
-- Entités dans différentes langues/pays qui sont distinctes
-
-**Instructions:**
-- Si tu détectes clairement 2+ identités distinctes, réponds "OUI"
-- Si tous les résultats semblent parler de la même entité, réponds "NON"
-- En cas de doute, privilégie "NON"
-- Identifie les entités dans TOUTES les langues présentes dans les résultats
-- Décris chaque entité de manière claire et distinctive
-
-**Format de réponse JSON:**
+**Pour les NOMS DE PERSONNES - Réponds TOUJOURS:**
 {
-  "requires_disambiguation": true/false,
-  "identified_entities": ["Description entité 1", "Description entité 2", ...],
-  "confidence": "high/medium/low",
-  "explanation": "Explication de ta décision"
+  "requires_identity_selection": true,
+  "identified_entities": [
+    {
+      "id": "entity-1",
+      "name": "Nom complet détecté dans les résultats",
+      "description": "Description précise basée sur les résultats (profession, activité principale, contexte)",
+      "type": "person",
+      "context": "Information supplémentaire (période, lieu, secteur)",
+      "confidence": 0.95
+    },
+    {
+      "id": "entity-other",
+      "name": "${brand} (Autre personne ou homonyme)",
+      "description": "Une autre personne portant ce nom",
+      "type": "person",
+      "context": "Contexte différent",
+      "confidence": 0.30
+    }
+  ],
+  "message": "Veuillez confirmer l'identité de '${brand}' pour une analyse précise"
 }
 
-Écris en ${responseLanguage}. Réponds uniquement avec du JSON valide.`
+**Pour les ENTITÉS NON-PERSONNES avec homonymie détectée:**
+{
+  "requires_identity_selection": true,
+  "identified_entities": [...], // 2-5 entités distinctes
+  "message": "Plusieurs entités distinctes identifiées"
+}
 
-        const { text } = await generateText({
-          model: openai("gpt-4o-mini"),
-          prompt: prompt,
+**Pour les ENTITÉS NON-PERSONNES sans ambiguïté:**
+{
+  "requires_identity_selection": false,
+  "identified_entity": {
+    "name": "Nom identifié",
+    "description": "Description",
+    "confidence": 0.95
+  }
+}
+
+**RÈGLE ABSOLUE: Si "${brand}" ressemble à un nom de personne (2+ mots dont au moins un prénom potentiel), retourne TOUJOURS requires_identity_selection: true**
+
+Réponds en ${responseLanguage}. NE RETOURNE QUE LE JSON, sans backticks.`
+
+        console.log("[v0] Calling OpenAI for homonym detection...")
+
+        const text = await callOpenAI([{ role: "user", content: prompt }], {
           temperature: 0.2,
+          max_tokens: 1500,
         })
 
         let cleanedText = text.trim()
         if (cleanedText.startsWith("```json")) {
-          cleanedText = cleanedText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
+          cleanedText = cleanedText.replace(/^```json\n?/, "").replace(/\n?```$/, "")
+        } else if (cleanedText.startsWith("```")) {
+          cleanedText = cleanedText.replace(/^```\n?/, "").replace(/\n?```$/, "")
         }
-        if (cleanedText.startsWith("```")) {
-          cleanedText = cleanedText.replace(/^```\s*/, "").replace(/\s*```$/, "")
-        }
 
-        try {
-          const parsed = JSON.parse(cleanedText)
-          console.log("[v0] Homonym detection result:", parsed)
+        const parsed = JSON.parse(cleanedText)
 
-          if (parsed.requires_disambiguation && parsed.identified_entities && parsed.identified_entities.length >= 2) {
-            const message =
-              responseLanguage === "en"
-                ? `Multiple identities detected for "${brand}". Please select the one you're interested in or refine your search.`
-                : responseLanguage === "es"
-                  ? `Múltiples identidades detectadas para "${brand}". Por favor selecciona la que te interesa o refina tu búsqueda.`
-                  : `Plusieurs identités détectées pour "${brand}". Veuillez sélectionner celle qui vous intéresse ou préciser votre recherche.`
+        console.log(
+          "[v0] Homonym detection result:",
+          parsed.requires_identity_selection ? "CONFIRMATION REQUIRED" : "SINGLE ENTITY",
+        )
 
-            return {
-              requires_identity_selection: true,
-              identified_entities: parsed.identified_entities,
-              message,
-            }
-          }
-
-          return {
-            requires_identity_selection: false,
-            identified_entities: [],
-            message: "",
-          }
-        } catch (parseError) {
-          console.error("[v0] Failed to parse homonym detection response:", parseError)
-          console.error("[v0] Cleaned text that failed to parse:", cleanedText.substring(0, 500))
-          return {
-            requires_identity_selection: false,
-            identified_entities: [],
-            message: "",
-          }
-        }
+        return parsed
       } catch (error) {
         console.error("[v0] Homonym detection error:", error)
-        return {
-          requires_identity_selection: false,
-          identified_entities: [],
-          message: "",
-        }
+        return { requires_identity_selection: false }
       }
     },
     { ttl: CACHE_TTL.GPT_ANALYSIS },
@@ -568,7 +595,7 @@ Détermine si "${brand}" fait référence à plusieurs personnes, entreprises ou
     console.log("[v0] Using cached homonym detection")
   }
 
-  return detection
+  return result
 }
 
 function normalizeAnalysisResponse(analysis: any): DetailedAnalysis {
@@ -585,6 +612,9 @@ function normalizeAnalysisResponse(analysis: any): DetailedAnalysis {
     presence_details: analysis.presence_details,
     tone_details: analysis.tone_details,
     coherence_details: analysis.coherence_details,
+    key_takeaway: analysis.key_takeaway,
+    risks: analysis.risks,
+    strengths: analysis.strengths,
   }
 }
 
@@ -609,53 +639,8 @@ function generateFallbackAnalysis(): DetailedAnalysis {
     presence_details: "⚠️ Détails non disponibles - erreur technique",
     tone_details: "⚠️ Détails non disponibles - erreur technique",
     coherence_details: "⚠️ Détails non disponibles - erreur technique",
+    key_takeaway: "⚠️ Détails non disponibles - erreur technique",
+    risks: ["⚠️ Risque non identifié", "⚠️ Risque non identifié", "⚠️ Risque non identifié"],
+    strengths: ["⚠️ Force non identifiée", "⚠️ Force non identifiée", "⚠️ Force non identifiée"],
   }
-}
-
-function isValidJsonStructure(text: string): boolean {
-  try {
-    // Check if the text starts with { and ends with }
-    const trimmed = text.trim()
-    if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) {
-      return false
-    }
-
-    // Count braces to ensure they're balanced
-    let braceCount = 0
-    for (const char of trimmed) {
-      if (char === "{") braceCount++
-      if (char === "}") braceCount--
-    }
-
-    return braceCount === 0
-  } catch {
-    return false
-  }
-}
-
-function extractPartialJsonData(text: string): Partial<DetailedAnalysis> | null {
-  try {
-    // Try to extract basic scores using regex
-    const presenceMatch = text.match(/"presence_score":\s*(\d+)/)
-    const toneMatch = text.match(/"tone_score":\s*(\d+)/)
-    const coherenceMatch = text.match(/"coherence_score":\s*(\d+)/)
-    const toneLabelMatch = text.match(/"tone_label":\s*"([^"]+)"/)
-    const rationaleMatch = text.match(/"rationale":\s*"([^"]+)"/)
-
-    if (presenceMatch && toneMatch && coherenceMatch) {
-      return {
-        presence_score: Number.parseInt(presenceMatch[1]),
-        tone_score: Number.parseInt(toneMatch[1]),
-        coherence_score: Number.parseInt(coherenceMatch[1]),
-        tone_label: toneLabelMatch?.[1] || "neutre",
-        rationale: rationaleMatch?.[1] || "Analyse partielle récupérée après erreur de parsing JSON.",
-        google_summary: "Résumé non disponible - erreur de parsing",
-        gpt_summary: "Analyse non disponible - erreur de parsing",
-      }
-    }
-  } catch (error) {
-    console.error("[v0] Failed to extract partial JSON data:", error)
-  }
-
-  return null
 }

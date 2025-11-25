@@ -37,7 +37,7 @@ export interface AnalysisHistoryItem {
 }
 
 class AnalysisHistory {
-  private readonly storageKey = "quintilian_analysis_history"
+  private readonly storageKey = "mak_ia_analysis_history"
   private readonly maxItems = 20
 
   private isClient(): boolean {

@@ -43,9 +43,9 @@ export function ShareButtons({ analysis }: ShareButtonsProps) {
     (analysis.results.presence_score + analysis.results.tone_score + analysis.results.coherence_score) / 3,
   )
 
-  const tweetText = `🚀 Découvrez mon analyse SEO complète sur Quintilian !\n\n📊 ${analysis.brand} - Score: ${globalScore}/100\n✅ Présence: ${analysis.results.presence_score}/100\n💭 Sentiment: ${analysis.results.tone_score}/100\n🎯 Cohérence: ${analysis.results.coherence_score}/100\n\n#SEO #AnalyseSEO #Marketing`
+  const tweetText = `🚀 Découvrez mon analyse SEO complète sur MAK-IA !\n\n📊 ${analysis.brand} - Score: ${globalScore}/100\n✅ Présence: ${analysis.results.presence_score}/100\n💭 Sentiment: ${analysis.results.tone_score}/100\n🎯 Cohérence: ${analysis.results.coherence_score}/100\n\n#SEO #AnalyseSEO #Marketing`
 
-  const facebookText = `Découvrez l'analyse SEO complète de ${analysis.brand} avec un score global de ${globalScore}/100 ! Analysez votre propre présence digitale sur Quintilian.`
+  const facebookText = `Découvrez l'analyse SEO complète de ${analysis.brand} avec un score global de ${globalScore}/100 ! Analysez votre propre présence digitale sur MAK-IA.`
 
   const handleSocialShare = (platform: "twitter" | "facebook") => {
     if (!shareUrl) return

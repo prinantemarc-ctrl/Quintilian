@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
-import { Swords, Trophy, Target, Crown, Zap, Shield, Flame, X } from "lucide-react"
+import { Target, X, Crosshair, Activity, ChevronUp, ChevronDown, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+import type { JSX } from "react/jsx-runtime"
+import { useLanguage } from "@/contexts/language-context"
+import { AnalysisResultsFullscreen } from "./analysis-results-fullscreen"
 
 interface DuelModalProps {
   isOpen: boolean
@@ -14,7 +16,7 @@ interface DuelModalProps {
   formData: {
     brand1: string
     brand2: string
-    message: string
+    message?: string // Keep as string but make it optional in validation
     language: string
   }
 }
@@ -54,66 +56,125 @@ interface DuelResult {
   score_difference: number
 }
 
+function formatComparisonText(text: string) {
+  const elements: JSX.Element[] = []
+  let key = 0
+
+  // Split by double line breaks to get sections
+  const sections = text.split("\n\n").filter((s) => s.trim())
+
+  sections.forEach((section) => {
+    const lines = section
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l)
+
+    if (lines.length === 0) return
+
+    const firstLine = lines[0]
+
+    // Check if it's a section header [TITLE]
+    if (firstLine.match(/^\[([A-Z\sÀ-Ÿ]+)\]$/)) {
+      const title = firstLine.replace(/\[|\]/g, "")
+      elements.push(
+        <h3
+          key={key++}
+          className="text-lg font-bold text-red-500 font-mono uppercase mt-8 mb-4 first:mt-0 tracking-wider"
+        >
+          {title}
+        </h3>,
+      )
+
+      // Render content after the header
+      if (lines.length > 1) {
+        const content = lines.slice(1)
+        content.forEach((line) => {
+          if (line.startsWith("-")) {
+            // Bullet point
+            elements.push(
+              <div key={key++} className="flex items-start gap-3 mb-2 ml-4">
+                <span className="text-red-500 mt-1.5">•</span>
+                <p className="text-gray-300 leading-relaxed flex-1">{line.substring(1).trim()}</p>
+              </div>,
+            )
+          } else {
+            // Regular paragraph
+            elements.push(
+              <p key={key++} className="text-gray-300 leading-relaxed mb-3">
+                {line}
+              </p>,
+            )
+          }
+        })
+      }
+    } else {
+      // No header, just content
+      lines.forEach((line) => {
+        if (line.startsWith("-")) {
+          // Bullet point
+          elements.push(
+            <div key={key++} className="flex items-start gap-3 mb-2 ml-4">
+              <span className="text-red-500 mt-1.5">•</span>
+              <p className="text-gray-300 leading-relaxed flex-1">{line.substring(1).trim()}</p>
+            </div>,
+          )
+        } else if (line.includes(":") && line.split(":")[0].length < 40) {
+          // Label: value format
+          const [label, ...rest] = line.split(":")
+          const content = rest.join(":").trim()
+          elements.push(
+            <p key={key++} className="mb-3 leading-relaxed">
+              <span className="font-bold text-white font-mono">{label}:</span>
+              {content && <span className="text-gray-300"> {content}</span>}
+            </p>,
+          )
+        } else {
+          // Regular paragraph
+          elements.push(
+            <p key={key++} className="text-gray-300 leading-relaxed mb-3">
+              {line}
+            </p>,
+          )
+        }
+      })
+    }
+  })
+
+  return <div className="space-y-1">{elements}</div>
+}
+
 export function DuelModal({ isOpen, onClose, formData }: DuelModalProps) {
+  const { t } = useLanguage()
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [currentStep, setCurrentStep] = useState(0)
   const [result, setResult] = useState<DuelResult | null>(null)
-  const [isAnalyzing, setIsAnalyzing] = useState(true)
-  const [progress, setProgress] = useState(0)
-  const [currentStep, setCurrentStep] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [showFullscreenView, setShowFullscreenView] = useState(false)
+  const [expandedComparison, setExpandedComparison] = useState(false)
+
+  const { brand1, brand2, message, language } = formData
 
   useEffect(() => {
-    if (isOpen && formData) {
+    if (isOpen) {
       setIsAnalyzing(true)
       setResult(null)
-      setProgress(0)
+      setCurrentStep(0)
+      setShowFullscreenView(false)
+      setExpandedComparison(false)
       analyzeDuel()
     }
-  }, [isOpen, formData])
-
-  useEffect(() => {
-    if (isAnalyzing) {
-      const steps = [
-        "Analyse de " + formData.brand1,
-        "Analyse de " + formData.brand2,
-        "Comparaison des résultats",
-        "Détermination du vainqueur",
-      ]
-
-      let stepIndex = 0
-      const interval = setInterval(() => {
-        setProgress((prev) => {
-          const increment = prev < 60 ? Math.random() * 12 : prev < 85 ? Math.random() * 6 : Math.random() * 3
-          const newProgress = Math.min(prev + increment, 92)
-
-          if (newProgress > 25 && stepIndex === 0) {
-            setCurrentStep(steps[1])
-            stepIndex = 1
-          } else if (newProgress > 50 && stepIndex === 1) {
-            setCurrentStep(steps[2])
-            stepIndex = 2
-          } else if (newProgress > 75 && stepIndex === 2) {
-            setCurrentStep(steps[3])
-            stepIndex = 3
-          }
-
-          return newProgress
-        })
-      }, 1500)
-
-      setCurrentStep(steps[0])
-      return () => clearInterval(interval)
-    }
-  }, [isAnalyzing, formData])
+  }, [isOpen])
 
   const analyzeDuel = async () => {
     try {
-      console.log("[v0] Starting duel analysis with data:", formData)
+      console.log("[v0] Starting duel analysis with data:", { brand1, brand2, message, language })
 
       const response = await fetch("/api/duel", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ brand1, brand2, message, language }),
       })
 
       console.log("[v0] Duel API response status:", response.status)
@@ -140,32 +201,31 @@ export function DuelModal({ isOpen, onClose, formData }: DuelModalProps) {
         throw new Error("Structure de données de duel invalide")
       }
 
-      setProgress(100)
-      setTimeout(() => {
-        setResult(duelResult)
-        setIsAnalyzing(false)
-      }, 1000)
+      setResult(duelResult)
+      setIsAnalyzing(false)
+      setCurrentStep(0)
+      setShowFullscreenView(true)
     } catch (error) {
       console.error("[v0] Duel error details:", error)
       console.log("[v0] Error message:", error.message)
       console.log("[v0] Error stack:", error.stack)
       setIsAnalyzing(false)
-      alert(`Erreur lors du duel: ${error.message}`)
+      setError(error.message)
     }
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600"
-    if (score >= 60) return "text-yellow-600"
-    return "text-red-600"
+    if (score >= 80) return "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+    if (score >= 60) return "text-gray-300"
+    return "text-red-500 drop-shadow-[0_0_8px_rgba(220,38,38,0.5)]"
   }
 
   const getWinnerBadge = (brand: string, winner: string) => {
     if (brand === winner) {
       return (
-        <Badge className="bg-yellow-500 text-white">
-          <Crown className="w-3 h-3 mr-1" />
-          Vainqueur
+        <Badge className="bg-red-900/50 text-red-200 border border-red-500/50 font-mono tracking-wider">
+          <Crosshair className="w-3 h-3 mr-1" />
+          CIBLE DOMINANTE
         </Badge>
       )
     }
@@ -173,329 +233,379 @@ export function DuelModal({ isOpen, onClose, formData }: DuelModalProps) {
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      {/* Custom header with close button */}
-      <DialogContent className="max-w-5xl w-full h-[90vh] p-0 gap-0 flex flex-col">
-        <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-slate-50 to-slate-100 flex-shrink-0">
-          <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-            <Swords className="w-6 h-6 text-primary" />
-            {isAnalyzing ? "Duel en cours..." : "Résultats du Duel"}
-          </DialogTitle>
-          <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+    <>
+      <Dialog open={isOpen && !showFullscreenView} onOpenChange={onClose}>
+        <DialogContent className="max-w-[1400px] w-[96vw] max-h-[90vh] p-0 gap-0 flex flex-col bg-black border border-red-900/30 shadow-[0_0_80px_rgba(153,27,27,0.15)]">
+          {/* Header - Single close button integrated */}
+          <div className="flex items-center justify-between px-8 py-5 border-b border-red-900/20 bg-gradient-to-r from-red-950/5 via-transparent to-red-950/5 flex-shrink-0">
+            <DialogTitle className="text-2xl font-bold flex items-center gap-3 font-['Space_Grotesk'] tracking-tight text-white">
+              <Activity className="w-7 h-7 text-red-500" strokeWidth={2.5} />
+              {isAnalyzing ? t("decrypting") : t("confrontation_report")}
+            </DialogTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="h-8 w-8 p-0 text-gray-500 hover:text-red-500 hover:bg-red-950/30"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
 
-        <div className="flex-1 overflow-y-auto p-6 min-h-0">
-          {isAnalyzing ? (
-            <div className="py-8 space-y-6 max-w-4xl mx-auto">
-              {/* Combat Arena */}
-              <div className="relative bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-8 overflow-hidden">
-                {/* Background effects */}
-                <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 via-transparent to-blue-500/10"></div>
-                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-red-500 to-blue-500 rounded-full"></div>
+          <div className="flex-1 overflow-y-auto p-6 min-h-0 bg-[url('/grid-pattern.svg')] bg-fixed">
+            {isAnalyzing ? (
+              <div className="py-4 space-y-4">
+                {/* Animated Combat Arena */}
+                <div className="relative bg-black border-2 border-red-900/50 rounded-lg p-4 overflow-hidden shadow-2xl shadow-red-500/20">
+                  {/* Animated grid background */}
+                  <div className="absolute inset-0 bg-[linear-gradient(rgba(220,38,38,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(220,38,38,0.03)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)]"></div>
 
-                {/* Fighters */}
-                <div className="relative flex items-center justify-between mb-8">
-                  {/* Fighter 1 */}
-                  <div className="text-center space-y-3">
-                    <div className="relative">
-                      <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg animate-pulse">
-                        {formData.brand1.charAt(0).toUpperCase()}
+                  {/* Scanning beam effect */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-500/10 to-transparent animate-[scan_3s_ease-in-out_infinite]"></div>
+
+                  {/* Radar pulse rings */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px]">
+                    <div className="absolute inset-0 border border-red-500/20 rounded-full animate-ping"></div>
+                    <div className="absolute inset-8 border border-red-500/30 rounded-full animate-[ping_2s_ease-in-out_infinite_0.5s]"></div>
+                    <div className="absolute inset-16 border border-red-500/40 rounded-full animate-[ping_2s_ease-in-out_infinite_1s]"></div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-8 relative z-10">
+                    {/* Target 1 - Left */}
+                    <div className="flex-1 text-center space-y-4 animate-[slideInLeft_0.5s_ease-out]">
+                      <div className="relative mx-auto w-32 h-32 flex items-center justify-center">
+                        {/* Rotating border rings */}
+                        <div className="absolute inset-0 border-2 border-red-500/40 rounded-full animate-[spin_8s_linear_infinite]">
+                          <div className="absolute top-0 left-1/2 w-2 h-2 -translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full"></div>
+                        </div>
+                        <div className="absolute inset-2 border-2 border-red-400/30 rounded-full animate-[spin_6s_linear_infinite_reverse]">
+                          <div className="absolute bottom-0 left-1/2 w-2 h-2 -translate-x-1/2 translate-y-1/2 bg-red-400 rounded-full"></div>
+                        </div>
+                        <div className="absolute inset-4 border border-red-300/20 rounded-full animate-[spin_4s_linear_infinite]"></div>
+
+                        {/* Center initial */}
+                        <div className="relative z-10 w-24 h-24 rounded-full bg-gradient-to-br from-red-950 to-black border border-red-500/50 flex items-center justify-center shadow-lg shadow-red-500/20">
+                          <div className="text-4xl font-bold text-red-400 font-mono animate-pulse">
+                            {brand1 ? brand1.charAt(0).toUpperCase() : "?"}
+                          </div>
+                        </div>
                       </div>
-                      {progress > 25 && (
-                        <div className="absolute -top-2 -right-2 animate-bounce">
-                          <Flame className="w-6 h-6 text-orange-500" />
+
+                      <div className="space-y-2">
+                        <div className="text-xl font-bold text-white font-['Space_Grotesk'] tracking-widest uppercase">
+                          {brand1 || "Target 1"}
+                        </div>
+                        <div className="font-['JetBrains_Mono'] text-xs text-red-400 uppercase tracking-widest animate-pulse">
+                          Scanning...
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Central Combat Hub */}
+                    <div className="w-48 text-center space-y-4 animate-[zoomIn_0.3s_ease-out]">
+                      <div className="relative w-24 h-24 mx-auto">
+                        {/* Pulsing outer ring */}
+                        <div className="absolute inset-0 border-2 border-red-500/60 rounded-full animate-[ping_2s_ease-in-out_infinite]"></div>
+                        <div className="absolute inset-8 border border-red-500/40 rounded-full animate-[ping_2s_ease-in-out_infinite_0.5s]"></div>
+
+                        {/* Inner rotating radar */}
+                        <div className="absolute inset-4 border border-red-500/30 rounded-full">
+                          <div className="absolute inset-0 bg-gradient-to-tr from-red-500/20 via-transparent to-transparent animate-[spin_2s_linear_infinite]"></div>
+                        </div>
+
+                        {/* Center icon */}
+                        <div className="absolute inset-8 rounded-full bg-red-950/80 border border-red-500 flex items-center justify-center shadow-lg shadow-red-500/30">
+                          <Zap className="w-8 h-8 text-red-500 animate-[pulse_1.5s_ease-in-out_infinite]" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="font-['Space_Grotesk'] text-lg font-bold text-red-500 uppercase tracking-widest animate-pulse">
+                          Confrontation
+                        </div>
+                        <div className="font-['JetBrains_Mono'] text-sm text-gray-400">Analyse en cours...</div>
+
+                        {/* Progress indicator */}
+                        <div className="w-full h-1 bg-zinc-900 rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-red-600 via-red-500 to-red-600 animate-[shimmer_2s_ease-in-out_infinite]"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Target 2 - Right */}
+                    <div className="flex-1 text-center space-y-4 animate-[slideInRight_0.5s_ease-out]">
+                      <div className="relative mx-auto w-32 h-32 flex items-center justify-center">
+                        {/* Rotating border rings */}
+                        <div className="absolute inset-0 border-2 border-red-500/40 rounded-full animate-[spin_8s_linear_infinite_reverse]">
+                          <div className="absolute top-0 right-1/2 w-2 h-2 translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full"></div>
+                        </div>
+                        <div className="absolute inset-2 border-2 border-red-400/30 rounded-full animate-[spin_6s_linear_infinite]">
+                          <div className="absolute bottom-0 right-1/2 w-2 h-2 translate-x-1/2 translate-y-1/2 bg-red-400 rounded-full"></div>
+                        </div>
+                        <div className="absolute inset-4 border border-red-300/20 rounded-full animate-[spin_4s_linear_infinite_reverse]"></div>
+
+                        {/* Center initial */}
+                        <div className="relative z-10 w-24 h-24 rounded-full bg-gradient-to-br from-red-950 to-black border border-red-500/50 flex items-center justify-center shadow-lg shadow-red-500/20">
+                          <div className="text-4xl font-bold text-red-400 font-mono animate-pulse">
+                            {brand2 ? brand2.charAt(0).toUpperCase() : "?"}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="text-xl font-bold text-white font-['Space_Grotesk'] tracking-widest uppercase">
+                          {brand2 || "Target 2"}
+                        </div>
+                        <div className="font-['JetBrains_Mono'] text-xs text-red-400 uppercase tracking-widest animate-pulse">
+                          Scanning...
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : result ? (
+              <div className="space-y-8 max-w-6xl mx-auto">
+                {/* Winner Announcement - Spy Style */}
+                <div className="relative overflow-hidden border border-red-900/50 bg-gradient-to-b from-red-950/20 to-black p-8 text-center">
+                  <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-red-600"></div>
+                  <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-red-600"></div>
+                  <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-red-600"></div>
+                  <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-red-600"></div>
+
+                  {result.winner === "Match nul" ? (
+                    <>
+                      <h3 className="text-3xl font-bold text-white font-mono mb-2 uppercase tracking-widest">
+                        {t("perfect_equality")}
+                      </h3>
+                      <div className="text-gray-400 font-mono">
+                        {t("power_index", { score: result.brand1_analysis.global_score })}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="text-xl text-red-500 font-mono mb-2 uppercase tracking-[0.2em]">
+                        {t("dominant_target_identified")}
+                      </h3>
+                      <div className="text-5xl font-bold text-white font-sans mb-4 uppercase tracking-tighter">
+                        {result.winner}
+                      </div>
+                      <div className="inline-flex items-center gap-4 text-gray-400 bg-black/50 px-6 py-2 border border-white/10 rounded-full">
+                        <span className="font-mono text-sm">{t("power_delta")}</span>
+                        <span className="text-red-500 font-bold font-mono">+{result.score_difference} PTS</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Data Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Brand 1 Card */}
+                  <div className="lg:col-span-1 border border-white/10 bg-zinc-950/50 p-6 flex flex-col gap-6">
+                    <div className="text-center border-b border-white/5 pb-4">
+                      <h4 className="text-2xl font-bold text-white uppercase font-mono">{brand1}</h4>
+                      {getWinnerBadge(brand1, result.winner)}
+                    </div>
+                    <div className="flex-1 space-y-4">
+                      <div className="text-sm text-gray-400 font-mono text-justify leading-relaxed">
+                        {result.brand1_analysis.rationale}
+                      </div>
+                      {result.brand1_analysis.google_summary && (
+                        <div className="bg-black/50 p-3 border-l-2 border-red-900/50 text-xs text-gray-500">
+                          {result.brand1_analysis.google_summary}
                         </div>
                       )}
                     </div>
-                    <div className="text-white font-bold">{formData.brand1}</div>
-                    <div className="flex justify-center space-x-1">
-                      {[...Array(3)].map((_, i) => (
-                        <div
-                          key={i}
-                          className={`w-2 h-2 rounded-full ${
-                            progress > 25 + i * 15 ? "bg-red-500" : "bg-gray-600"
-                          } transition-colors duration-500`}
-                        />
-                      ))}
+                  </div>
+
+                  {/* Comparison Stats - Center */}
+                  <div className="lg:col-span-1 space-y-4">
+                    <div className="bg-black border border-white/10 p-6 space-y-6">
+                      <h5 className="text-red-500 text-xs font-mono uppercase text-center mb-4">
+                        {t("comparative_metrics")}
+                      </h5>
+
+                      {/* Presence */}
+                      <div>
+                        <div className="flex justify-between text-xs text-gray-500 font-mono mb-2">
+                          <span>{t("visibility")}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={cn(
+                              "font-mono font-bold w-8 text-right",
+                              getScoreColor(result.brand1_analysis.presence_score),
+                            )}
+                          >
+                            {result.brand1_analysis.presence_score}
+                          </span>
+                          <div className="flex-1 h-2 bg-gray-900 relative overflow-hidden">
+                            <div className="absolute top-0 left-0 h-full bg-white/20 w-1/2 border-r border-black">
+                              <div
+                                className="h-full bg-white transition-all"
+                                style={{ width: `${result.brand1_analysis.presence_score}%` }}
+                              ></div>
+                            </div>
+                            <div className="absolute top-0 right-0 h-full bg-white/20 w-1/2">
+                              <div
+                                className="h-full bg-red-600 transition-all ml-auto"
+                                style={{ width: `${result.brand2_analysis.presence_score}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          <span
+                            className={cn(
+                              "font-mono font-bold w-8",
+                              getScoreColor(result.brand2_analysis.presence_score),
+                            )}
+                          >
+                            {result.brand2_analysis.presence_score}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Tone */}
+                      <div>
+                        <div className="flex justify-between text-xs text-gray-500 font-mono mb-2">
+                          <span>{t("sentiment")}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={cn(
+                              "font-mono font-bold w-8 text-right",
+                              getScoreColor(result.brand1_analysis.tone_score),
+                            )}
+                          >
+                            {result.brand1_analysis.tone_score}
+                          </span>
+                          <div className="flex-1 h-2 bg-gray-900 relative overflow-hidden">
+                            <div className="absolute top-0 left-0 h-full bg-white/20 w-1/2 border-r border-black">
+                              <div
+                                className="h-full bg-white transition-all"
+                                style={{ width: `${result.brand1_analysis.tone_score}%` }}
+                              ></div>
+                            </div>
+                            <div className="absolute top-0 right-0 h-full bg-white/20 w-1/2">
+                              <div
+                                className="h-full bg-red-600 transition-all ml-auto"
+                                style={{ width: `${result.brand2_analysis.tone_score}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          <span
+                            className={cn("font-mono font-bold w-8", getScoreColor(result.brand2_analysis.tone_score))}
+                          >
+                            {result.brand2_analysis.tone_score}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Coherence */}
+                      <div>
+                        <div className="flex justify-between text-xs text-gray-500 font-mono mb-2">
+                          <span>{t("coherence")}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={cn(
+                              "font-mono font-bold w-8 text-right",
+                              getScoreColor(result.brand1_analysis.coherence_score),
+                            )}
+                          >
+                            {result.brand1_analysis.coherence_score}
+                          </span>
+                          <div className="flex-1 h-2 bg-gray-900 relative overflow-hidden">
+                            <div className="absolute top-0 left-0 h-full bg-white/20 w-1/2 border-r border-black">
+                              <div
+                                className="h-full bg-white transition-all"
+                                style={{ width: `${result.brand1_analysis.coherence_score}%` }}
+                              ></div>
+                            </div>
+                            <div className="absolute top-0 right-0 h-full bg-white/20 w-1/2">
+                              <div
+                                className="h-full bg-red-600 transition-all ml-auto"
+                                style={{ width: `${result.brand2_analysis.coherence_score}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          <span
+                            className={cn(
+                              "font-mono font-bold w-8",
+                              getScoreColor(result.brand2_analysis.coherence_score),
+                            )}
+                          >
+                            {result.brand2_analysis.coherence_score}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  {/* VS Animation */}
-                  <div className="text-center">
-                    <div className="relative">
-                      <Swords className="w-12 h-12 text-yellow-400 animate-spin" style={{ animationDuration: "3s" }} />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Zap className="w-6 h-6 text-white animate-ping" />
-                      </div>
+                  {/* Brand 2 Card */}
+                  <div className="lg:col-span-1 border border-white/10 bg-zinc-950/50 p-6 flex flex-col gap-6">
+                    <div className="text-center border-b border-white/5 pb-4">
+                      <h4 className="text-2xl font-bold text-white uppercase font-mono">{brand2}</h4>
+                      {getWinnerBadge(brand2, result.winner)}
                     </div>
-                    <div className="text-yellow-400 font-bold text-xl mt-2">VS</div>
-                    {progress > 50 && <div className="text-xs text-yellow-300 animate-pulse mt-1">⚡ COMBAT ⚡</div>}
-                  </div>
-
-                  {/* Fighter 2 */}
-                  <div className="text-center space-y-3">
-                    <div className="relative">
-                      <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg animate-pulse">
-                        {formData.brand2.charAt(0).toUpperCase()}
+                    <div className="flex-1 space-y-4">
+                      <div className="text-sm text-gray-400 font-mono text-justify leading-relaxed">
+                        {result.brand2_analysis.rationale}
                       </div>
-                      {progress > 50 && (
-                        <div className="absolute -top-2 -left-2 animate-bounce">
-                          <Shield className="w-6 h-6 text-blue-400" />
+                      {result.brand2_analysis.google_summary && (
+                        <div className="bg-black/50 p-3 border-l-2 border-red-900/50 text-xs text-gray-500">
+                          {result.brand2_analysis.google_summary}
                         </div>
                       )}
                     </div>
-                    <div className="text-white font-bold">{formData.brand2}</div>
-                    <div className="flex justify-center space-x-1">
-                      {[...Array(3)].map((_, i) => (
-                        <div
-                          key={i}
-                          className={`w-2 h-2 rounded-full ${
-                            progress > 50 + i * 15 ? "bg-blue-500" : "bg-gray-600"
-                          } transition-colors duration-500`}
-                        />
-                      ))}
-                    </div>
                   </div>
                 </div>
 
-                {/* Battle Status */}
-                <div className="text-center space-y-3">
-                  <div className="text-yellow-300 font-medium text-lg">{currentStep}</div>
-                  <div className="max-w-md mx-auto space-y-3">
-                    <div className="flex justify-between text-sm text-gray-300">
-                      <span>Progression du Combat</span>
-                      <span>{Math.round(progress)}%</span>
-                    </div>
-                    <div className="relative">
-                      <Progress value={progress} className="h-4 bg-gray-700" />
-                      <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 via-yellow-500/20 to-blue-500/20 rounded-full"></div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Combat Effects */}
-                {progress > 75 && (
-                  <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute top-1/2 left-1/4 w-4 h-4 bg-yellow-400 rounded-full animate-ping"></div>
-                    <div
-                      className="absolute top-1/3 right-1/4 w-3 h-3 bg-red-400 rounded-full animate-ping"
-                      style={{ animationDelay: "0.5s" }}
-                    ></div>
-                    <div
-                      className="absolute bottom-1/3 left-1/3 w-2 h-2 bg-blue-400 rounded-full animate-ping"
-                      style={{ animationDelay: "1s" }}
-                    ></div>
-                  </div>
-                )}
-              </div>
-
-              {/* Battle Commentary */}
-              <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-4 border-l-4 border-primary">
-                <div className="text-sm text-gray-600 italic">
-                  {progress < 25 && "🔍 Analyse des forces de " + formData.brand1 + "..."}
-                  {progress >= 25 && progress < 50 && "⚔️ " + formData.brand2 + " entre dans l'arène..."}
-                  {progress >= 50 && progress < 75 && "💥 Les deux combattants s'affrontent !"}
-                  {progress >= 75 && progress < 95 && "🏆 Détermination du vainqueur..."}
-                  {progress >= 95 && "✨ Le verdict tombe !"}
-                </div>
-              </div>
-            </div>
-          ) : result ? (
-            <div className="space-y-6 max-w-4xl mx-auto">
-              {/* Winner Announcement */}
-              <div className="text-center py-6 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-xl border-2 border-yellow-200">
-                <Trophy className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
-                {result.winner === "Match nul" ? (
-                  <>
-                    <h3 className="text-2xl font-bold text-yellow-800 mb-2">🤝 Match nul !</h3>
-                    <div className="text-lg text-yellow-700">
-                      Les deux entités sont à égalité avec un score de {result.brand1_analysis.global_score}/100
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <h3 className="text-2xl font-bold text-yellow-800 mb-2">🏆 {result.winner} remporte le duel !</h3>
-                    <div className="text-lg text-yellow-700">
-                      Score global :{" "}
-                      {result.winner === formData.brand1
-                        ? result.brand1_analysis.global_score
-                        : result.brand2_analysis.global_score}
-                      /100
-                      {result.score_difference > 0 && (
-                        <span className="ml-3">(Écart de {result.score_difference} points)</span>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Score Comparison */}
-              <Card className="bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-200">
-                <CardHeader>
-                  <CardTitle className="text-center text-purple-800">
-                    <div className="flex items-center justify-center gap-2">
-                      <Swords className="w-5 h-5" />
-                      Comparaison des Scores
-                    </div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-3 gap-4 text-center mb-6">
-                    <div className="p-4 bg-white rounded-lg">
-                      <div className="text-sm font-medium text-gray-600 mb-2">Présence Digitale</div>
-                      <div className="flex items-center justify-center gap-2">
-                        <span className={`text-xl font-bold ${getScoreColor(result.brand1_analysis.presence_score)}`}>
-                          {result.brand1_analysis.presence_score}
-                        </span>
-                        <span className="text-gray-400 text-sm">vs</span>
-                        <span className={`text-xl font-bold ${getScoreColor(result.brand2_analysis.presence_score)}`}>
-                          {result.brand2_analysis.presence_score}
-                        </span>
+                {/* Detailed Comparison */}
+                {result.detailed_comparison && !isAnalyzing && (
+                  <div className="border-t border-red-900/20 bg-zinc-950/30">
+                    <button
+                      onClick={() => setExpandedComparison(!expandedComparison)}
+                      className="w-full flex items-center justify-between px-8 py-5 hover:bg-red-950/10 transition-colors group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Target className="w-5 h-5 text-red-500" />
+                        <h3 className="text-xl font-bold text-white font-['Space_Grotesk'] uppercase tracking-wide">
+                          {t("detailed_comparative_analysis")}
+                        </h3>
                       </div>
-                    </div>
-                    <div className="p-4 bg-white rounded-lg">
-                      <div className="text-sm font-medium text-gray-600 mb-2">Sentiment</div>
-                      <div className="flex items-center justify-center gap-2">
-                        <span className={`text-xl font-bold ${getScoreColor(result.brand1_analysis.tone_score)}`}>
-                          {result.brand1_analysis.tone_score}
-                        </span>
-                        <span className="text-gray-400 text-sm">vs</span>
-                        <span className={`text-xl font-bold ${getScoreColor(result.brand2_analysis.tone_score)}`}>
-                          {result.brand2_analysis.tone_score}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-white rounded-lg">
-                      <div className="text-sm font-medium text-gray-600 mb-2">Cohérence</div>
-                      <div className="flex items-center justify-center gap-2">
-                        <span className={`text-xl font-bold ${getScoreColor(result.brand1_analysis.coherence_score)}`}>
-                          {result.brand1_analysis.coherence_score}
-                        </span>
-                        <span className="text-gray-400 text-sm">vs</span>
-                        <span className={`text-xl font-bold ${getScoreColor(result.brand2_analysis.coherence_score)}`}>
-                          {result.brand2_analysis.coherence_score}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Global Scores */}
-                  <div className="flex justify-center items-center gap-8 p-6 bg-white rounded-lg">
-                    <div className="text-center">
-                      <div className="text-lg font-semibold text-gray-700 mb-1">{formData.brand1}</div>
-                      <div className={`text-3xl font-bold ${getScoreColor(result.brand1_analysis.global_score)}`}>
-                        {result.brand1_analysis.global_score}
-                      </div>
-                      {getWinnerBadge(formData.brand1, result.winner)}
-                    </div>
-                    <div className="text-2xl font-bold text-gray-400">VS</div>
-                    <div className="text-center">
-                      <div className="text-lg font-semibold text-gray-700 mb-1">{formData.brand2}</div>
-                      <div className={`text-3xl font-bold ${getScoreColor(result.brand2_analysis.global_score)}`}>
-                        {result.brand2_analysis.global_score}
-                      </div>
-                      {getWinnerBadge(formData.brand2, result.winner)}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Brand 1 Analysis */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>Analyse de {formData.brand1}</span>
-                    {getWinnerBadge(formData.brand1, result.winner)}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="text-sm text-muted-foreground leading-relaxed">
-                    {result.brand1_analysis.rationale}
-                  </div>
-                  {result.brand1_analysis.google_summary && (
-                    <div>
-                      <h4 className="font-semibold mb-2">Résumé de l'analyse SEO</h4>
-                      <div className="text-sm text-muted-foreground leading-relaxed p-3 bg-gray-50 rounded-lg">
-                        {result.brand1_analysis.google_summary}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Brand 2 Analysis */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>Analyse de {formData.brand2}</span>
-                    {getWinnerBadge(formData.brand2, result.winner)}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="text-sm text-muted-foreground leading-relaxed">
-                    {result.brand2_analysis.rationale}
-                  </div>
-                  {result.brand2_analysis.google_summary && (
-                    <div>
-                      <h4 className="font-semibold mb-2">Résumé de l'analyse SEO</h4>
-                      <div className="text-sm text-muted-foreground leading-relaxed p-3 bg-gray-50 rounded-lg">
-                        {result.brand2_analysis.google_summary}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Detailed Comparison */}
-              {result.detailed_comparison && (
-                <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-                  <CardHeader>
-                    <CardTitle className="text-center text-blue-800">
-                      <div className="flex items-center justify-center gap-2">
-                        <Target className="w-5 h-5" />
-                        Analyse Comparative Détaillée
-                      </div>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-sm text-blue-700 leading-relaxed">
-                      {result.detailed_comparison ? (
-                        <div
-                          className="prose prose-sm max-w-none"
-                          dangerouslySetInnerHTML={{
-                            __html: String(result.detailed_comparison || "")
-                              .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                              .replace(/\*(.*?)\*/g, "<em>$1</em>")
-                              .replace(/### (.*?)$/gm, '<h4 class="font-semibold text-blue-800 mt-4 mb-2">$1</h4>')
-                              .replace(/## (.*?)$/gm, '<h3 class="font-bold text-blue-900 mt-5 mb-3">$1</h3>')
-                              .replace(/# (.*?)$/gm, '<h2 class="font-bold text-blue-900 text-lg mt-6 mb-3">$1</h2>')
-                              .replace(/\n/g, "<br>"),
-                          }}
-                        />
+                      {expandedComparison ? (
+                        <ChevronUp className="w-5 h-5 text-gray-400 group-hover:text-red-500 transition-colors" />
                       ) : (
-                        result.summary || "Analyse comparative non disponible"
+                        <ChevronDown className="w-5 h-5 text-gray-400 group-hover:text-red-500 transition-colors" />
                       )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+                    </button>
 
-              {/* Promotional Section */}
-              <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
-                <div className="text-center">
-                  <h4 className="font-bold text-green-900 text-lg mb-2">🚀 Vous voulez améliorer votre score ?</h4>
-                  <p className="text-green-800 mb-3">
-                    Nous avons tous les outils pour optimiser votre présence digitale et votre cohérence de message.
-                  </p>
-                  <p className="text-green-900 font-semibold">📞 Contactez-nous dès maintenant !</p>
-                </div>
+                    {expandedComparison && (
+                      <div className="px-8 pb-8 pt-4">
+                        <div className="bg-black/40 border border-red-900/20 rounded-lg p-8">
+                          <div className="prose prose-invert prose-lg max-w-none">
+                            {formatComparisonText(result.detailed_comparison)}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
-          ) : null}
-        </div>
-      </DialogContent>
-    </Dialog>
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <AnalysisResultsFullscreen
+        isOpen={showFullscreenView}
+        onClose={() => {
+          setShowFullscreenView(false)
+          onClose()
+        }}
+        result={result}
+        type="duel"
+      />
+    </>
   )
 }

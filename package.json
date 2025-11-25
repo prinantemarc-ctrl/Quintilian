@@ -68,7 +68,7 @@
     "openai": "5.21.0",
     "path": "0.12.7",
     "prop-types": "latest",
-    "react": "^18",
+    "react": "latest",
     "react-day-picker": "latest",
     "react-dom": "^18",
     "react-hook-form": "^7.60.0",

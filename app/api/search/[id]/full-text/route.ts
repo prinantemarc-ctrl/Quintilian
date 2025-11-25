@@ -31,7 +31,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     // Vérifier que l'utilisateur a accès à cette recherche (soit c'est la sienne, soit il est admin)
     if (search.user_id !== user.id) {
       // Vérifier si l'utilisateur est admin (vous pouvez ajuster cette logique selon vos besoins)
-      const isAdmin = user.email === "admin@quintilian.com" // Ajustez selon votre logique d'admin
+      const isAdmin = user.email.endsWith("@mak-ia.com") // Ajustez selon votre logique d'admin
       if (!isAdmin) {
         return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
       }

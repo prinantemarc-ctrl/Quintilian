@@ -1,5 +1,4 @@
 import { generateText } from "ai"
-import { openai } from "@ai-sdk/openai"
 import type { GMISearchResult } from "./gmi-search"
 
 export interface GMICountryAnalysis {
@@ -130,7 +129,7 @@ Répondez au format JSON:
 }`
 
   const { text } = await generateText({
-    model: openai("gpt-4o-mini"),
+    model: "openai/gpt-4o-mini",
     prompt,
     temperature: 0.3,
   })
@@ -196,7 +195,7 @@ Marché à améliorer: ${worstCountry.country} (${worstCountry.globalScore}/100)
 Fournissez une analyse comparative en 2-3 phrases qui explique les tendances géographiques et les opportunités.`
 
     const { text } = await generateText({
-      model: openai("gpt-4o-mini"),
+      model: "openai/gpt-4o-mini",
       prompt,
       temperature: 0.4,
     })

@@ -19,9 +19,9 @@ export function SharedResultDisplay({ result }: SharedResultDisplayProps) {
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : ""
 
-  const tweetText = `🚀 Découvrez mon analyse SEO complète sur Quintilian !\n\n📊 ${result.brand} - Score: ${globalScore}/100\n✅ Présence: ${result.results.presence_score}/100\n💭 Sentiment: ${result.results.tone_score}/100\n🎯 Cohérence: ${result.results.coherence_score}/100\n\n#SEO #AnalyseSEO #Marketing`
+  const tweetText = `🚀 Découvrez mon analyse SEO complète sur MAK-IA !\n\n📊 ${result.brand} - Score: ${globalScore}/100\n✅ Présence: ${result.results.presence_score}/100\n💭 Sentiment: ${result.results.tone_score}/100\n🎯 Cohérence: ${result.results.coherence_score}/100\n\n#SEO #AnalyseSEO #Marketing`
 
-  const facebookText = `Découvrez l'analyse SEO complète de ${result.brand} avec un score global de ${globalScore}/100 ! Analysez votre propre présence digitale sur Quintilian.`
+  const facebookText = `Découvrez l'analyse SEO complète de ${result.brand} avec un score global de ${globalScore}/100 ! Analysez votre propre présence digitale sur MAK-IA.`
 
   const handleShare = (platform: "twitter" | "facebook") => {
     let url = ""
@@ -339,7 +339,7 @@ export function SharedResultDisplay({ result }: SharedResultDisplayProps) {
             <Link href="/">Faire mon analyse gratuite</Link>
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">Analyse partagée • Powered by Quintilian</p>
+        <p className="text-xs text-muted-foreground">Analyse partagée • Powered by MAK-IA</p>
       </div>
     </div>
   )

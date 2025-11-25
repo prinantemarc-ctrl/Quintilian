@@ -4,37 +4,50 @@ interface EntityOption {
   id: string
   name: string
   description: string
-  type: "company" | "person" | "location" | "organization"
+  type: "company" | "person" | "location" | "organization" | "product" | "brand"
   context: string
+  confidence: number
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { query } = await request.json()
+    const { query, searchResults } = await request.json()
 
     if (!query || typeof query !== "string") {
       return NextResponse.json({ error: "Query is required" }, { status: 400 })
     }
 
+    const searchContext = searchResults
+      ? `\n\nSearch results found:\n${searchResults
+          .slice(0, 5)
+          .map((r: any) => `- ${r.title}: ${r.snippet}`)
+          .join("\n")}`
+      : ""
+
     const disambiguationPrompt = `
-    Given the search term "${query}", provide up to 4 different possible entities this could refer to.
-    Consider companies, people, locations, and organizations that might share this name.
+    Given the search term "${query}", analyze and identify the most likely distinct entities this could refer to.
+    ${searchContext}
     
-    Return a JSON array of objects with this structure:
+    Provide 3-5 different possible entities, ranked by confidence (most likely first).
+    Consider companies, people, products, brands, locations, and organizations.
+    
+    Return a JSON array of objects with this exact structure:
     {
-      "id": "unique_id",
-      "name": "Entity Name",
-      "description": "Brief description (company in X industry, person known for Y, etc.)",
-      "type": "company|person|location|organization",
-      "context": "Additional context for search refinement"
+      "id": "unique_identifier",
+      "name": "Official Entity Name",
+      "description": "Clear, specific description (e.g., 'Tech company based in California', 'French footballer', 'Historic town in Corsica')",
+      "type": "company|person|location|organization|product|brand",
+      "context": "Detailed context for disambiguation (industry, location, notable facts)",
+      "confidence": 0.95 // Float between 0 and 1, indicating confidence level
     }
     
-    Examples for "Aleria":
-    - Company: Aleria AI company in UAE
-    - Location: Aleria town in Corsica, France  
-    - Company: Aleria tech company in USA
+    IMPORTANT:
+    - Order results by confidence (highest first)
+    - Be specific in descriptions to help users distinguish between entities
+    - Include geographic/industry context when relevant
+    - confidence should reflect how likely this interpretation is
     
-    Only return the JSON array, no other text.
+    Return ONLY the JSON array, no markdown, no other text.
     `
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -47,12 +60,17 @@ export async function POST(request: NextRequest) {
         model: "gpt-4o-mini",
         messages: [
           {
+            role: "system",
+            content:
+              "You are an expert entity disambiguation system. Provide clear, accurate entity distinctions based on search context.",
+          },
+          {
             role: "user",
             content: disambiguationPrompt,
           },
         ],
-        temperature: 0.3,
-        max_tokens: 1000,
+        temperature: 0.2, // Lower temperature for more consistent results
+        max_tokens: 1500,
       }),
     })
 
@@ -78,13 +96,20 @@ export async function POST(request: NextRequest) {
         jsonContent = jsonContent.replace(/^```\s*/, "").replace(/\s*```$/, "")
       }
 
-      console.log("[v0] Parsing JSON content:", jsonContent)
+      console.log("[v0] Parsing disambiguation JSON:", jsonContent.substring(0, 200))
 
       const entities: EntityOption[] = JSON.parse(jsonContent)
 
       const validEntities = entities
         .filter((entity) => entity.name && entity.description && entity.type && entity.context)
-        .slice(0, 4)
+        .map((entity) => ({
+          ...entity,
+          confidence: entity.confidence || 0.5, // Default confidence if missing
+        }))
+        .sort((a, b) => b.confidence - a.confidence) // Sort by confidence
+        .slice(0, 5)
+
+      console.log(`[v0] Returning ${validEntities.length} disambiguation options`)
 
       return NextResponse.json(validEntities)
     } catch (parseError) {

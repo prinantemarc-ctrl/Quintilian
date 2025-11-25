@@ -1,87 +1,93 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Updated to green & black color palette */
+/* Completely overhauled for "Dark Machiavelli" theme */
 :root {
-  /* Green & Black Theme with World Map colors */
-  --background: #ffffff;
-  --foreground: #1a1a1a;
-  --card: #fafafa;
-  --card-foreground: #1a1a1a;
-  --popover: #ffffff;
-  --popover-foreground: #1a1a1a;
-  --primary: #16a34a;
-  --primary-foreground: #ffffff;
-  --secondary: #22c55e;
-  --secondary-foreground: #ffffff;
-  --muted: #f5f5f5;
-  --muted-foreground: #525252;
-  --accent: #15803d;
-  --accent-foreground: #ffffff;
-  --destructive: #dc2626;
-  --destructive-foreground: #ffffff;
-  --border: #e5e5e5;
-  --input: #fafafa;
-  --ring: rgba(22, 163, 74, 0.3);
-  --chart-1: #16a34a;
-  --chart-2: #22c55e;
-  --chart-3: #15803d;
-  --chart-4: #525252;
-  --chart-5: #dc2626;
-  --radius: 0.75rem;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #1a1a1a;
-  --sidebar-primary: #16a34a;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #22c55e;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #e5e5e5;
-  --sidebar-ring: rgba(22, 163, 74, 0.3);
+  /* Dark Mode Default - Deep Black & Blood Red */
+  --background: #000000;
+  --foreground: #ededed;
 
-  /* Added world map specific colors */
-  --map-country-default: #f3f4f6;
-  --map-country-hover: #e5e7eb;
-  --map-country-selected: #16a34a;
-  --map-country-high: #22c55e;
-  --map-country-medium: #fbbf24;
-  --map-country-low: #ef4444;
-  --map-ocean: #dbeafe;
+  --card: #0a0a0a;
+  --card-foreground: #ededed;
+
+  --popover: #0a0a0a;
+  --popover-foreground: #ededed;
+
+  /* Primary Red - The color of power */
+  --primary: #991b1b;
+  --primary-foreground: #ffffff;
+
+  /* Secondary - Cold Steel/Tech */
+  --secondary: #171717;
+  --secondary-foreground: #a3a3a3;
+
+  --muted: #171717;
+  --muted-foreground: #666666;
+
+  --accent: #262626;
+  --accent-foreground: #ffffff;
+
+  --destructive: #7f1d1d;
+  --destructive-foreground: #ffffff;
+
+  --border: #262626;
+  --input: #171717;
+  --ring: #991b1b;
+
+  --radius: 0rem; /* Sharp edges for brutalist/spy look */
+
+  /* Charts - Red/Grey Spectrum */
+  --chart-1: #991b1b;
+  --chart-2: #7f1d1d;
+  --chart-3: #450a0a;
+  --chart-4: #525252;
+  --chart-5: #262626;
+
+  --sidebar: #050505;
+  --sidebar-foreground: #ededed;
+  --sidebar-primary: #991b1b;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #171717;
+  --sidebar-accent-foreground: #ededed;
+  --sidebar-border: #262626;
+  --sidebar-ring: #991b1b;
+
+  /* Map colors - Dark world view */
+  --map-country-default: #171717;
+  --map-country-hover: #262626;
+  --map-country-selected: #991b1b;
+  --map-country-high: #7f1d1d;
+  --map-country-medium: #450a0a;
+  --map-country-low: #262626;
+  --map-ocean: #000000;
 }
 
+/* Ensure dark mode is consistent */
 .dark {
-  /* Dark theme with green & black */
-  --background: #0a0a0a;
-  --foreground: #fafafa;
-  --card: #1a1a1a;
-  --card-foreground: #fafafa;
-  --popover: #1a1a1a;
-  --popover-foreground: #fafafa;
-  --primary: #22c55e;
-  --primary-foreground: #0a0a0a;
-  --secondary: #16a34a;
-  --secondary-foreground: #ffffff;
-  --muted: #262626;
-  --muted-foreground: #a3a3a3;
-  --accent: #15803d;
+  --background: #000000;
+  --foreground: #ededed;
+  --card: #0a0a0a;
+  --card-foreground: #ededed;
+  --popover: #0a0a0a;
+  --popover-foreground: #ededed;
+  --primary: #991b1b;
+  --primary-foreground: #ffffff;
+  --secondary: #171717;
+  --secondary-foreground: #a3a3a3;
+  --muted: #171717;
+  --muted-foreground: #666666;
+  --accent: #262626;
   --accent-foreground: #ffffff;
-  --destructive: #dc2626;
+  --destructive: #7f1d1d;
   --destructive-foreground: #ffffff;
-  --border: #404040;
-  --input: #1a1a1a;
-  --ring: rgba(34, 197, 94, 0.3);
-  --chart-1: #22c55e;
-  --chart-2: #16a34a;
-  --chart-3: #15803d;
-  --chart-4: #a3a3a3;
-  --chart-5: #dc2626;
-  --sidebar: #1a1a1a;
-  --sidebar-foreground: #fafafa;
-  --sidebar-primary: #22c55e;
-  --sidebar-primary-foreground: #0a0a0a;
-  --sidebar-accent: #16a34a;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #404040;
-  --sidebar-ring: rgba(34, 197, 94, 0.3);
+  --border: #262626;
+  --input: #171717;
+  --ring: #991b1b;
+  --chart-1: #991b1b;
+  --chart-2: #7f1d1d;
+  --chart-3: #450a0a;
+  --chart-4: #525252;
+  --chart-5: #262626;
 }
 
 @theme inline {
@@ -122,8 +128,10 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Added DM Sans font family */
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  /* Updated font variables */
+  --font-heading: var(--font-heading);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
 }
 
 @layer base {
@@ -131,36 +139,108 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    /* Enhanced text rendering for better readability */
+    /* Switch to font-sans for readability, keep mono for data only */
+    @apply bg-background text-foreground font-sans antialiased selection:bg-primary selection:text-white;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
   }
 
-  /* Improved typography hierarchy */
+  /* Use the new heading font */
   h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
-    @apply font-semibold tracking-tight;
+    @apply font-heading font-bold tracking-tight text-white uppercase;
   }
 
   h1 {
-    @apply text-4xl lg:text-5xl;
+    @apply text-4xl lg:text-6xl;
   }
-
   h2 {
     @apply text-3xl lg:text-4xl;
   }
-
   h3 {
     @apply text-2xl lg:text-3xl;
   }
+}
 
-  p {
-    @apply leading-relaxed;
+/* Adding custom animations for loading states */
+@layer utilities {
+  /* Scanning beam animation */
+  @keyframes scan {
+    0%,
+    100% {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+    50% {
+      transform: translateY(0%);
+      opacity: 1;
+    }
+  }
+
+  /* Shimmer effect for progress bars */
+  @keyframes shimmer {
+    0% {
+      background-position: -200% center;
+    }
+    100% {
+      background-position: 200% center;
+    }
+  }
+
+  /* Zoom in animation */
+  @keyframes zoomIn {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Slide in from left */
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Slide in from right */
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Radar pulse animation */
+  @keyframes radarPulse {
+    0% {
+      transform: scale(0.8);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1.2);
+      opacity: 0;
+    }
+  }
+
+  /* Apply shimmer background size */
+  .animate-\[shimmer_2s_ease-in-out_infinite\] {
+    background-size: 200% 100%;
   }
 }
