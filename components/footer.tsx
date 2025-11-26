@@ -1,16 +1,11 @@
 "use client"
 
 import { useLanguage } from "@/contexts/language-context"
+import Link from "next/link"
+import { BarChart3, Swords } from "lucide-react"
 
 export function Footer() {
   const { t } = useLanguage()
-
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
-    }
-  }
 
   return (
     <footer className="bg-primary text-primary-foreground py-12">
@@ -19,36 +14,28 @@ export function Footer() {
           {/* Logo & Description */}
           <div className="space-y-4">
             <h3 className="text-xl font-bold">MAK-IA</h3>
-            <p className="text-sm opacity-90">{t("footer.description")}</p>
+            <p className="text-sm opacity-90">
+              Votre outil d'intelligence digitale pour mesurer et comparer votre réputation en ligne.
+            </p>
           </div>
 
-          {/* Quick Links */}
           <div className="space-y-4">
-            <h4 className="font-semibold">{t("footer.quick_links")}</h4>
+            <h4 className="font-semibold">Nos Analyses</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <button
-                  onClick={() => scrollToSection("features")}
-                  className="opacity-90 hover:opacity-100 transition-opacity"
+                <Link
+                  href="/analyze"
+                  className="opacity-90 hover:opacity-100 transition-opacity flex items-center gap-2"
                 >
-                  {t("footer.features")}
-                </button>
+                  <BarChart3 className="w-4 h-4" />
+                  Audit de Réputation
+                </Link>
               </li>
               <li>
-                <button
-                  onClick={() => scrollToSection("pricing")}
-                  className="opacity-90 hover:opacity-100 transition-opacity"
-                >
-                  {t("footer.pricing")}
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => scrollToSection("contact")}
-                  className="opacity-90 hover:opacity-100 transition-opacity"
-                >
-                  {t("footer.contact")}
-                </button>
+                <Link href="/duel" className="opacity-90 hover:opacity-100 transition-opacity flex items-center gap-2">
+                  <Swords className="w-4 h-4" />
+                  Mode Confrontation
+                </Link>
               </li>
             </ul>
           </div>
@@ -58,19 +45,19 @@ export function Footer() {
             <h4 className="font-semibold">{t("footer.legal")}</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="/legal/mentions" className="opacity-90 hover:opacity-100 transition-opacity">
+                <Link href="/legal/mentions" className="opacity-90 hover:opacity-100 transition-opacity">
                   {t("footer.legal_mentions")}
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/legal/privacy" className="opacity-90 hover:opacity-100 transition-opacity">
+                <Link href="/legal/privacy" className="opacity-90 hover:opacity-100 transition-opacity">
                   {t("footer.privacy")}
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/legal/terms" className="opacity-90 hover:opacity-100 transition-opacity">
+                <Link href="/legal/terms" className="opacity-90 hover:opacity-100 transition-opacity">
                   {t("footer.terms")}
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -90,7 +77,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-primary-foreground/20 mt-8 pt-8 text-center">
-          <p className="text-sm opacity-90">© 2025 MAK-IA</p>
+          <p className="text-sm opacity-90">© 2025 MAK-IA. Tous droits réservés.</p>
         </div>
       </div>
     </footer>

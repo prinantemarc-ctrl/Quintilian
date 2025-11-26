@@ -29,20 +29,41 @@ export default function SignUpPage() {
       return
     }
 
+    if (password.length < 6) {
+      setError("Le mot de passe doit contenir au moins 6 caractères")
+      return
+    }
+
     const supabase = createClient()
     setIsLoading(true)
     setError(null)
+    setMessage(null)
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL
+        ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
+        : `${window.location.origin}/auth/callback`
+
+      const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/dashboard`,
+          emailRedirectTo: redirectUrl,
         },
       })
-      if (error) throw error
-      setMessage("Vérifiez votre email pour confirmer votre inscription")
+
+      if (signUpError) {
+        if (signUpError.message.includes("after")) {
+          throw new Error("Trop de tentatives. Veuillez patienter 60 secondes avant de réessayer.")
+        } else if (signUpError.message.includes("already registered")) {
+          throw new Error("Cet email est déjà enregistré. Connectez-vous ou réinitialisez votre mot de passe.")
+        }
+        throw signUpError
+      }
+
+      setMessage(
+        `Un email de confirmation a été envoyé à ${email}. Vérifiez votre boîte de réception et vos spams, puis cliquez sur le lien pour activer votre compte.`,
+      )
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "Une erreur s'est produite")
     } finally {
@@ -86,7 +107,9 @@ export default function SignUpPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  minLength={6}
                 />
+                <p className="text-xs text-muted-foreground">Minimum 6 caractères</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
@@ -99,7 +122,11 @@ export default function SignUpPage() {
                 />
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
-              {message && <p className="text-sm text-primary">{message}</p>}
+              {message && (
+                <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/50">
+                  <p className="text-sm text-green-600 dark:text-green-400">{message}</p>
+                </div>
+              )}
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Création..." : "Créer un compte"}
               </Button>

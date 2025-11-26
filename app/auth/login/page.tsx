@@ -26,15 +26,22 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error: loginError } = await supabase.auth.signInWithPassword({
         email,
         password,
-        options: {
-          emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/dashboard`,
-        },
       })
-      if (error) throw error
+
+      if (loginError) {
+        if (loginError.message.includes("Invalid login credentials")) {
+          throw new Error("Email ou mot de passe incorrect")
+        } else if (loginError.message.includes("Email not confirmed")) {
+          throw new Error("Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.")
+        }
+        throw loginError
+      }
+
       router.push("/dashboard")
+      router.refresh()
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "Une erreur s'est produite")
     } finally {

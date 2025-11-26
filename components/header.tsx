@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Swords, ShieldAlert } from "lucide-react"
+import { Menu, X, Swords, BarChart3, Shield } from "lucide-react"
 import Link from "next/link"
 import { useLanguage } from "@/contexts/language-context"
 import { createClient } from "@/lib/supabase/client"
@@ -82,19 +82,6 @@ export function Header() {
     }
   }
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
-    }
-    setIsMenuOpen(false)
-  }
-
-  const scrollToHero = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" })
-    setIsMenuOpen(false)
-  }
-
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-black/80 backdrop-blur-xl supports-[backdrop-filter]:bg-black/50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -114,21 +101,28 @@ export function Header() {
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation - Simplified to 2 analysis types */}
           <nav className="hidden md:flex items-center gap-8 mx-6">
+            <Link
+              href="/renseignement"
+              className="text-xs font-medium tracking-widest text-zinc-400 hover:text-white transition-colors flex items-center gap-2 uppercase whitespace-nowrap"
+            >
+              <Shield className="w-4 h-4 text-emerald-500/50" />
+              Renseignement
+            </Link>
+            <Link
+              href="/analyze"
+              className="text-xs font-medium tracking-widest text-zinc-400 hover:text-white transition-colors flex items-center gap-2 uppercase whitespace-nowrap"
+            >
+              <BarChart3 className="w-4 h-4 text-blue-500/50" />
+              Audit
+            </Link>
             <Link
               href="/duel"
               className="text-xs font-medium tracking-widest text-zinc-400 hover:text-white transition-colors flex items-center gap-2 uppercase whitespace-nowrap"
             >
               <Swords className="w-4 h-4 text-red-500/50" />
-              {t("header.duel")}
-            </Link>
-            <Link
-              href="/solutions"
-              className="text-xs font-medium tracking-widest text-zinc-400 hover:text-white transition-colors flex items-center gap-2 uppercase whitespace-nowrap"
-            >
-              <ShieldAlert className="w-4 h-4 text-red-500/50" />
-              {t("header.features")}
+              Confrontation
             </Link>
           </nav>
 
@@ -171,23 +165,40 @@ export function Header() {
           </button>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation - Simplified to 2 analysis types */}
         {isMenuOpen && (
           <div className="md:hidden z-[100] border-t border-white/10 bg-black">
             <div className="px-4 pt-4 pb-6 space-y-4">
+              <Link
+                href="/renseignement"
+                className="block py-2 text-sm font-mono uppercase text-zinc-400 hover:text-emerald-500"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Shield className="w-4 h-4 inline mr-2" />
+                Renseignement
+              </Link>
+              <Link
+                href="/analyze"
+                className="block py-2 text-sm font-mono uppercase text-zinc-400 hover:text-blue-500"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <BarChart3 className="w-4 h-4 inline mr-2" />
+                Audit de Réputation
+              </Link>
               <Link
                 href="/duel"
                 className="block py-2 text-sm font-mono uppercase text-zinc-400 hover:text-red-500"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t("header.duel")}
+                <Swords className="w-4 h-4 inline mr-2" />
+                Mode Confrontation
               </Link>
               <Link
                 href="/contact"
-                className="block py-2 text-sm font-mono uppercase text-zinc-400 hover:text-red-500"
+                className="block py-2 text-sm font-mono uppercase text-zinc-400 hover:text-white"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t("header.contact")}
+                Contact
               </Link>
 
               <div className="pt-4 border-t border-white/10">

@@ -2,13 +2,13 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Eye, Heart, Target, Zap, Globe, BarChart3, Users, TrendingUp, Sparkles, Brain } from "lucide-react"
+import { Eye, Heart, Target, Zap, Users, Brain, Shield } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 
 export function FeaturesSection() {
   const { t } = useLanguage()
 
-  const coreFeatures = [
+  const allFeatures = [
     {
       icon: Eye,
       title: t("features.presence_title"),
@@ -30,68 +30,39 @@ export function FeaturesSection() {
       description: t("features.coherence_desc"),
       category: "Core",
     },
-  ]
-
-  const advancedFeatures = [
-    {
-      icon: Globe,
-      title: "Réputation Mondiale",
-      subtitle: "Analyse Globale",
-      description:
-        "Évaluez votre réputation à travers différents pays et cultures avec des insights géographiques détaillés.",
-      category: "Advanced",
-    },
     {
       icon: Users,
-      title: "Comparaison Concurrentielle",
-      subtitle: "Duel de Marques",
-      description: "Comparez directement votre marque avec vos concurrents pour identifier vos avantages compétitifs.",
-      category: "Advanced",
-    },
-    {
-      icon: BarChart3,
-      title: "Analytics Avancés",
-      subtitle: "Tableaux de Bord",
-      description: "Visualisez vos performances avec des graphiques interactifs et des métriques détaillées.",
-      category: "Analytics",
-    },
-    {
-      icon: TrendingUp,
-      title: "Suivi Temporel",
-      subtitle: "Évolution",
-      description: "Suivez l'évolution de votre réputation dans le temps avec des analyses de tendances.",
-      category: "Analytics",
+      title: "Confrontation Directe",
+      subtitle: "Mode Duel",
+      description: "Comparez directement votre marque avec un concurrent pour identifier vos avantages compétitifs.",
+      category: "Duel",
     },
     {
       icon: Brain,
       title: "IA Avancée",
       subtitle: "GPT-4 Analysis",
-      description: "Analyse sémantique poussée avec intelligence artificielle pour des insights précis.",
+      description:
+        "Analyse sémantique poussée avec intelligence artificielle pour des insights précis et actionnables.",
       category: "AI",
     },
     {
-      icon: Sparkles,
-      title: "Visualisations Interactives",
-      subtitle: "Animations",
-      description:
-        "Interface moderne avec animations fluides et graphiques interactifs pour une meilleure compréhension.",
-      category: "UX",
+      icon: Shield,
+      title: "Rapport d'Intelligence",
+      subtitle: "Dossier Complet",
+      description: "Recevez un rapport détaillé avec recommandations stratégiques pour améliorer votre réputation.",
+      category: "Report",
     },
   ]
-
-  const allFeatures = [...coreFeatures, ...advancedFeatures]
 
   const getCategoryColor = (category: string) => {
     switch (category) {
       case "Core":
         return "bg-primary/10 text-primary border-primary/20"
-      case "Advanced":
-        return "bg-secondary/10 text-secondary border-secondary/20"
-      case "Analytics":
-        return "bg-blue-500/10 text-blue-600 border-blue-500/20"
+      case "Duel":
+        return "bg-red-500/10 text-red-600 border-red-500/20"
       case "AI":
         return "bg-purple-500/10 text-purple-600 border-purple-500/20"
-      case "UX":
+      case "Report":
         return "bg-green-500/10 text-green-600 border-green-500/20"
       default:
         return "bg-muted text-muted-foreground"
@@ -106,8 +77,7 @@ export function FeaturesSection() {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">{t("features.subtitle")}</p>
           <div className="flex items-center justify-center gap-2 mt-6">
             <Badge variant="outline" className="px-4 py-2 text-sm font-medium">
-              <Zap className="w-4 h-4 mr-2" />
-              {allFeatures.length} Fonctionnalités Avancées
+              <Zap className="w-4 h-4 mr-2" />6 Fonctionnalités Clés
             </Badge>
           </div>
         </div>
@@ -146,8 +116,8 @@ export function FeaturesSection() {
               <div className="text-sm text-muted-foreground">Temps d'Analyse</div>
             </div>
             <div className="space-y-2">
-              <div className="text-3xl font-bold text-primary">99.9%</div>
-              <div className="text-sm text-muted-foreground">Précision IA</div>
+              <div className="text-3xl font-bold text-primary">2</div>
+              <div className="text-sm text-muted-foreground">Modes d'Analyse</div>
             </div>
             <div className="space-y-2">
               <div className="text-3xl font-bold text-primary">24/7</div>

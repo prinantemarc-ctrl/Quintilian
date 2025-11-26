@@ -264,13 +264,13 @@ export function AnalysisModal({ isOpen, onClose, initialData }: AnalysisModalPro
                   <p className="text-sm text-gray-500 uppercase">Préciser la Cible</p>
                 </div>
                 <Textarea
-                  placeholder="Ex: Directeur Marketing, Spécialiste UX..."
+                  placeholder="Ex: Directeur Marketing, Spécialiste UX, entreprise d'IA à Abu Dhabi..."
                   value={customIdentity}
                   onChange={(e) => setCustomIdentity(e.target.value)}
                   className="min-h-[80px] bg-zinc-900/50 border-white/10"
                 />
                 <Button
-                  onClick={() => handleIdentitySelection(customIdentity)}
+                  onClick={() => handleIdentitySelection(`${initialData.brand}, ${customIdentity}`)}
                   disabled={!customIdentity.trim()}
                   size="sm"
                 >
