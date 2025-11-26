@@ -390,20 +390,8 @@ function DetailedTab({ result, type }: any) {
     return <DuelDetailedAnalysis text={detailedText} result={result} />
   }
 
-  // Use a placeholder for renderDetailedAnalysis if it's not defined or imported
-  // For now, assuming it's intended to be a function that handles text rendering.
-  // If renderDetailedAnalysis is meant to be imported or defined elsewhere,
-  // ensure it's available in the scope.
-  // For demonstration, let's assume it's a simple text display.
-  const renderDetailedAnalysis = (text: string) => (
-    <div className="prose prose-invert max-w-none">
-      {text.split("\n").map((line, i) => (
-        <p key={i}>{line}</p>
-      ))}
-    </div>
-  )
-
-  return renderDetailedAnalysis(detailedText)
+  // Pour les analyses simples, utiliser un composant formaté similaire
+  return <SingleDetailedAnalysis text={detailedText} result={result} />
 }
 
 // Metrics Tab
@@ -1502,6 +1490,225 @@ function DuelAnalysisCard({
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+// ADDED COMPONENT: SingleDetailedAnalysis
+function SingleDetailedAnalysis({ text, result }: { text: string; result: any }) {
+  if (!text) {
+    return (
+      <div className="max-w-6xl mx-auto rounded-lg border border-red-900/30 bg-zinc-950 p-12 text-center space-y-4">
+        <div className="w-16 h-16 mx-auto rounded-full bg-red-950/30 flex items-center justify-center">
+          <Brain className="w-8 h-8 text-red-500" />
+        </div>
+        <h3 className="font-['Space_Grotesk'] text-xl font-bold text-white">Analyse Détaillée Indisponible</h3>
+        <p className="font-['JetBrains_Mono'] text-sm text-gray-400">
+          Le contenu détaillé de cette analyse sera bientôt disponible.
+        </p>
+      </div>
+    )
+  }
+
+  // Parser le texte en sections avec des phrases individuelles
+  const parseSections = (text: string) => {
+    const sections: Array<{
+      title: string
+      content: Array<{ type: "text" | "list"; items: string[] }>
+    }> = []
+
+    const lines = text
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l)
+    let currentSection: { title: string; content: Array<{ type: "text" | "list"; items: string[] }> } | null = null
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i]
+
+      // Détecter les titres (## ou ###)
+      if (line.match(/^#{2,3}\s+/)) {
+        if (currentSection) {
+          sections.push(currentSection)
+        }
+        currentSection = {
+          title: line.replace(/^#{2,3}\s+/, ""),
+          content: [],
+        }
+        continue
+      }
+
+      if (!currentSection) continue
+
+      // Détecter les listes
+      if (line.startsWith("-") || line.startsWith("*") || line.startsWith("•")) {
+        const listItems = [line.replace(/^[-*•]\s+/, "")]
+        // Continuer à collecter les éléments de liste
+        while (
+          i + 1 < lines.length &&
+          (lines[i + 1].startsWith("-") || lines[i + 1].startsWith("*") || lines[i + 1].startsWith("•"))
+        ) {
+          i++
+          listItems.push(lines[i].replace(/^[-*•]\s+/, ""))
+        }
+        currentSection.content.push({ type: "list", items: listItems })
+        continue
+      }
+
+      // Découper le texte en phrases (max 2-3 phrases par bloc)
+      const sentences = line.split(/(?<=[.!?])\s+/)
+      const chunks: string[] = []
+      let currentChunk = ""
+
+      for (const sentence of sentences) {
+        if (currentChunk && (currentChunk + " " + sentence).length > 300) {
+          chunks.push(currentChunk)
+          currentChunk = sentence
+        } else {
+          currentChunk = currentChunk ? currentChunk + " " + sentence : sentence
+        }
+      }
+      if (currentChunk) chunks.push(currentChunk)
+
+      currentSection.content.push({ type: "text", items: chunks })
+    }
+
+    if (currentSection) {
+      sections.push(currentSection)
+    }
+
+    return sections
+  }
+
+  const sections = parseSections(text)
+
+  // Déterminer l'icône et la couleur basées sur le titre
+  const getSectionStyle = (title: string) => {
+    const lowerTitle = title.toLowerCase()
+
+    if (lowerTitle.includes("osint") || lowerTitle.includes("sources") || lowerTitle.includes("crawl")) {
+      return { icon: <Globe className="w-5 h-5" />, color: "blue" as const }
+    }
+    if (lowerTitle.includes("sentiment") || lowerTitle.includes("tonalité") || lowerTitle.includes("perception")) {
+      return { icon: <MessageSquare className="w-5 h-5" />, color: "emerald" as const }
+    }
+    if (lowerTitle.includes("projection") || lowerTitle.includes("ia") || lowerTitle.includes("génératif")) {
+      return { icon: <Brain className="w-5 h-5" />, color: "purple" as const }
+    }
+    if (lowerTitle.includes("stratégique") || lowerTitle.includes("vue") || lowerTitle.includes("complète")) {
+      return { icon: <Target className="w-5 h-5" />, color: "amber" as const }
+    }
+    if (lowerTitle.includes("recommandation") || lowerTitle.includes("conseil")) {
+      return { icon: <Lightbulb className="w-5 h-5" />, color: "purple" as const }
+    }
+
+    return { icon: <FileText className="w-5 h-5" />, color: "red" as const }
+  }
+
+  return (
+    <div className="max-w-6xl mx-auto space-y-6">
+      {sections.map((section, idx) => {
+        const { icon, color } = getSectionStyle(section.title)
+
+        return (
+          <ImprovedAnalysisSection
+            key={idx}
+            title={section.title}
+            content={section.content}
+            icon={icon}
+            color={color}
+          />
+        )
+      })}
+    </div>
+  )
+}
+
+// ADDED COMPONENT: ImprovedAnalysisSection to handle structured content with lists
+function ImprovedAnalysisSection({
+  title,
+  content,
+  icon,
+  color,
+}: {
+  title: string
+  content: Array<{ type: "text" | "list"; items: string[] }>
+  icon: React.ReactNode
+  color: "blue" | "emerald" | "amber" | "purple" | "red"
+}) {
+  const colorClasses = {
+    blue: {
+      border: "border-blue-500/30",
+      bg: "bg-blue-500/5",
+      icon: "text-blue-400 bg-blue-500/20",
+      title: "text-blue-400",
+    },
+    emerald: {
+      border: "border-emerald-500/30",
+      bg: "bg-emerald-500/5",
+      icon: "text-emerald-400 bg-emerald-500/20",
+      title: "text-emerald-400",
+    },
+    amber: {
+      border: "border-amber-500/30",
+      bg: "bg-amber-500/5",
+      icon: "text-amber-400 bg-amber-500/20",
+      title: "text-amber-400",
+    },
+    purple: {
+      border: "border-purple-500/30",
+      bg: "bg-purple-500/5",
+      icon: "text-purple-400 bg-purple-500/20",
+      title: "text-purple-400",
+    },
+    red: {
+      border: "border-red-500/30",
+      bg: "bg-red-500/5",
+      icon: "text-red-400 bg-red-500/20",
+      title: "text-red-400",
+    },
+  }
+
+  const colors = colorClasses[color]
+
+  return (
+    <div className={`rounded-2xl border ${colors.border} ${colors.bg} p-6`}>
+      <div className="flex items-start gap-4">
+        <div className={`p-3 rounded-xl ${colors.icon} shrink-0`}>{icon}</div>
+        <div className="flex-1 space-y-4">
+          <h3 className={`font-['Space_Grotesk'] text-lg font-bold ${colors.title} uppercase tracking-wide`}>
+            {title}
+          </h3>
+          <div className="space-y-4">
+            {content.map((block, idx) => {
+              if (block.type === "list") {
+                return (
+                  <ul key={idx} className="space-y-2 ml-4">
+                    {block.items.map((item, itemIdx) => (
+                      <li key={itemIdx} className="flex items-start gap-2 text-gray-300 text-sm">
+                        <span
+                          className={`mt-1.5 w-1.5 h-1.5 rounded-full ${colors.icon.split(" ")[0].replace("text-", "bg-")} shrink-0`}
+                        />
+                        <span className="leading-relaxed">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )
+              }
+
+              return (
+                <div key={idx} className="space-y-2">
+                  {block.items.map((para, paraIdx) => (
+                    <p key={paraIdx} className="text-gray-300 leading-relaxed text-sm">
+                      {para}
+                    </p>
+                  ))}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
