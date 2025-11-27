@@ -178,6 +178,7 @@ export async function POST(request: NextRequest) {
         key_takeaway: hasMessage ? undefined : "Analyse générale basée sur la présence digitale.",
         risks: hasMessage ? undefined : [],
         strengths: hasMessage ? undefined : [],
+        advanced_metrics: undefined, // Added advanced metrics to API response
       }
     }
 
@@ -203,18 +204,19 @@ export async function POST(request: NextRequest) {
       global_score: globalScore,
       presence_score: detailedAnalysis.presence_score,
       tone_score: detailedAnalysis.tone_score,
-      coherence_score: hasMessage ? detailedAnalysis.coherence_score : null, // Null if no message
+      coherence_score: hasMessage ? detailedAnalysis.coherence_score : null,
       tone_label: detailedAnalysis.tone_label,
       rationale: detailedAnalysis.rationale,
       sources,
       google_summary: googleSummary,
-      gpt_summary: aiSummary, // Keeping API field name for backward compatibility
+      gpt_summary: aiSummary,
       structured_conclusion: detailedAnalysis.structured_conclusion,
       detailed_analysis: detailedAnalysis.detailed_analysis,
       key_takeaway: detailedAnalysis.key_takeaway,
       risks: detailedAnalysis.risks || [],
       strengths: detailedAnalysis.strengths || [],
       has_message: hasMessage,
+      advanced_metrics: detailedAnalysis.advanced_metrics, // Added advanced metrics to API response
       _cache_stats: {
         search: searchCache.getStats(),
         analysis: analysisCache.getStats(),

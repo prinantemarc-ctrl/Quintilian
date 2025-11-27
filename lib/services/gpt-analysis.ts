@@ -7,6 +7,47 @@ export interface AnalysisScores {
   tone_label: string
 }
 
+export interface AdvancedMetrics {
+  source_quality: {
+    tier1_percentage: number // % sources Tier 1 (NYT, Wikipedia, etc.)
+    tier2_percentage: number // % sources Tier 2 (médias régionaux)
+    tier3_percentage: number // % sources Tier 3 (réseaux sociaux, blogs)
+    dominant_tier: "tier1" | "tier2" | "tier3"
+  }
+  information_freshness: {
+    recent_percentage: number // % sources < 6 mois
+    old_percentage: number // % sources > 6 mois
+    average_age_months: number
+  }
+  geographic_diversity: {
+    local_percentage: number
+    national_percentage: number
+    international_percentage: number
+    dominant_scope: "local" | "national" | "international"
+  }
+  coverage_type: {
+    in_depth_percentage: number // Articles de fond
+    brief_percentage: number // Brèves
+    mention_percentage: number // Simples mentions
+    dominant_type: "in_depth" | "brief" | "mention"
+  }
+  polarization: {
+    neutral_percentage: number
+    oriented_percentage: number
+    bias_level: "neutral" | "slightly_biased" | "highly_biased"
+  }
+  risk_level: {
+    score: number // 0-100
+    category: "low" | "moderate" | "high" | "critical"
+    main_threats: string[]
+  }
+  reputation_index: {
+    score: number // 0-100
+    trend: "improving" | "stable" | "declining"
+    health_status: "excellent" | "good" | "fair" | "poor"
+  }
+}
+
 export interface DetailedAnalysis extends AnalysisScores {
   rationale: string
   google_summary: string
@@ -19,6 +60,7 @@ export interface DetailedAnalysis extends AnalysisScores {
   key_takeaway?: string
   risks?: string[]
   strengths?: string[]
+  advanced_metrics?: AdvancedMetrics
 }
 
 const apiKey = process.env.OPENAI_API_KEY
@@ -55,6 +97,7 @@ async function callOpenAI(
       max_tokens: options.max_tokens ?? 500,
       response_format: options.response_format,
     }),
+    cache: "no-store", // Required for Next.js 15 API routes
   })
 
   if (!response.ok) {
@@ -211,6 +254,7 @@ export async function generateDetailedAnalysis(
     key_takeaway?: string
     risks?: string[]
     strengths?: string[]
+    advanced_metrics?: AdvancedMetrics
   }
 > {
   console.log(`[v0] Starting detailed analysis generation for: ${brand}`)
@@ -225,7 +269,7 @@ export async function generateDetailedAnalysis(
     analysisType,
     presentationLanguage: responseLanguage,
     hasMessage,
-    type: "detailed-analysis-v4", // Updated cache version for new detailed analysis format
+    type: "detailed-analysis-v5", // Updated cache version for new metrics
   }
 
   const { data: analysisResult, fromCache } = await analysisCache.getOrSet(
@@ -248,6 +292,48 @@ export async function generateDetailedAnalysis(
 
         let prompt: string
 
+        const metricsSection = `
+**MÉTRIQUES AVANCÉES À CALCULER (advanced_metrics):**
+
+1. **source_quality**: Analyse la qualité des sources crawlées:
+   - tier1_percentage: % de sources haute autorité (Wikipedia, NYT, Le Monde, Forbes, sites .edu/.gov)
+   - tier2_percentage: % médias régionaux, presse spécialisée, blogs reconnus
+   - tier3_percentage: % réseaux sociaux, annuaires, sites de faible autorité
+   - dominant_tier: "tier1"|"tier2"|"tier3" (la catégorie majoritaire)
+
+2. **information_freshness**: Fraîcheur des informations:
+   - recent_percentage: % de sources datant de moins de 6 mois
+   - old_percentage: % de sources de plus de 6 mois
+   - average_age_months: âge moyen estimé en mois
+
+3. **geographic_diversity**: Distribution géographique:
+   - local_percentage: % sources locales/régionales
+   - national_percentage: % sources nationales
+   - international_percentage: % sources internationales
+   - dominant_scope: "local"|"national"|"international"
+
+4. **coverage_type**: Type de couverture médiatique:
+   - in_depth_percentage: % articles de fond (>500 mots estimés)
+   - brief_percentage: % brèves (100-500 mots estimés)
+   - mention_percentage: % simples mentions (<100 mots estimés)
+   - dominant_type: "in_depth"|"brief"|"mention"
+
+5. **polarization**: Orientation politique/éditoriale:
+   - neutral_percentage: % sources neutres/objectives
+   - oriented_percentage: % sources orientées politiquement
+   - bias_level: "neutral"|"slightly_biased"|"highly_biased"
+
+6. **risk_level**: Niveau de risque réputationnel:
+   - score: 0-100 (0=aucun risque, 100=risque critique)
+   - category: "low"|"moderate"|"high"|"critical"
+   - main_threats: array de 2-3 menaces principales identifiées
+
+7. **reputation_index**: Indice de réputation global:
+   - score: 0-100 (santé globale de la réputation)
+   - trend: "improving"|"stable"|"declining" (tendance)
+   - health_status: "excellent"|"good"|"fair"|"poor"
+`
+
         if (hasMessage) {
           prompt = `Tu es un analyste OSINT opérationnel spécialisé en intelligence digitale. Target: "${brand}". Langue de sortie: ${responseLanguage}.
 
@@ -263,6 +349,7 @@ ${googleContent}
 1. **EMPREINTE NUMÉRIQUE (score/100)**: Visibilité cross-platform, diversité des vecteurs d'exposition, autorité des domaines indexés
 2. **SENTIMENT GLOBAL (score/100)**: Polarisation de l'opinion (hostile=0, neutre=50, favorable=100)
 3. **ALIGNEMENT INTEL (score/100)**: Corrélation entre hypothèse et data crawlée
+${metricsSection}
 
 **RAPPORT EXÉCUTIF (structured_conclusion) - 3-4 sections markdown, 150+ mots/section:**
 
@@ -318,7 +405,16 @@ Synthèse globale avec méthodologie renseignement open source:
   "google_summary": "<rapport factuel avec données concrètes, SANS numéros (100+ mots)>",
   "gpt_summary": "<analyse contextuelle intel, SANS numéros (100+ mots)>",
   "structured_conclusion": "<markdown ##, MINIMUM 450 mots, SANS numéros>",
-  "detailed_analysis": "<markdown 3 sections, MINIMUM 600 mots, SANS numéros>"
+  "detailed_analysis": "<markdown 3 sections, MINIMUM 600 mots, SANS numéros>",
+  "advanced_metrics": {
+    "source_quality": { "tier1_percentage": <0-100>, "tier2_percentage": <0-100>, "tier3_percentage": <0-100>, "dominant_tier": "<tier1|tier2|tier3>" },
+    "information_freshness": { "recent_percentage": <0-100>, "old_percentage": <0-100>, "average_age_months": <number> },
+    "geographic_diversity": { "local_percentage": <0-100>, "national_percentage": <0-100>, "international_percentage": <0-100>, "dominant_scope": "<local|national|international>" },
+    "coverage_type": { "in_depth_percentage": <0-100>, "brief_percentage": <0-100>, "mention_percentage": <0-100>, "dominant_type": "<in_depth|brief|mention>" },
+    "polarization": { "neutral_percentage": <0-100>, "oriented_percentage": <0-100>, "bias_level": "<neutral|slightly_biased|highly_biased>" },
+    "risk_level": { "score": <0-100>, "category": "<low|moderate|high|critical>", "main_threats": ["<threat1>", "<threat2>"] },
+    "reputation_index": { "score": <0-100>, "trend": "<improving|stable|declining>", "health_status": "<excellent|good|fair|poor>" }
+  }
 }
 
 **RÈGLES D'ENGAGEMENT:**
@@ -327,6 +423,7 @@ Synthèse globale avec méthodologie renseignement open source:
 - Style: Analyste stratégique, pas académique
 - Précision, données factuelles, approche terrain
 - MINIMUM 750 mots detailed_analysis, 450 structured_conclusion
+- CALCULER les métriques avancées avec précision
 
 Réponds UNIQUEMENT avec le JSON, sans backticks.`
         } else {
@@ -342,6 +439,7 @@ ${googleContent}
 1. **EMPREINTE DIGITALE (score/100)**: Présence cross-platform, diversité des vecteurs, autorité domain, couverture médiatique
 2. **POLARISATION GLOBALE (score/100)**: Sentiment agrégé (hostile=0, neutre=50, favorable=100)
 3. **PAS DE SCORE D'ALIGNEMENT** (pas d'hypothèse à checker)
+${metricsSection}
 
 **ÉLÉMENTS TACTIQUES:**
 - **key_takeaway**: UNE phrase percutante résumant l'essentiel (max 20 mots)
@@ -382,7 +480,7 @@ Perception de la target par les LLMs (ChatGPT, Claude, Gemini, Perplexity):
 - Actions recommandées
 
 ## Vue Stratégique Complète OSINT
-Synthèse globale avec méthodologie renseignement rigoureus:
+Synthèse globale avec méthodologie renseignement rigoureuse:
 - Cartographie complète surface digitale
 - Forces structurelles et avantages compétitifs
 - Vulnérabilités et vecteurs d'attaque
@@ -404,7 +502,16 @@ Synthèse globale avec méthodologie renseignement rigoureus:
   "detailed_analysis": "<markdown 3 sections complètes, MINIMUM 750 mots, SANS numéros>",
   "key_takeaway": "<phrase percutante (15-20 mots max)>",
   "risks": ["<risque 1>", "<risque 2>", "<risque 3>"],
-  "strengths": ["<force 1>", "<force 2>", "<force 3>"]
+  "strengths": ["<force 1>", "<force 2>", "<force 3>"],
+  "advanced_metrics": {
+    "source_quality": { "tier1_percentage": <0-100>, "tier2_percentage": <0-100>, "tier3_percentage": <0-100>, "dominant_tier": "<tier1|tier2|tier3>" },
+    "information_freshness": { "recent_percentage": <0-100>, "old_percentage": <0-100>, "average_age_months": <number> },
+    "geographic_diversity": { "local_percentage": <0-100>, "national_percentage": <0-100>, "international_percentage": <0-100>, "dominant_scope": "<local|national|international>" },
+    "coverage_type": { "in_depth_percentage": <0-100>, "brief_percentage": <0-100>, "mention_percentage": <0-100>, "dominant_type": "<in_depth|brief|mention>" },
+    "polarization": { "neutral_percentage": <0-100>, "oriented_percentage": <0-100>, "bias_level": "<neutral|slightly_biased|highly_biased>" },
+    "risk_level": { "score": <0-100>, "category": "<low|moderate|high|critical>", "main_threats": ["<threat1>", "<threat2>"] },
+    "reputation_index": { "score": <0-100>, "trend": "<improving|stable|declining>", "health_status": "<excellent|good|fair|poor>" }
+  }
 }
 
 **RÈGLES D'ENGAGEMENT:**
@@ -413,6 +520,7 @@ Synthèse globale avec méthodologie renseignement rigoureus:
 - Style: Analyste renseignement, pas académique
 - Précision, données factuelles, approche terrain
 - MINIMUM 750 mots detailed_analysis, 450 structured_conclusion
+- CALCULER les métriques avancées avec précision
 
 JSON pur sans backticks`
         }
@@ -422,11 +530,9 @@ JSON pur sans backticks`
 
         const text = await callOpenAI([{ role: "user", content: prompt }], {
           temperature: 0.3,
-          max_tokens: 4000, // Increased token limit to allow longer, more detailed analyses
-          response_format: { type: "json_object" }, // Added response_format to force valid JSON output
+          max_tokens: 4500, // Increased for advanced metrics
+          response_format: { type: "json_object" },
         })
-
-        console.log("[v0] OpenAI response length:", text.length)
 
         let cleanedText = text.trim()
         if (cleanedText.startsWith("```json")) {
@@ -455,6 +561,7 @@ JSON pur sans backticks`
           key_takeaway: !hasMessage ? parsed.key_takeaway : undefined,
           risks: !hasMessage ? parsed.risks : undefined,
           strengths: !hasMessage ? parsed.strengths : undefined,
+          advanced_metrics: parsed.advanced_metrics,
         }
       } catch (error) {
         console.error("[v0] Detailed analysis error:", error)
@@ -615,6 +722,7 @@ function normalizeAnalysisResponse(analysis: any): DetailedAnalysis {
     key_takeaway: analysis.key_takeaway,
     risks: analysis.risks,
     strengths: analysis.strengths,
+    advanced_metrics: analysis.advanced_metrics,
   }
 }
 
@@ -642,5 +750,45 @@ function generateFallbackAnalysis(): DetailedAnalysis {
     key_takeaway: "⚠️ Détails non disponibles - erreur technique",
     risks: ["⚠️ Risque non identifié", "⚠️ Risque non identifié", "⚠️ Risque non identifié"],
     strengths: ["⚠️ Force non identifiée", "⚠️ Force non identifiée", "⚠️ Force non identifiée"],
+    advanced_metrics: {
+      source_quality: {
+        tier1_percentage: 0,
+        tier2_percentage: 0,
+        tier3_percentage: 0,
+        dominant_tier: "tier3",
+      },
+      information_freshness: {
+        recent_percentage: 0,
+        old_percentage: 0,
+        average_age_months: 0,
+      },
+      geographic_diversity: {
+        local_percentage: 0,
+        national_percentage: 0,
+        international_percentage: 0,
+        dominant_scope: "local",
+      },
+      coverage_type: {
+        in_depth_percentage: 0,
+        brief_percentage: 0,
+        mention_percentage: 0,
+        dominant_type: "mention",
+      },
+      polarization: {
+        neutral_percentage: 0,
+        oriented_percentage: 0,
+        bias_level: "neutral",
+      },
+      risk_level: {
+        score: 0,
+        category: "low",
+        main_threats: [],
+      },
+      reputation_index: {
+        score: 0,
+        trend: "stable",
+        health_status: "fair",
+      },
+    },
   }
 }

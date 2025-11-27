@@ -64,10 +64,10 @@ const translations = {
     // Hero Section
     "hero.badge": "Système d'Intelligence Stratégique",
     "hero.title_measure": "MAK-IA",
-    "hero.title_reputation": "Votre espion personnel",
+    "hero.title_reputation": "Comment êtes-vous perçu sur internet ?",
     "hero.title_time": "sait ce qu'ils disent.",
     "hero.subtitle": "L'information, c'est le pouvoir.",
-    "hero.title": "MAK-IA - Votre espion personnel sait ce qu'ils disent.",
+    "hero.title": "MAK-IA - Comment êtes-vous perçu sur internet ?",
     "hero.subtitle_desc":
       "Nous infiltrons les moteurs de recherche et les IA pour vous révéler la vérité brute sur votre image. Sans filtre. Sans pitié.",
     "hero.name_label": "Cible",
@@ -83,7 +83,7 @@ const translations = {
     "hero.detailed_results": "Dossier complet généré en temps réel",
 
     // Features Section
-    "features.title": "3 Vecteurs d'Intelligence",
+    "features.title": "6 Vecteurs d'Intelligence",
     "features.subtitle": "Une dissection complète de votre empreinte numérique",
     "features.presence_title": "Indice d'Omniprésence",
     "features.presence_subtitle": "Visibilité / Furtivité",
@@ -631,10 +631,10 @@ const translations = {
     // Hero Section
     "hero.badge": "Strategic Intelligence System",
     "hero.title_measure": "MAK-IA",
-    "hero.title_reputation": "Your personal spy",
+    "hero.title_reputation": "How are you perceived online?",
     "hero.title_time": "knows what they say.",
     "hero.subtitle": "Information is power.",
-    "hero.title": "MAK-IA - Your personal spy knows what they say.",
+    "hero.title": "MAK-IA - How are you perceived online?",
     "hero.subtitle_desc":
       "We infiltrate search engines and AI to reveal the raw truth about your image. No filters. No mercy.",
     "hero.name_label": "Target",
@@ -650,7 +650,7 @@ const translations = {
     "hero.detailed_results": "Full dossier generated in real-time",
 
     // Features Section
-    "features.title": "3 Intelligence Vectors",
+    "features.title": "6 Intelligence Vectors",
     "features.subtitle": "Complete dissection of your digital footprint",
     "features.presence_title": "Omnipresence Index",
     "features.presence_subtitle": "Visibility / Stealth",
@@ -1189,10 +1189,10 @@ const translations = {
     // Hero Section
     "hero.badge": "Sistema de Inteligencia Estratégica",
     "hero.title_measure": "MAK-IA",
-    "hero.title_reputation": "Tu espía personal",
+    "hero.title_reputation": "¿Cómo es percibido en internet?",
     "hero.title_time": "sabe lo que dicen.",
     "hero.subtitle": "La información es poder.",
-    "hero.title": "MAK-IA - Tu espía personal sabe lo que dicen.",
+    "hero.title": "MAK-IA - ¿Cómo es percibido en internet?",
     "hero.subtitle_desc":
       "Infiltramos motores de búsqueda e IA para revelar la verdad cruda sobre tu imagen. Sin filtros. Sin piedad.",
     "hero.name_label": "Objetivo",
@@ -1208,7 +1208,7 @@ const translations = {
     "hero.detailed_results": "Expediente completo generado en tiempo real",
 
     // Features Section
-    "features.title": "3 Vectores de Inteligencia",
+    "features.title": "6 Vectores de Inteligencia",
     "features.subtitle": "Disección completa de tu huella digital",
     "features.presence_title": "Índice de Omnipresencia",
     "features.presence_subtitle": "Visibilidad / Sigilo",
@@ -1238,8 +1238,8 @@ const translations = {
     "example.presence": "Huella",
     "example.tone": "Sentimiento",
     "example.coherence": "Integridad",
-    "example.scale": "Escala:",
-    "example.how_calculated": "Ver protocolo de calculo",
+    "example.scale": "Échelle :",
+    "example.how_calculated": "Voir protocole de calcul",
     "example.simple_mode": "Modo Infiltración",
     "example.duel_mode": "Modo Duel",
     "example.company_name": "TechCorp Solutions",
@@ -1362,8 +1362,8 @@ const translations = {
     "footer.pricing": "Acceso",
     "footer.contact": "Contacto",
     "footer.legal": "Legal",
-    "footer.legal_mentions": "Avisos legales",
-    "footer.privacy": "Confidencialidad",
+    "footer.legal_mentions": "Mentions légales",
+    "footer.privacy": "Confidentialité",
     "footer.terms": "CGU",
     "footer.contact_title": "Contacto",
     "footer.support": "Soporte Ops 24/7",
@@ -1711,7 +1711,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>("fr")
 
   const t = (key: string): string => {
-    return translations[language][key as keyof (typeof translations)["fr"]] || key
+    // Fix for missing key access within translations object
+    const currentLanguageTranslations = translations[language] || translations["fr"] // Fallback to 'fr' if current language is missing
+    return currentLanguageTranslations[key as keyof (typeof translations)["fr"]] || key
   }
 
   return <LanguageContext.Provider value={{ language, setLanguage, t }}>{children}</LanguageContext.Provider>

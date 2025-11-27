@@ -1,12 +1,12 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google"
+import { Manrope, Inter, JetBrains_Mono } from "next/font/google"
 import { Suspense } from "react"
 import { LanguageProvider } from "@/contexts/language-context"
 import { Header } from "@/components/header"
 import "./globals.css"
 
-const spaceGrotesk = Space_Grotesk({
+const manrope = Manrope({
   subsets: ["latin"],
   variable: "--font-heading",
   display: "swap",
@@ -39,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="fr" className="dark">
       <body
-        className={`font-sans ${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased bg-background text-foreground`}
+        className={`font-sans ${manrope.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased bg-background text-foreground`}
       >
         <LanguageProvider>
           <Header />

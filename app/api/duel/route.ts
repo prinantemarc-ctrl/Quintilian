@@ -58,61 +58,77 @@ async function generateComparison(
     winner = "Match nul"
   }
 
-  const prompt = `Tu es un expert en analyse comparative. Compare "${brand1}" et "${brand2}" concernant "${message}" en ${language}.
+  const prompt = `Tu es un analyste expert en réputation digitale. Compare "${brand1}" et "${brand2}" de manière TRÈS SPÉCIFIQUE et DÉTAILLÉE en ${language}.
 
-DONNÉES D'ANALYSE :
+DONNÉES D'ANALYSE COMPLÈTES :
 
 ${brand1} (Score global: ${brand1GlobalScore}/100) :
-- Présence digitale : ${brand1Analysis.presence_score}/100 (${brand1Analysis.presence_details})
-- Sentiment : ${brand1Analysis.tone_score}/100 (${brand1Analysis.tone_details}) (${brand1Analysis.tone_label})
-- Cohérence : ${brand1Analysis.coherence_score}/100 (${brand1Analysis.coherence_details})
+- Présence digitale : ${brand1Analysis.presence_score}/100
+  Détails: ${brand1Analysis.presence_details}
+- Sentiment public : ${brand1Analysis.tone_score}/100 (${brand1Analysis.tone_label})
+  Détails: ${brand1Analysis.tone_details}
+- Cohérence message : ${brand1Analysis.coherence_score}/100
+  Détails: ${brand1Analysis.coherence_details}
+- Analyse détaillée : ${brand1Analysis.detailed_analysis}
 
 ${brand2} (Score global: ${brand2GlobalScore}/100) :
-- Présence digitale : ${brand2Analysis.presence_score}/100 (${brand2Analysis.presence_details})
-- Sentiment : ${brand2Analysis.tone_score}/100 (${brand2Analysis.tone_details}) (${brand2Analysis.tone_label})
-- Cohérence : ${brand2Analysis.coherence_score}/100 (${brand2Analysis.coherence_details})
+- Présence digitale : ${brand2Analysis.presence_score}/100
+  Détails: ${brand2Analysis.presence_details}
+- Sentiment public : ${brand2Analysis.tone_score}/100 (${brand2Analysis.tone_label})
+  Détails: ${brand2Analysis.tone_details}
+- Cohérence message : ${brand2Analysis.coherence_score}/100
+  Détails: ${brand2Analysis.coherence_details}
+- Analyse détaillée : ${brand2Analysis.detailed_analysis}
 
-STRUCTURE EXACTE (N'utilise AUCUN symbole markdown, juste du texte simple avec sauts de ligne) :
+INSTRUCTIONS CRITIQUES :
+1. Sois ULTRA SPÉCIFIQUE - utilise des chiffres, des faits, des exemples concrets
+2. Compare point par point avec des DIFFÉRENCES QUANTIFIÉES
+3. Cite des plateformes, canaux, types de contenu PRÉCIS
+4. Donne des recommandations ACTIONNABLES et MESURABLES
+5. N'utilise AUCUN markdown (**, ##, emoji) - texte brut uniquement
+6. Sois factuel, analytique et professionnel
+
+STRUCTURE EXACTE (texte brut, séparé par sauts de ligne) :
 
 [VERDICT]
-${winner} remporte cette confrontation. Justification en 2-3 phrases courtes et percutantes basées sur les données.
+${winner === "Match nul" ? `Les deux entités sont au coude-à-coude avec seulement ${scoreDiff} points d'écart (${brand1}: ${brand1GlobalScore}/100, ${brand2}: ${brand2GlobalScore}/100).` : `${winner} domine avec ${scoreDiff} points d'avance (${brand1GlobalScore} vs ${brand2GlobalScore}).`} Explique en 2-3 phrases PRÉCISES pourquoi, avec des éléments QUANTIFIÉS des données ci-dessus.
 
 [PRÉSENCE DIGITALE]
-Comparaison objective des scores de présence. 2 phrases max.
+Compare SPÉCIFIQUEMENT les scores (${brand1}: ${brand1Analysis.presence_score}/100 vs ${brand2}: ${brand2Analysis.presence_score}/100). Mentionne les plateformes, types de médias, autorité des sources. 3-4 phrases avec DONNÉES CHIFFRÉES.
 
 [SENTIMENT PUBLIC]
-Analyse des perceptions et tonalités. 2 phrases max.
+Analyse DÉTAILLÉE des sentiments (${brand1}: ${brand1Analysis.tone_label} ${brand1Analysis.tone_score}/100 vs ${brand2}: ${brand2Analysis.tone_label} ${brand2Analysis.tone_score}/100). Explique les RAISONS des différences de perception avec exemples concrets. 3-4 phrases.
 
 [COHÉRENCE]
-Évaluation de l'alignement avec le message. 2 phrases max.
+Compare l'alignement message/image (${brand1}: ${brand1Analysis.coherence_score}/100 vs ${brand2}: ${brand2Analysis.coherence_score}/100). Identifie PRÉCISÉMENT les écarts ou cohérences. 3 phrases minimum.
 
 [FORCES ${brand1.toUpperCase()}]
-- Point fort 1
-- Point fort 2
-- Point fort 3
+- Force 1 : [élément précis avec chiffre ou fait]
+- Force 2 : [plateforme/canal spécifique avec impact quantifié]
+- Force 3 : [avantage concurrentiel mesurable]
+- Force 4 : [atout distinctif avec preuve]
 
 [FAIBLESSES ${brand1.toUpperCase()}]
-- Faiblesse 1
-- Faiblesse 2
+- Faiblesse 1 : [point faible identifié avec impact chiffré]
+- Faiblesse 2 : [manque spécifique sur canal/plateforme]
+- Faiblesse 3 : [risque ou lacune mesurable]
 
 [FORCES ${brand2.toUpperCase()}]
-- Point fort 1
-- Point fort 2
-- Point fort 3
+- Force 1 : [élément précis avec chiffre ou fait]
+- Force 2 : [plateforme/canal spécifique avec impact quantifié]
+- Force 3 : [avantage concurrentiel mesurable]
+- Force 4 : [atout distinctif avec preuve]
 
 [FAIBLESSES ${brand2.toUpperCase()}]
-- Faiblesse 1
-- Faiblesse 2
+- Faiblesse 1 : [point faible identifié avec impact chiffré]
+- Faiblesse 2 : [manque spécifique sur canal/plateforme]
+- Faiblesse 3 : [risque ou lacune mesurable]
 
 [RECOMMANDATIONS]
-Conseils concrets et actionnables. 3-4 phrases maximum.
+Pour ${brand1}: 2-3 actions PRÉCISES et MESURABLES (ex: "augmenter présence LinkedIn de 40%", "publier 3 articles/mois sur médias autorité").
+Pour ${brand2}: 2-3 actions PRÉCISES et MESURABLES avec KPIs.
 
-RÈGLES :
-- N'utilise AUCUN **, ##, emoji
-- Texte simple, factuel, professionnel
-- Sépare chaque section par une ligne vide
-- Phrases courtes et percutantes
-- Utilise EXACTEMENT les marqueurs [SECTION] fournis`
+RAPPEL : Texte brut uniquement, sans **, ##, ou emoji. Sois FACTUEL et SPÉCIFIQUE.`
 
   try {
     const apiKey = process.env.OPENAI_API_KEY
@@ -134,7 +150,7 @@ RÈGLES :
             content: prompt,
           },
         ],
-        temperature: 0.3,
+        temperature: 0.3, // Keep low temperature for factual analysis
       }),
     })
 
@@ -156,7 +172,7 @@ RÈGLES :
       winner,
       summary: `${brand1} (${brand1GlobalScore}/100) vs ${brand2} (${brand2GlobalScore}/100). ${
         winner === "Match nul"
-          ? "Scores très proches, match nul !"
+          ? "Match nul - Scores très proches !"
           : `${winner} l'emporte avec ${scoreDiff} points d'avance.`
       }`,
     }

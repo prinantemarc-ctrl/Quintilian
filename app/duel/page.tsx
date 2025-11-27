@@ -11,7 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Swords, ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { DuelModal } from "@/components/duel-modal"
+import { AnalysisResultsFullscreen } from "@/components/analysis-results-fullscreen"
+import { DuelLoadingAnimation } from "@/components/duel-loading-animation"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { useLanguage } from "@/contexts/language-context"
 
 export default function DuelPage() {
@@ -22,12 +24,39 @@ export default function DuelPage() {
     message: "",
     language: "fr",
   })
-  const [showModal, setShowModal] = useState(false)
+  const [showLoading, setShowLoading] = useState(false)
+  const [duelResult, setDuelResult] = useState<any>(null)
+  const [showResults, setShowResults] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (formData.brand1.trim() && formData.brand2.trim()) {
-      setShowModal(true)
+      setShowLoading(true)
+
+      try {
+        const response = await fetch("/api/duel", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        })
+
+        if (!response.ok) {
+          throw new Error(`Erreur lors du duel: ${response.status}`)
+        }
+
+        const apiResponse = await response.json()
+
+        if (apiResponse.success && apiResponse.data) {
+          setDuelResult(apiResponse.data)
+          setShowLoading(false)
+          setShowResults(true)
+        }
+      } catch (error) {
+        console.error("[v0] Duel error:", error)
+        setShowLoading(false)
+      }
     }
   }
 
@@ -134,7 +163,24 @@ export default function DuelPage() {
         </div>
       </div>
 
-      <DuelModal isOpen={showModal} onClose={() => setShowModal(false)} formData={formData} />
+      <Dialog open={showLoading} onOpenChange={() => setShowLoading(false)}>
+        <DialogContent className="max-w-[1200px] w-[95vw] max-h-[90vh] p-0 gap-0 flex flex-col bg-black border border-red-900/30">
+          <DuelLoadingAnimation brand1={formData.brand1} brand2={formData.brand2} />
+        </DialogContent>
+      </Dialog>
+
+      {duelResult && (
+        <AnalysisResultsFullscreen
+          isOpen={showResults}
+          onClose={() => {
+            setShowResults(false)
+            setDuelResult(null)
+          }}
+          result={duelResult}
+          type="duel"
+          brand={`${formData.brand1} vs ${formData.brand2}`}
+        />
+      )}
     </div>
   )
 }

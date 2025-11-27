@@ -85,50 +85,47 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-black/80 backdrop-blur-xl supports-[backdrop-filter]:bg-black/50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between gap-4">
-          {/* Logo */}
+        <div className="flex h-14 sm:h-16 items-center justify-between gap-2 sm:gap-4">
           <div className="flex items-center shrink-0">
-            <Link href="/" className="group flex items-center gap-4">
+            <Link href="/" className="group flex items-center gap-2 sm:gap-4">
               <div className="relative shrink-0">
                 <div className="absolute inset-0 bg-red-600/20 rounded-sm blur-md group-hover:bg-red-600/30 transition-all duration-300"></div>
-                <div className="relative border border-red-900 bg-black text-red-500 w-10 h-10 flex items-center justify-center font-serif font-black text-xl tracking-tighter rounded-sm">
+                <div className="relative border border-red-900 bg-black text-red-500 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center font-heading font-black text-lg sm:text-xl tracking-tighter rounded-sm">
                   M
                 </div>
               </div>
-              <span className="text-xl font-heading font-bold tracking-widest text-white group-hover:text-red-500 transition-colors uppercase whitespace-nowrap">
+              <span className="text-base sm:text-xl font-heading font-bold tracking-widest text-white group-hover:text-red-500 transition-colors uppercase whitespace-nowrap">
                 MAK-IA
               </span>
             </Link>
           </div>
 
-          {/* Desktop Navigation - Simplified to 2 analysis types */}
-          <nav className="hidden md:flex items-center gap-8 mx-6">
-            <Link
-              href="/renseignement"
-              className="text-xs font-medium tracking-widest text-zinc-400 hover:text-white transition-colors flex items-center gap-2 uppercase whitespace-nowrap"
-            >
-              <Shield className="w-4 h-4 text-emerald-500/50" />
-              Renseignement
-            </Link>
+          <nav className="hidden lg:flex items-center gap-6 xl:gap-8 mx-6">
             <Link
               href="/analyze"
               className="text-xs font-medium tracking-widest text-zinc-400 hover:text-white transition-colors flex items-center gap-2 uppercase whitespace-nowrap"
             >
               <BarChart3 className="w-4 h-4 text-blue-500/50" />
-              Audit
+              Analyse Basique
             </Link>
             <Link
               href="/duel"
               className="text-xs font-medium tracking-widest text-zinc-400 hover:text-white transition-colors flex items-center gap-2 uppercase whitespace-nowrap"
             >
               <Swords className="w-4 h-4 text-red-500/50" />
-              Confrontation
+              Duel
+            </Link>
+            <Link
+              href="/renseignement"
+              className="text-xs font-medium tracking-widest text-zinc-400 hover:text-white transition-colors flex items-center gap-2 uppercase whitespace-nowrap"
+            >
+              <Shield className="w-4 h-4 text-emerald-500/50" />
+              Intel
             </Link>
           </nav>
 
-          {/* Desktop CTA and Auth */}
-          <div className="hidden md:flex items-center gap-8 shrink-0">
-            <div className="flex items-center">
+          <div className="hidden md:flex items-center gap-4 lg:gap-8 shrink-0">
+            <div className="hidden lg:flex items-center">
               <LanguageSelector />
             </div>
 
@@ -150,13 +147,12 @@ export function Header() {
             )}
 
             <Link href="/analyze">
-              <Button className="bg-red-600 hover:bg-red-700 text-white rounded-sm font-bold text-xs uppercase tracking-widest px-6 py-5 shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:shadow-[0_0_30px_rgba(220,38,38,0.5)] transition-all duration-300 border-none whitespace-nowrap">
+              <Button className="bg-red-600 hover:bg-red-700 text-white rounded-sm font-bold text-[10px] sm:text-xs uppercase tracking-widest px-3 sm:px-6 py-4 sm:py-5 shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:shadow-[0_0_30px_rgba(220,38,38,0.5)] transition-all duration-300 border-none whitespace-nowrap">
                 {t("header.try_free")}
               </Button>
             </Link>
           </div>
 
-          {/* Mobile menu button */}
           <button
             className="md:hidden p-2 text-zinc-400 hover:text-white hover:bg-white/5 transition-colors"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -165,45 +161,48 @@ export function Header() {
           </button>
         </div>
 
-        {/* Mobile Navigation - Simplified to 2 analysis types */}
         {isMenuOpen && (
           <div className="md:hidden z-[100] border-t border-white/10 bg-black">
-            <div className="px-4 pt-4 pb-6 space-y-4">
-              <Link
-                href="/renseignement"
-                className="block py-2 text-sm font-mono uppercase text-zinc-400 hover:text-emerald-500"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <Shield className="w-4 h-4 inline mr-2" />
-                Renseignement
-              </Link>
+            <div className="px-4 pt-4 pb-6 space-y-3">
               <Link
                 href="/analyze"
-                className="block py-2 text-sm font-mono uppercase text-zinc-400 hover:text-blue-500"
+                className="block py-2 text-sm font-sans uppercase text-zinc-400 hover:text-blue-500"
                 onClick={() => setIsMenuOpen(false)}
               >
                 <BarChart3 className="w-4 h-4 inline mr-2" />
-                Audit de Réputation
+                Analyse Basique
               </Link>
               <Link
                 href="/duel"
-                className="block py-2 text-sm font-mono uppercase text-zinc-400 hover:text-red-500"
+                className="block py-2 text-sm font-sans uppercase text-zinc-400 hover:text-red-500"
                 onClick={() => setIsMenuOpen(false)}
               >
                 <Swords className="w-4 h-4 inline mr-2" />
-                Mode Confrontation
+                Duel
+              </Link>
+              <Link
+                href="/renseignement"
+                className="block py-2 text-sm font-sans uppercase text-zinc-400 hover:text-emerald-500"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Shield className="w-4 h-4 inline mr-2" />
+                Intel
               </Link>
               <Link
                 href="/contact"
-                className="block py-2 text-sm font-mono uppercase text-zinc-400 hover:text-white"
+                className="block py-2 text-sm font-sans uppercase text-zinc-400 hover:text-white"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Contact
               </Link>
 
-              <div className="pt-4 border-t border-white/10">
+              <div className="pt-3 border-t border-white/10">
+                <LanguageSelector />
+              </div>
+
+              <div className="pt-3 border-t border-white/10">
                 <Link href="/analyze">
-                  <Button className="w-full bg-red-600 text-white rounded-none font-mono uppercase">
+                  <Button className="w-full bg-red-600 text-white rounded-none font-medium uppercase">
                     {t("header.try_free")}
                   </Button>
                 </Link>

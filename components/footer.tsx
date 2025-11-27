@@ -8,9 +8,10 @@ export function Footer() {
   const { t } = useLanguage()
 
   return (
-    <footer className="bg-primary text-primary-foreground py-12">
+    <footer className="bg-primary text-primary-foreground py-8 sm:py-12">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-4 gap-8">
+        {/* Responsive grid - 1 col on mobile, 2 on tablet, 4 on desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           {/* Logo & Description */}
           <div className="space-y-4">
             <h3 className="text-xl font-bold">MAK-IA</h3>
@@ -76,8 +77,8 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-primary-foreground/20 mt-8 pt-8 text-center">
-          <p className="text-sm opacity-90">© 2025 MAK-IA. Tous droits réservés.</p>
+        <div className="border-t border-primary-foreground/20 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center">
+          <p className="text-xs sm:text-sm opacity-90">© 2025 MAK-IA. Tous droits réservés.</p>
         </div>
       </div>
     </footer>

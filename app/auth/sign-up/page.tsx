@@ -72,22 +72,27 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 sm:p-6">
+      {/* Responsive card width */}
       <div className="w-full max-w-md">
-        <div className="mb-6">
-          <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary">
-            <ArrowLeft className="w-4 h-4 mr-2" />
+        <div className="mb-4 sm:mb-6">
+          <Link
+            href="/"
+            className="inline-flex items-center text-xs sm:text-sm text-muted-foreground hover:text-primary"
+          >
+            <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
             Retour à l'accueil
           </Link>
         </div>
 
         <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">Créer un compte</CardTitle>
-            <CardDescription>Rejoignez MAK-IA pour accéder à vos analyses</CardDescription>
+          <CardHeader className="text-center px-4 sm:px-6">
+            {/* Responsive title */}
+            <CardTitle className="text-xl sm:text-2xl font-bold">Créer un compte</CardTitle>
+            <CardDescription className="text-sm">Rejoignez MAK-IA pour accéder à vos analyses</CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSignUp} className="space-y-4">
+          <CardContent className="px-4 sm:px-6">
+            <form onSubmit={handleSignUp} className="space-y-3 sm:space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -127,11 +132,12 @@ export default function SignUpPage() {
                   <p className="text-sm text-green-600 dark:text-green-400">{message}</p>
                 </div>
               )}
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              {/* Responsive button */}
+              <Button type="submit" className="w-full h-11 sm:h-12 text-sm sm:text-base" disabled={isLoading}>
                 {isLoading ? "Création..." : "Créer un compte"}
               </Button>
             </form>
-            <div className="mt-4 text-center text-sm">
+            <div className="mt-3 sm:mt-4 text-center text-xs sm:text-sm">
               Déjà un compte ?{" "}
               <Link href="/auth/login" className="text-primary hover:underline">
                 Se connecter
