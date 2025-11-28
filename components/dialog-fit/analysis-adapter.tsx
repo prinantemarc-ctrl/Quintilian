@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { AdaptiveModal, useModal, type DialogFitContent } from "@/components/dialog-fit"
 import { InfoModal } from "@/components/info-modal"
 import { analysisHistory } from "@/lib/history"
+import { useLanguage } from "@/contexts/language-context"
 
 interface AnalysisAdapterProps {
   isOpen: boolean
@@ -61,6 +62,7 @@ interface IdentitySelectionResponse {
 
 export function AnalysisAdapter({ isOpen, onClose, searchTerm, message, language }: AnalysisAdapterProps) {
   const modal = useModal()
+  const { language: uiLanguage } = useLanguage()
   const [showInfo, setShowInfo] = useState(false)
   const [result, setResult] = useState<AnalysisResult | null>(null)
   const [identitySelection, setIdentitySelection] = useState<IdentitySelectionResponse | null>(null)
@@ -99,6 +101,7 @@ export function AnalysisAdapter({ isOpen, onClose, searchTerm, message, language
             brand: searchTerm,
             message: message,
             language: language,
+            uiLanguage: uiLanguage,
             selected_identity: identity,
             search_results: identitySelection?.search_results || [],
           }
@@ -106,6 +109,7 @@ export function AnalysisAdapter({ isOpen, onClose, searchTerm, message, language
             brand: searchTerm,
             message: message,
             language: language,
+            uiLanguage: uiLanguage,
           }
 
       const response = await fetch("/api/analyze", {

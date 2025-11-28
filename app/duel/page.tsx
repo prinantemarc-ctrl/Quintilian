@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { AuthGateModal } from "@/components/auth/auth-gate-modal"
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,11 +16,10 @@ import { AnalysisResultsFullscreen } from "@/components/analysis-results-fullscr
 import { DuelLoadingAnimation } from "@/components/duel-loading-animation"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { useLanguage } from "@/contexts/language-context"
-import { AuthGateModal } from "@/components/auth/auth-gate-modal"
 import { createClient } from "@/lib/supabase/client"
 
 export default function DuelPage() {
-  const { t } = useLanguage()
+  const { t, language: uiLanguage } = useLanguage()
   const [formData, setFormData] = useState({
     brand1: "",
     brand2: "",
@@ -63,7 +63,10 @@ export default function DuelPage() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            ...formData,
+            uiLanguage: uiLanguage,
+          }),
         })
 
         if (!response.ok) {

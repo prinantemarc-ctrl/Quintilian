@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { AdaptiveModal, useModal, type DialogFitContent } from "@/components/dialog-fit"
+import { useLanguage } from "@/contexts/language-context"
 
 interface DuelAdapterProps {
   isOpen: boolean
@@ -51,6 +52,7 @@ interface DuelResult {
 
 export function DuelAdapter({ isOpen, onClose, formData }: DuelAdapterProps) {
   const modal = useModal()
+  const { language: uiLanguage } = useLanguage()
   const [result, setResult] = useState<DuelResult | null>(null)
 
   useEffect(() => {
@@ -76,7 +78,10 @@ export function DuelAdapter({ isOpen, onClose, formData }: DuelAdapterProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          uiLanguage: uiLanguage,
+        }),
       })
 
       if (!response.ok) {

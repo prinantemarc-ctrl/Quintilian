@@ -49,11 +49,11 @@ export async function POST(request: NextRequest) {
 
     const hasMessage = message && message.trim().length > 0
 
-    const userLanguage = request.headers.get("accept-language")?.split(",")[0]?.split("-")[0] || "fr"
+    const userLanguage = body.uiLanguage || request.headers.get("accept-language")?.split(",")[0]?.split("-")[0] || "fr"
     console.log(
       "[v0] Analysis language:",
       language,
-      "| Presentation language:",
+      "| UI language (for GPT):",
       userLanguage,
       "| Has message:",
       hasMessage,

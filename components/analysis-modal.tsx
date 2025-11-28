@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Textarea } from "@/components/ui/textarea"
 import { AnalysisResultsFullscreen } from "./analysis-results-fullscreen"
 import { InteractiveLoadingAnimation } from "./interactive-loading-animation"
+import { useLanguage } from "@/contexts/language-context"
 
 interface AnalysisModalProps {
   isOpen: boolean
@@ -55,6 +56,7 @@ interface IdentifiedEntity {
 }
 
 export function AnalysisModal({ isOpen, onClose, initialData }: AnalysisModalProps) {
+  const { t, language: uiLanguage } = useLanguage()
   const [result, setResult] = useState<AnalysisResult | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -117,6 +119,7 @@ export function AnalysisModal({ isOpen, onClose, initialData }: AnalysisModalPro
         brand: initialData.brand,
         message: initialData.message || "",
         language: initialData.language || "fr",
+        uiLanguage: uiLanguage,
       }
 
       if (selectedIdentity) {
@@ -208,10 +211,14 @@ export function AnalysisModal({ isOpen, onClose, initialData }: AnalysisModalPro
         <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 sm:py-5 border-b border-violet-900/20 flex-shrink-0">
           <DialogTitle className="font-heading text-lg sm:text-xl lg:text-2xl font-bold uppercase text-white flex items-center gap-2 sm:gap-3">
             <Brain className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-violet-500" />
-            {identifiedEntities.length > 0 ? "CIBLES DÉTECTÉES" : error ? "ÉCHEC MISSION" : "ANALYSE EN COURS"}
+            {identifiedEntities.length > 0
+              ? t("detectedTargets")
+              : error
+                ? t("missionFailed")
+                : t("analysisInProgress")}
           </DialogTitle>
           <Button variant="ghost" className="h-8 w-8 p-0" onClick={handleClose}>
-            <span className="sr-only">Fermer</span>
+            <span className="sr-only">{t("close")}</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -237,7 +244,7 @@ export function AnalysisModal({ isOpen, onClose, initialData }: AnalysisModalPro
             <div className="space-y-4 sm:space-y-6 max-w-4xl mx-auto py-4 sm:py-8">
               <div className="mb-6">
                 <div className="flex justify-between text-xs text-gray-500 font-mono mb-2">
-                  <span>PHASE 3 - DÉSAMBIGUÏSATION</span>
+                  <span>{t("phase3Disambiguation")}</span>
                   <span>{progressBeforeDisambiguation}%</span>
                 </div>
                 <div className="h-2 bg-zinc-900 border border-violet-900/50 rounded-full overflow-hidden">
@@ -250,14 +257,11 @@ export function AnalysisModal({ isOpen, onClose, initialData }: AnalysisModalPro
 
               <Alert className="bg-violet-950/20 border-violet-900/50">
                 <ShieldAlert className="h-4 w-4 text-violet-500" />
-                <AlertDescription>
-                  Plusieurs cibles potentielles détectées. Veuillez sélectionner la bonne identité pour affiner
-                  l'analyse.
-                </AlertDescription>
+                <AlertDescription>{t("multipleTargetsDetected")}</AlertDescription>
               </Alert>
 
               <div className="space-y-3 sm:space-y-4">
-                <h3 className="font-heading text-xs sm:text-sm text-gray-500 uppercase">Identités Identifiées</h3>
+                <h3 className="font-heading text-xs sm:text-sm text-gray-500 uppercase">{t("identifiedIdentities")}</h3>
                 <div className="grid gap-3 sm:gap-4">
                   {identifiedEntities.map((entity) => (
                     <div
@@ -279,16 +283,18 @@ export function AnalysisModal({ isOpen, onClose, initialData }: AnalysisModalPro
                             variant="outline"
                             className="ml-0 sm:ml-4 shrink-0 bg-transparent text-xs sm:text-sm w-full sm:w-auto"
                           >
-                            CIBLER
+                            {t("target")}
                           </Button>
                         </div>
                         <div className="flex items-center gap-2 text-xs sm:text-sm">
                           <span
                             className={`px-2 py-0.5 rounded ${entity.type === "person" ? "bg-blue-950/50 text-blue-400" : "bg-gray-800 text-gray-400"}`}
                           >
-                            {entity.type === "person" ? "Personne" : entity.type}
+                            {entity.type === "person" ? t("person") : entity.type}
                           </span>
-                          <span className="text-gray-600">Confiance: {Math.round(entity.confidence * 100)}%</span>
+                          <span className="text-gray-600">
+                            {t("confidence")}: {Math.round(entity.confidence * 100)}%
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -299,10 +305,10 @@ export function AnalysisModal({ isOpen, onClose, initialData }: AnalysisModalPro
               <div className="space-y-4 sm:space-y-6">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <Edit3 className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-violet-500" />
-                  <p className="font-heading text-xs sm:text-sm text-gray-500 uppercase">Préciser la Cible</p>
+                  <p className="font-heading text-xs sm:text-sm text-gray-500 uppercase">{t("refineTarget")}</p>
                 </div>
                 <Textarea
-                  placeholder="Ex: Directeur Marketing, Spécialiste UX, entreprise d'IA à Abu Dhabi..."
+                  placeholder={t("refineTargetPlaceholder")}
                   value={customIdentity}
                   onChange={(e) => setCustomIdentity(e.target.value)}
                   className="min-h-[80px] bg-zinc-900/50 border-white/10"
@@ -312,7 +318,7 @@ export function AnalysisModal({ isOpen, onClose, initialData }: AnalysisModalPro
                   disabled={!customIdentity.trim()}
                   size="sm"
                 >
-                  Analyser cette Identité
+                  {t("analyzeThisIdentity")}
                 </Button>
               </div>
             </div>
@@ -324,7 +330,7 @@ export function AnalysisModal({ isOpen, onClose, initialData }: AnalysisModalPro
                 <AlertCircle className="h-4 w-4 text-violet-500" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
-              <Button onClick={() => launchAnalysis()}>Réitérer l'Analyse</Button>
+              <Button onClick={() => launchAnalysis()}>{t("retryAnalysis")}</Button>
             </div>
           )}
         </div>

@@ -37,6 +37,7 @@ async function generateComparison(
   brand2Analysis: any,
   message: string,
   language: string,
+  presentationLanguage = "fr",
 ): Promise<{
   detailed_comparison: string
   winner: string
@@ -58,7 +59,16 @@ async function generateComparison(
     winner = "Match nul"
   }
 
-  const prompt = `Tu es un analyste expert en réputation digitale. Compare "${brand1}" et "${brand2}" de manière TRÈS SPÉCIFIQUE et DÉTAILLÉE en ${language}.
+  const responseLanguageMap: Record<string, string> = {
+    fr: "français",
+    en: "English",
+    es: "español",
+  }
+  const responseLanguage = responseLanguageMap[presentationLanguage] || "français"
+
+  const prompt = `Tu es un analyste expert en réputation digitale. Compare "${brand1}" et "${brand2}" de manière TRÈS SPÉCIFIQUE et DÉTAILLÉE.
+
+IMPORTANT: Réponds ENTIÈREMENT en ${responseLanguage}. Tous les titres, textes et analyses doivent être en ${responseLanguage}.
 
 DONNÉES D'ANALYSE COMPLÈTES :
 
@@ -87,8 +97,9 @@ INSTRUCTIONS CRITIQUES :
 4. Donne des recommandations ACTIONNABLES et MESURABLES
 5. N'utilise AUCUN markdown (**, ##, emoji) - texte brut uniquement
 6. Sois factuel, analytique et professionnel
+7. RÉPONDS ENTIÈREMENT EN ${responseLanguage.toUpperCase()}
 
-STRUCTURE EXACTE (texte brut, séparé par sauts de ligne) :
+STRUCTURE EXACTE (texte brut en ${responseLanguage}, séparé par sauts de ligne) :
 
 [VERDICT]
 ${winner === "Match nul" ? `Les deux entités sont au coude-à-coude avec seulement ${scoreDiff} points d'écart (${brand1}: ${brand1GlobalScore}/100, ${brand2}: ${brand2GlobalScore}/100).` : `${winner} domine avec ${scoreDiff} points d'avance (${brand1GlobalScore} vs ${brand2GlobalScore}).`} Explique en 2-3 phrases PRÉCISES pourquoi, avec des éléments QUANTIFIÉS des données ci-dessus.
@@ -128,7 +139,7 @@ Compare l'alignement message/image (${brand1}: ${brand1Analysis.coherence_score}
 Pour ${brand1}: 2-3 actions PRÉCISES et MESURABLES (ex: "augmenter présence LinkedIn de 40%", "publier 3 articles/mois sur médias autorité").
 Pour ${brand2}: 2-3 actions PRÉCISES et MESURABLES avec KPIs.
 
-RAPPEL : Texte brut uniquement, sans **, ##, ou emoji. Sois FACTUEL et SPÉCIFIQUE.`
+RAPPEL : Texte brut uniquement en ${responseLanguage}, sans **, ##, ou emoji. Sois FACTUEL et SPÉCIFIQUE.`
 
   try {
     const apiKey = process.env.OPENAI_API_KEY
@@ -211,10 +222,13 @@ export async function POST(request: NextRequest) {
     const { brand1, brand2, message, language, country } = DuelAnalysisSchema.parse(body)
 
     const hasMessage = message && message.trim().length > 0
+
+    const userLanguage = body.uiLanguage || request.headers.get("accept-language")?.split(",")[0]?.split("-")[0] || "fr"
     console.log(
       `[v0] Processing duel: ${brand1} vs ${brand2}`,
       country ? `(Country: ${country})` : "",
       hasMessage ? `(Message: ${message})` : "(No message)",
+      `| UI language (for GPT): ${userLanguage}`,
     )
 
     const apiKey = process.env.OPENAI_API_KEY
@@ -241,15 +255,23 @@ export async function POST(request: NextRequest) {
     }
 
     const [brand1Analysis, brand2Analysis] = await Promise.all([
-      generateDetailedAnalysis(brand1, message, brand1Results, language, "duel"),
-      generateDetailedAnalysis(brand2, message, brand2Results, language, "duel"),
+      generateDetailedAnalysis(brand1, message, brand1Results, language, "duel", userLanguage),
+      generateDetailedAnalysis(brand2, message, brand2Results, language, "duel", userLanguage),
     ])
 
     if (brand1Analysis.rationale.includes("FALLBACK") || brand2Analysis.rationale.includes("FALLBACK")) {
       console.error("[v0] WARNING: Fallback data detected in duel analysis!")
     }
 
-    const comparison = await generateComparison(brand1, brand1Analysis, brand2, brand2Analysis, message, language)
+    const comparison = await generateComparison(
+      brand1,
+      brand1Analysis,
+      brand2,
+      brand2Analysis,
+      message,
+      language,
+      userLanguage,
+    )
 
     const brand1GlobalScore = hasMessage
       ? Math.round((brand1Analysis.presence_score + brand1Analysis.tone_score + brand1Analysis.coherence_score) / 3)

@@ -4,6 +4,7 @@ export const BaseAnalysisSchema = z.object({
   message: z.string().optional().default(""),
   language: z.string().optional().default("fr"),
   country: z.string().optional(),
+  uiLanguage: z.string().optional().default("fr"),
 })
 
 export const SingleAnalysisSchema = BaseAnalysisSchema.extend({

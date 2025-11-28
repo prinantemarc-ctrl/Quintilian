@@ -18,10 +18,15 @@ import {
   ExternalLink,
   Trophy,
   Star,
+  CheckCircle2,
+  AlertCircle,
+  Eye,
+  MessageSquare,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import { AuthGateModal } from "@/components/auth/auth-gate-modal"
+import { useLanguage } from "@/contexts/language-context"
 
 interface AnalysisResultsFullscreenProps {
   isOpen: boolean
@@ -29,7 +34,9 @@ interface AnalysisResultsFullscreenProps {
   result: any
   type?: "duel" | "gmi" | "press"
   brand?: string
+  brand2?: string // Added for duel type
   analysisType?: string
+  duelWinner?: string // Added for duel type
 }
 
 export function AnalysisResultsFullscreen({
@@ -38,11 +45,14 @@ export function AnalysisResultsFullscreen({
   result,
   type = "gmi",
   brand,
+  brand2,
   analysisType,
+  duelWinner,
 }: AnalysisResultsFullscreenProps) {
   const [activeTab, setActiveTab] = useState("overview")
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [showAuthGate, setShowAuthGate] = useState(false)
+  const { t } = useLanguage()
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -121,10 +131,10 @@ export function AnalysisResultsFullscreen({
   }
 
   const tabs = [
-    { id: "overview", label: "Vue d'ensemble", icon: Target },
-    { id: "detailed", label: "Analyse Détaillée", icon: Brain },
-    { id: "metrics", label: "Métriques", icon: FileText },
-    { id: "sources", label: "Sources", icon: LinkIcon },
+    { id: "overview", label: t("overview"), icon: Target },
+    { id: "detailed", label: t("detailedAnalysis"), icon: Brain },
+    { id: "metrics", label: t("metrics"), icon: FileText },
+    { id: "sources", label: t("sources"), icon: LinkIcon },
   ]
 
   return (
@@ -139,11 +149,11 @@ export function AnalysisResultsFullscreen({
               className="gap-2 text-violet-500 hover:text-violet-400 hover:bg-violet-950/30"
             >
               <ArrowLeft className="h-5 w-5" />
-              <span className="hidden sm:inline">Retour</span>
+              <span className="hidden sm:inline">{t("back")}</span>
             </Button>
             <div className="h-8 w-px bg-violet-900/30 hidden sm:block" />
             <h1 className="font-heading text-lg sm:text-2xl font-bold tracking-tight text-white">
-              {type === "duel" ? "RAPPORT DE CONFRONTATION" : "RAPPORT D'INTELLIGENCE"}
+              {type === "duel" ? t("confrontationReport") : t("intelligenceReport")}
             </h1>
           </div>
           <Button
@@ -194,6 +204,8 @@ export function AnalysisResultsFullscreen({
 
 // Overview Tab - red to violet throughout
 function OverviewTab({ result, type, brand }: any) {
+  const { t } = useLanguage()
+
   if (type === "duel") {
     const brand1Name = result.brand1_name || "Cible Alpha"
     const brand2Name = result.brand2_name || "Cible Bravo"
@@ -216,17 +228,17 @@ function OverviewTab({ result, type, brand }: any) {
           <div className="rounded-lg border border-violet-900/30 bg-zinc-950 p-4 sm:p-6">
             <h3 className="font-heading text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6">{brand1Name}</h3>
             <div className="space-y-4">
-              <ScoreDisplay label="Empreinte Numérique" score={result.brand1_analysis.presence_score} />
+              <ScoreDisplay label={t("results.digitalFootprint")} score={result.brand1_analysis.presence_score} />
               <ScoreDisplay
-                label="Tonalité Détectée"
+                label={t("results.detectedTone")}
                 score={result.brand1_analysis.tone_score}
                 label2={result.brand1_analysis.tone_label}
               />
               {hasCoherence && (
-                <ScoreDisplay label="Cohérence Message" score={result.brand1_analysis.coherence_score} />
+                <ScoreDisplay label={t("results.messageCoherence")} score={result.brand1_analysis.coherence_score} />
               )}
               <div className="pt-4 border-t border-violet-900/30">
-                <ScoreDisplay label="Score Global" score={result.brand1_analysis.global_score} large />
+                <ScoreDisplay label={t("results.globalScore")} score={result.brand1_analysis.global_score} large />
               </div>
             </div>
           </div>
@@ -235,17 +247,17 @@ function OverviewTab({ result, type, brand }: any) {
           <div className="rounded-lg border border-violet-900/30 bg-zinc-950 p-4 sm:p-6">
             <h3 className="font-heading text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6">{brand2Name}</h3>
             <div className="space-y-4">
-              <ScoreDisplay label="Empreinte Numérique" score={result.brand2_analysis.presence_score} />
+              <ScoreDisplay label={t("results.digitalFootprint")} score={result.brand2_analysis.presence_score} />
               <ScoreDisplay
-                label="Tonalité Détectée"
+                label={t("results.detectedTone")}
                 score={result.brand2_analysis.tone_score}
                 label2={result.brand2_analysis.tone_label}
               />
               {hasCoherence && (
-                <ScoreDisplay label="Cohérence Message" score={result.brand2_analysis.coherence_score} />
+                <ScoreDisplay label={t("results.messageCoherence")} score={result.brand2_analysis.coherence_score} />
               )}
               <div className="pt-4 border-t border-violet-900/30">
-                <ScoreDisplay label="Score Global" score={result.brand2_analysis.global_score} large />
+                <ScoreDisplay label={t("results.globalScore")} score={result.brand2_analysis.global_score} large />
               </div>
             </div>
           </div>
@@ -260,10 +272,10 @@ function OverviewTab({ result, type, brand }: any) {
       <div
         className={`grid gap-4 sm:gap-6 ${result.coherence_score !== null && result.coherence_score !== undefined ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 sm:grid-cols-2"}`}
       >
-        <ScoreCard label="Empreinte Numérique" score={result.presence_score} />
-        <ScoreCard label="Tonalité Détectée" score={result.tone_score} sublabel={result.tone_label} />
+        <ScoreCard label={t("results.digitalFootprint")} score={result.presence_score} />
+        <ScoreCard label={t("results.detectedTone")} score={result.tone_score} sublabel={result.tone_label} />
         {result.coherence_score !== null && result.coherence_score !== undefined && (
-          <ScoreCard label="Cohérence Message" score={result.coherence_score} />
+          <ScoreCard label={t("results.messageCoherence")} score={result.coherence_score} />
         )}
       </div>
 
@@ -274,7 +286,7 @@ function OverviewTab({ result, type, brand }: any) {
               <Brain className="w-5 h-5 text-violet-400" />
             </div>
             <h3 className="font-heading text-lg sm:text-xl font-bold text-violet-400">
-              Que retient-on, en une phrase ?
+              {t("results.keySummaryTitle")}
             </h3>
           </div>
           <p className="text-base sm:text-lg leading-relaxed text-white font-medium pl-0 sm:pl-14">
@@ -287,7 +299,7 @@ function OverviewTab({ result, type, brand }: any) {
         <div className="rounded-lg border border-violet-900/30 bg-gradient-to-br from-violet-950/30 to-zinc-950 p-4 sm:p-6">
           <div className="flex items-start gap-3 mb-3">
             <Brain className="w-5 h-5 text-violet-400 mt-1 flex-shrink-0" />
-            <h3 className="font-heading text-base sm:text-lg font-bold text-violet-400">Résumé Clé</h3>
+            <h3 className="font-heading text-base sm:text-lg font-bold text-violet-400">{t("results.keySummary")}</h3>
           </div>
           <p className="text-sm sm:text-base leading-relaxed text-white">{result.key_takeaway}</p>
         </div>
@@ -300,7 +312,9 @@ function OverviewTab({ result, type, brand }: any) {
             <div className="rounded-lg border border-green-900/30 bg-zinc-950 p-4 sm:p-6">
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp className="w-5 h-5 text-green-400" />
-                <h3 className="font-heading text-base sm:text-lg font-bold text-green-400">Forces Principales</h3>
+                <h3 className="font-heading text-base sm:text-lg font-bold text-green-400">
+                  {t("results.mainStrengths")}
+                </h3>
               </div>
               <ul className="space-y-3">
                 {result.strengths.map((strength: string, idx: number) => (
@@ -318,7 +332,9 @@ function OverviewTab({ result, type, brand }: any) {
             <div className="rounded-lg border border-orange-900/30 bg-zinc-950 p-4 sm:p-6">
               <div className="flex items-center gap-2 mb-4">
                 <AlertTriangle className="w-5 h-5 text-orange-400" />
-                <h3 className="font-heading text-base sm:text-lg font-bold text-orange-400">Risques Réputationnels</h3>
+                <h3 className="font-heading text-base sm:text-lg font-bold text-orange-400">
+                  {t("results.reputationalRisks")}
+                </h3>
               </div>
               <ul className="space-y-3">
                 {result.risks.map((risk: string, idx: number) => (
@@ -338,7 +354,7 @@ function OverviewTab({ result, type, brand }: any) {
           <div className="flex items-center gap-3 mb-6">
             <FileText className="w-6 sm:w-7 h-6 sm:h-7 text-violet-400" />
             <h3 className="font-heading text-xl sm:text-2xl font-bold text-white uppercase tracking-wide">
-              Synthèse Exécutive
+              {t("results.executiveSummary")}
             </h3>
           </div>
 
@@ -433,6 +449,8 @@ function DetailedTab({ result, type }: any) {
 
 // Metrics Tab - red to violet
 function MetricsTab({ result, type }: any) {
+  const { t } = useLanguage()
+
   if (type === "duel") {
     const brand1Name = result.brand1_name || "Cible Alpha"
     const brand2Name = result.brand2_name || "Cible Bravo"
@@ -484,12 +502,82 @@ function MetricsTab({ result, type }: any) {
 
   if (!metrics) {
     return (
-      <div className="p-8 text-center text-muted-foreground">
-        <p className="text-gray-400">Les métriques avancées ne sont pas disponibles pour cette analyse.</p>
-        <p className="text-sm text-gray-500 mt-2">Elles seront générées lors des prochaines analyses.</p>
+      <div className="space-y-8 p-4 sm:p-8">
+        {/* Basic scores section */}
+        <div className="rounded-xl border border-violet-900/30 bg-gradient-to-r from-violet-950/20 via-black to-violet-950/20 p-6">
+          <h3 className="text-xl font-bold text-white mb-6">Core Analysis Metrics</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Global Score */}
+            <div className="text-center">
+              <Globe className="w-8 h-8 text-violet-400 mx-auto mb-2" />
+              <div className="text-sm text-gray-400 mb-1">Global Score</div>
+              <div className="text-3xl font-bold text-white">{result.global_score || 0}</div>
+              <div className="text-xs text-gray-500 mt-1">/ 100</div>
+            </div>
+
+            {/* Presence Score */}
+            <div className="text-center">
+              <Eye className="w-8 h-8 text-blue-400 mx-auto mb-2" />
+              <div className="text-sm text-gray-400 mb-1">Visibility</div>
+              <div className="text-3xl font-bold text-white">{result.presence_score || 0}</div>
+              <div className="text-xs text-gray-500 mt-1">/ 100</div>
+            </div>
+
+            {/* Tone Score */}
+            <div className="text-center">
+              <MessageSquare className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
+              <div className="text-sm text-gray-400 mb-1">Sentiment</div>
+              <div className="text-3xl font-bold text-white">{result.tone_score || 0}</div>
+              <div className="text-xs text-gray-500 mt-1">/ 100</div>
+            </div>
+          </div>
+
+          {/* Tone Label */}
+          {result.tone_label && (
+            <div className="mt-6 text-center">
+              <span
+                className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${
+                  result.tone_label === "positif"
+                    ? "bg-emerald-950/50 text-emerald-400 border border-emerald-900/50"
+                    : result.tone_label === "négatif"
+                      ? "bg-red-950/50 text-red-400 border border-red-900/50"
+                      : "bg-gray-950/50 text-gray-400 border border-gray-900/50"
+                }`}
+              >
+                Overall Sentiment: {result.tone_label.charAt(0).toUpperCase() + result.tone_label.slice(1)}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Rationale section */}
+        {result.rationale && (
+          <div className="rounded-xl border border-violet-900/30 bg-black/40 p-6">
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-violet-400" />
+              Analysis Summary
+            </h3>
+            <p className="text-gray-300 leading-relaxed">{result.rationale}</p>
+          </div>
+        )}
+
+        {/* Info message about advanced metrics */}
+        <div className="rounded-xl border border-yellow-900/30 bg-yellow-950/10 p-6">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="text-sm font-medium text-yellow-400 mb-1">Advanced Metrics Coming Soon</h4>
+              <p className="text-sm text-yellow-300/70">
+                Detailed metrics (source quality, geographic diversity, risk assessment) will be available in future
+                analyses.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
+  // </CHANGE>
 
   const getTierLabel = (tier: string) => {
     switch (tier) {
@@ -520,11 +608,11 @@ function MetricsTab({ result, type }: any) {
   const getCoverageLabel = (type: string) => {
     switch (type) {
       case "in_depth":
-        return "Articles de Fond"
+        return t("inDepthArticles")
       case "brief":
-        return "Brèves"
+        return t("briefs")
       case "mention":
-        return "Mentions"
+        return t("mentions")
       default:
         return type
     }
@@ -533,28 +621,30 @@ function MetricsTab({ result, type }: any) {
   const getBiasLabel = (bias: string) => {
     switch (bias) {
       case "neutral":
-        return "Neutre"
+        return t("neutral")
       case "slightly_biased":
-        return "Légèrement Orienté"
+        return t("slightlyBiased")
+      case "moderately_biased":
+        return t("moderatelyBiased")
       case "highly_biased":
-        return "Fortement Orienté"
+        return t("highlyBiased")
       default:
         return bias
     }
   }
 
-  const getRiskCategoryLabel = (category: string) => {
-    switch (category) {
+  const getRiskLabel = (level: string) => {
+    switch (level) {
       case "low":
-        return "Faible"
+        return t("low")
       case "moderate":
-        return "Modéré"
+        return t("moderate")
       case "high":
-        return "Élevé"
+        return t("high")
       case "critical":
-        return "Critique"
+        return t("critical")
       default:
-        return category
+        return level
     }
   }
 
@@ -671,96 +761,101 @@ function MetricsTab({ result, type }: any) {
 
       {/* Type de Couverture */}
       <div>
-        <h3 className="text-xl font-heading font-bold mb-4 text-white">Type de Couverture</h3>
+        <h3 className="text-xl font-heading font-bold mb-4 text-white">{t("coverageType")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <MetricCard
-            label="Articles de Fond"
+            label={t("inDepthArticles")}
             value={`${metrics.coverage_type.in_depth_percentage}%`}
-            description="> 500 mots"
+            description={t("moreThan500Words")}
             color="text-green-500"
           />
           <MetricCard
-            label="Brèves"
+            label={t("briefs")}
             value={`${metrics.coverage_type.brief_percentage}%`}
-            description="100-500 mots"
+            description={t("between100And500Words")}
             color="text-blue-500"
           />
           <MetricCard
-            label="Mentions"
+            label={t("mentions")}
             value={`${metrics.coverage_type.mention_percentage}%`}
-            description="< 100 mots"
+            description={t("lessThan100Words")}
             color="text-gray-500"
           />
         </div>
         <p className="text-sm text-gray-400">
-          Type dominant:{" "}
+          {t("dominantType")}:{" "}
           <span className="font-semibold text-white">{getCoverageLabel(metrics.coverage_type.dominant_type)}</span>
         </p>
       </div>
 
       {/* Polarisation */}
       <div>
-        <h3 className="text-xl font-heading font-bold mb-4 text-white">Polarisation des Sources</h3>
+        <h3 className="text-xl font-heading font-bold mb-4 text-white">{t("sourcePolarization")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <MetricCard
-            label="Sources Neutres"
-            value={`${metrics.polarization.neutral_percentage}%`}
-            description="Objectivité éditoriale"
+            label={t("neutralSources")}
+            value={`${metrics.source_polarization.neutral_percentage}%`}
+            description={t("editorialObjectivity")}
             color="text-green-500"
           />
           <MetricCard
-            label="Sources Orientées"
-            value={`${metrics.polarization.oriented_percentage}%`}
-            description="Biais politique/éditorial"
+            label={t("biasedSources")}
+            value={`${metrics.source_polarization.biased_percentage}%`}
+            description={t("politicalEditorialBias")}
             color="text-amber-500"
           />
         </div>
         <p className="text-sm text-gray-400">
-          Niveau de biais:{" "}
-          <span className="font-semibold text-white">{getBiasLabel(metrics.polarization.bias_level)}</span>
+          {t("biasLevel")}:{" "}
+          <span className="font-semibold text-white">{getBiasLabel(metrics.source_polarization.bias_level)}</span>
         </p>
       </div>
 
-      {/* Niveau de Risque */}
+      {/* Risque Réputationnel */}
       <div>
-        <h3 className="text-xl font-heading font-bold mb-4 text-white">Niveau de Risque Réputationnel</h3>
-        <div className="bg-zinc-950 border border-red-900/30 rounded-lg p-6">
+        <h3 className="text-xl font-heading font-bold mb-4 text-white">{t("reputationalRiskLevel")}</h3>
+        <div
+          className={`p-6 rounded-lg border-2 ${
+            metrics.reputation_risk.risk_level === "low"
+              ? "bg-green-500/10 border-green-500"
+              : metrics.reputation_risk.risk_level === "moderate"
+                ? "bg-yellow-500/10 border-yellow-500"
+                : metrics.reputation_risk.risk_level === "high"
+                  ? "bg-orange-500/10 border-orange-500"
+                  : "bg-red-500/10 border-red-500"
+          } mb-4`}
+        >
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-4xl font-bold font-mono text-white">{metrics.risk_level.score}/100</p>
-              <p className="text-sm text-gray-400 mt-1">
-                Catégorie:{" "}
-                <span className="font-semibold text-white">{getRiskCategoryLabel(metrics.risk_level.category)}</span>
-              </p>
-            </div>
-            <div
-              className={`text-5xl ${
-                metrics.risk_level.category === "low"
-                  ? "text-green-500"
-                  : metrics.risk_level.category === "moderate"
-                    ? "text-amber-500"
-                    : metrics.risk_level.category === "high"
-                      ? "text-orange-500"
-                      : "text-red-500"
-              }`}
-            >
-              {metrics.risk_level.category === "low" ? "✓" : metrics.risk_level.category === "moderate" ? "⚠" : "⚠"}
-            </div>
+            <div className="text-5xl font-bold text-white">{metrics.reputation_risk.risk_score}/100</div>
+            {metrics.reputation_risk.risk_level === "low" ? (
+              <CheckCircle2 className="w-12 h-12 text-green-500" />
+            ) : metrics.reputation_risk.risk_level === "moderate" ? (
+              <AlertCircle className="w-12 h-12 text-yellow-500" />
+            ) : metrics.reputation_risk.risk_level === "high" ? (
+              <AlertTriangle className="w-12 h-12 text-orange-500" />
+            ) : (
+              <AlertTriangle className="w-12 h-12 text-red-500" />
+            )}
           </div>
-          {metrics.risk_level.main_threats.length > 0 && (
-            <div className="mt-4">
-              <p className="text-sm font-semibold mb-2 text-white">Menaces principales:</p>
-              <ul className="space-y-1">
-                {metrics.risk_level.main_threats.map((threat, index) => (
-                  <li key={index} className="text-sm text-gray-300 flex items-start gap-2">
-                    <span className="text-red-500 mt-0.5">•</span>
-                    <span>{threat}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          <p className="text-sm text-gray-400 mb-2">
+            {t("category")}:{" "}
+            <span className="font-semibold text-white">{getRiskLabel(metrics.reputation_risk.risk_level)}</span>
+          </p>
         </div>
+
+        {metrics.reputation_risk.main_threats.length > 0 && (
+          <div>
+            <h4 className="text-sm font-semibold text-gray-300 mb-2">{t("mainThreats")}:</h4>
+            <ul className="space-y-2">
+              {metrics.reputation_risk.main_threats.map((threat, idx) => (
+                <li key={idx} className="text-sm text-gray-400 flex items-start">
+                  <span className="text-red-500 mr-2">•</span>
+                  {threat}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       {/* Indice de Réputation */}
@@ -1361,7 +1456,7 @@ function SingleDetailedAnalysis({ text, result }: { text: string; result: any })
                 <div className="flex items-center gap-3 sm:gap-4">
                   <div
                     className={`w-10 sm:w-12 h-10 sm:h-12 rounded-xl flex items-center justify-center ${
-                      isExpanded ? "bg-violet-500/20 text-violet-400" : "bg-violet-950/50 text-violet-400"
+                      isExpanded ? "bg-violet-500/20 text-violet-400" : "bg-zinc-950/50 text-violet-400"
                     }`}
                   >
                     {renderIcon(section.iconType)}
@@ -1438,422 +1533,6 @@ function SingleDetailedAnalysis({ text, result }: { text: string; result: any })
 }
 
 // Helper Components
-// Removed duplicate ScoreCard function
-// function ScoreCard({ label, score, sublabel }: { label: string; score: number; sublabel?: string }) {
-//   return (
-//     <div className="rounded-lg border border-red-900/30 bg-zinc-950 p-4 sm:p-6">
-//       <div className="font-heading text-xs font-bold tracking-widest text-gray-400 uppercase mb-3">{label}</div>
-//       <div className="font-heading text-4xl sm:text-5xl font-bold text-white mb-2">
-//         {score}
-//         <span className="text-lg sm:text-xl text-gray-500">/100</span>
-//       </div>
-//       {sublabel && <div className="text-xs font-heading text-red-400 uppercase font-bold">{sublabel}</div>}
-//       <div className="mt-4 h-2 bg-zinc-900 rounded-full overflow-hidden">
-//         <div
-//           className="h-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-500"
-//           style={{ width: `${score}%` }}
-//         />
-//       </div>
-//     </div>
-//   )
-// }
-
-// Removed duplicate ScoreDisplay function
-// function ScoreDisplay({
-//   label,
-//   score,
-//   label2,
-//   large,
-// }: { label: string; score: number; label2?: string; large?: boolean }) {
-//   return (
-//     <div className="flex items-center justify-between">
-//       <div>
-//         <div className={`font-heading text-gray-400 ${large ? "text-base" : "text-sm"}`}>{label}</div>
-//         {label2 && <div className="text-xs font-heading text-violet-400 uppercase font-bold">{label2}</div>}
-//       </div>
-//       <div className={`font-mono font-bold ${large ? "text-2xl text-violet-400" : "text-xl text-white"}`}>{score}</div>
-//     </div>
-//   )
-// }
-
-// Removed duplicate DuelMetricsCard function
-// function DuelMetricsCard({ title, data, brandName }: { title: string; data: any; brandName: string }) {
-//   if (!data) return null
-
-//   const metrics = [
-//     { label: "Présence", value: data.presence_score, color: "text-blue-400" },
-//     { label: "Tonalité", value: data.tone_score, color: data.tone_score >= 50 ? "text-green-400" : "text-red-400" },
-//     { label: "Cohérence", value: data.coherence_score, color: "text-purple-400" },
-//     { label: "Global", value: data.global_score, color: "text-white" },
-//   ]
-
-//   return (
-//     <div className="rounded-lg border border-red-900/30 bg-zinc-950 p-4 sm:p-6">
-//       <div className="flex items-center justify-between mb-4 sm:mb-6">
-//         <h3 className="font-heading text-base sm:text-lg font-bold text-white uppercase tracking-wide">{brandName}</h3>
-//         <p className="font-heading text-xs text-gray-500">Métriques détaillées</p>
-//       </div>
-//       <div className="grid grid-cols-2 gap-4">
-//         {metrics.map((metric, idx) => (
-//           <div key={idx} className="text-center p-3 sm:p-4 bg-zinc-900/50 rounded-lg">
-//             <div className="font-heading text-xs text-gray-400 uppercase tracking-wider">{metric.label}</div>
-//             <div className={`font-heading text-2xl sm:text-3xl font-bold ${metric.color} mt-1`}>
-//               {metric.value || 0}
-//             </div>
-//           </div>
-//         ))}
-//       </div>
-//       {data.rationale && (
-//         <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-red-900/30">
-//           <div className="font-heading text-xs text-gray-400 uppercase tracking-wider mb-2">Analyse</div>
-//           <p className="text-sm text-gray-300 leading-relaxed">{data.rationale}</p>
-//         </div>
-//       )}
-//     </div>
-//   )
-// }
-
-// Removed duplicate AnalysisSection function
-// function AnalysisSection({
-//   title,
-//   content,
-//   colors,
-// }: { title: string; content: string; colors: { bg: string; border: string; title: string; icon: string } }) {
-//   return (
-//     <div className={`rounded-xl border ${colors.border} ${colors.bg} p-4 sm:p-6`}>
-//       <h3 className={`font-heading text-base sm:text-lg font-bold ${colors.title} uppercase tracking-wide mb-4`}>
-//         {title}
-//       </h3>
-//       <div className="space-y-3">
-//         {content
-//           .split("\n")
-//           .filter(Boolean)
-//           .map((paragraph, idx) => (
-//             <p key={idx} className="text-sm text-gray-300 leading-relaxed">
-//               {paragraph}
-//             </p>
-//           ))}
-//       </div>
-//     </div>
-//   )
-// }
-
-// Removed duplicate DuelDetailedAnalysis function
-// function DuelDetailedAnalysis({ text, result }: { text: string; result: any }) {
-//   const brand1Name = result.brand1_name || "Cible Alpha"
-//   const brand2Name = result.brand2_name || "Cible Bravo"
-
-//   const parseDetailedComparison = (text: string) => {
-//     const sections: { title: string; content: string }[] = []
-
-//     // Split by lines starting with [SECTION] or # SECTION
-//     const lines = text.split("\n")
-//     let currentSection: { title: string; content: string } | null = null
-
-//     for (const line of lines) {
-//       const trimmed = line.trim()
-
-//       // Check for [SECTION TITLE] format
-//       const bracketMatch = trimmed.match(/^\[([A-ZÀ-Ÿ\s]+)\](.*)$/)
-//       if (bracketMatch) {
-//         if (currentSection) sections.push(currentSection)
-//         currentSection = {
-//           title: bracketMatch[1].trim(),
-//           content: bracketMatch[2].trim(),
-//         }
-//         continue
-//       }
-
-//       // Check for # SECTION TITLE format
-//       const hashMatch = trimmed.match(/^#{1,2}\s+([A-ZÀ-Ÿa-z\s]+)$/)
-//       if (hashMatch) {
-//         if (currentSection) sections.push(currentSection)
-//         currentSection = {
-//           title: hashMatch[1].trim(),
-//           content: "",
-//         }
-//         continue
-//       }
-
-//       // Add content to current section
-//       if (currentSection && trimmed) {
-//         currentSection.content += (currentSection.content ? " " : "") + trimmed
-//       }
-//     }
-
-//     if (currentSection) sections.push(currentSection)
-//     return sections.filter((s) => s.content)
-//   }
-
-//   const sections = parseDetailedComparison(text)
-
-//   const getSectionIcon = (title: string) => {
-//     const lower = title.toLowerCase()
-//     if (lower.includes("verdict")) return <Trophy className="w-5 h-5 text-yellow-400" />
-//     if (lower.includes("présence") || lower.includes("digitale")) return <Globe className="w-5 h-5 text-blue-400" />
-//     if (lower.includes("sentiment") || lower.includes("public"))
-//       return <TrendingUp className="w-5 h-5 text-green-400" />
-//     if (lower.includes("cohérence")) return <Target className="w-5 h-5 text-purple-400" />
-//     if (lower.includes("force")) return <Shield className="w-5 h-5 text-emerald-400" />
-//     if (lower.includes("faiblesse")) return <AlertTriangle className="w-5 h-5 text-orange-400" />
-//     if (lower.includes("recommandation")) return <Lightbulb className="w-5 h-5 text-cyan-400" />
-//     return <FileText className="w-5 h-5 text-zinc-400" />
-//   }
-
-//   return (
-//     <div className="space-y-8">
-//       <div className="font-heading text-xs font-bold tracking-[0.15em] text-red-400/80 uppercase mb-3">
-//         Rapport de Confrontation
-//       </div>
-//       <h2 className="font-heading text-xl sm:text-2xl md:text-3xl font-bold text-white mb-6">
-//         {brand1Name} vs {brand2Name}
-//       </h2>
-
-//       {sections.length > 0 ? (
-//         <div className="space-y-6">
-//           {sections.map((section, idx) => (
-//             <div
-//               key={idx}
-//               className="rounded-xl border border-zinc-800 bg-gradient-to-br from-zinc-950 to-zinc-950 p-6 sm:p-8 hover:border-red-900/50 transition-all duration-300 shadow-lg hover:shadow-red-500/10"
-//             >
-//               <div className="flex items-start gap-4">
-//                 <div className="flex-shrink-0 mt-1">{getSectionIcon(section.title)}</div>
-//                 <div className="flex-1 space-y-4">
-//                   <h4 className="font-heading text-base sm:text-lg font-bold text-red-400 uppercase tracking-wide">
-//                     {section.title}
-//                   </h4>
-//                   <p className="text-zinc-300 leading-relaxed text-sm sm:text-base whitespace-pre-line">
-//                     {section.content}
-//                   </p>
-//                 </div>
-//               </div>
-//             </div>
-//           ))}
-//         </div>
-//       ) : (
-//         // Fallback: display as paragraphs
-//         <div className="prose prose-invert max-w-none">
-//           {text.split("\n\n").map((paragraph, idx) => (
-//             <p key={idx} className="text-sm sm:text-base text-gray-300 leading-relaxed mb-4">
-//               {paragraph}
-//             </p>
-//           ))}
-//         </div>
-//       )}
-//     </div>
-//   )
-// }
-
-// Removed duplicate Single Detailed Analysis Component
-// function SingleDetailedAnalysis({ text, result }: { text: string; result: any }) {
-//   const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set([0]))
-
-//   if (!text) {
-//     return (
-//       <div className="text-center py-16">
-//         <Brain className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-//         <h3 className="font-heading text-lg sm:text-xl font-bold text-white">Analyse détaillée non disponible</h3>
-//         <p className="text-sm text-gray-400 mt-2">
-//           L'analyse détaillée sera disponible une fois le traitement terminé.
-//         </p>
-//       </div>
-//     )
-//   }
-
-//   // Parse sections from text
-//   const parseDetailedAnalysis = (text: string) => {
-//     const sections: Array<{ title: string; content: string; iconType: string; confidence: number }> = []
-
-//     // Split by # or ## headers
-//     const parts = text.split(/(?=^#{1,2}\s)/m).filter(Boolean)
-
-//     parts.forEach((part) => {
-//       const lines = part.trim().split("\n")
-//       const title = lines[0]?.replace(/^#{1,2}\s*/, "").trim() || "Section"
-//       const content = lines.slice(1).join("\n").trim()
-
-//       if (content) {
-//         let iconType = "default"
-//         if (title.toLowerCase().includes("osint") || title.toLowerCase().includes("source")) {
-//           iconType = "globe"
-//         } else if (title.toLowerCase().includes("ia") || title.toLowerCase().includes("générative")) {
-//           iconType = "brain"
-//         } else if (title.toLowerCase().includes("stratég")) {
-//           iconType = "target"
-//         } else if (title.toLowerCase().includes("recommandation")) {
-//           iconType = "lightbulb"
-//         }
-
-//         sections.push({
-//           title,
-//           content,
-//           iconType,
-//           confidence: Math.floor(Math.random() * 20) + 75,
-//         })
-//       }
-//     })
-
-//     return sections.length > 0
-//       ? sections
-//       : [
-//           {
-//             title: "Analyse Complète",
-//             content: text,
-//             iconType: "default",
-//             confidence: 85,
-//           },
-//         ]
-//   }
-
-//   const sections = parseDetailedAnalysis(text)
-
-//   const toggleSection = (idx: number) => {
-//     const newExpanded = new Set(expandedSections)
-//     if (newExpanded.has(idx)) {
-//       newExpanded.delete(idx)
-//     } else {
-//       newExpanded.add(idx)
-//     }
-//     setExpandedSections(newExpanded)
-//   }
-
-//   const renderIcon = (type: string) => {
-//     switch (type) {
-//       case "globe":
-//         return <Globe className="w-5 h-5" />
-//       case "brain":
-//         return <Brain className="w-5 h-5" />
-//       case "target":
-//         return <Target className="w-5 h-5" />
-//       case "lightbulb":
-//         return <Lightbulb className="w-5 h-5" />
-//       default:
-//         return <FileText className="w-5 h-5" />
-//     }
-//   }
-
-//   // Extract key points from content
-//   const extractKeyPoints = (content: string): string[] => {
-//     const sentences = content.split(/[.!?]+/).filter((s) => s.trim().length > 30)
-//     return sentences.slice(0, 4).map((s) => s.trim())
-//   }
-
-//   return (
-//     <div className="space-y-6">
-//       {/* Section Pills */}
-//       <div className="flex flex-wrap gap-2 p-4 bg-zinc-950/50 rounded-lg border border-red-900/20">
-//         {sections.map((section, idx) => (
-//           <button
-//             key={idx}
-//             onClick={() => {
-//               const element = document.getElementById(`section-${idx}`)
-//               element?.scrollIntoView({ behavior: "smooth" })
-//             }}
-//             className="flex items-center gap-2 px-3 py-2 bg-zinc-900 hover:bg-red-950/30 border border-red-900/30 rounded-full transition-colors text-xs sm:text-sm"
-//           >
-//             <span className="text-cyan-400">{renderIcon(section.iconType)}</span>
-//             <span className="text-gray-300 truncate max-w-[120px] sm:max-w-none">{section.title}</span>
-//           </button>
-//         ))}
-//       </div>
-
-//       {/* Accordion Sections */}
-//       <div className="space-y-4">
-//         {sections.map((section, idx) => {
-//           const isExpanded = expandedSections.has(idx)
-//           const keyPoints = extractKeyPoints(section.content)
-
-//           return (
-//             <div
-//               key={idx}
-//               id={`section-${idx}`}
-//               className={`rounded-xl border transition-all duration-300 ${
-//                 isExpanded ? "border-cyan-500/50 bg-gradient-to-br from-cyan-950/20 to-zinc-950" : "border-red-900/30 bg-zinc-950/50 hover:border-red-900/50"
-//               }`}
-//             >
-//               {/* Header */}
-//               <button
-//                 onClick={() => toggleSection(idx)}
-//                 className="w-full p-4 sm:p-6 flex items-center justify-between text-left"
-//               >
-//                 <div className="flex items-center gap-3 sm:gap-4">
-//                   <div
-//                     className={`w-10 sm:w-12 h-10 sm:h-12 rounded-xl flex items-center justify-center ${
-//                       isExpanded ? "bg-cyan-500/20 text-cyan-400" : "bg-red-950/50 text-red-400"
-//                     }`}
-//                   >
-//                     {renderIcon(section.iconType)}
-//                   </div>
-//                   <div>
-//                     <h3
-//                       className={`font-heading text-base sm:text-lg font-bold ${isExpanded ? "text-cyan-400" : "text-white"} uppercase tracking-wide`}
-//                     >
-//                       {section.title}
-//                     </h3>
-//                     <p className="text-xs sm:text-sm text-gray-500">{keyPoints.length} points clés identifiés</p>
-//                   </div>
-//                 </div>
-//                 <div className="flex items-center gap-3 sm:gap-4">
-//                   <div
-//                     className={`hidden sm:flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${
-//                       section.confidence >= 80 ? "bg-green-950/50 text-green-400" : "bg-yellow-950/50 text-yellow-400"
-//                     }`}
-//                   >
-//                     <span
-//                       className={`w-2 h-2 rounded-full ${section.confidence >= 80 ? "bg-green-400" : "bg-yellow-400"}`}
-//                     />
-//                     {section.confidence}% confiance
-//                   </div>
-//                   <ChevronDown
-//                     className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""}`}
-//                   />
-//                 </div>
-//               </button>
-
-//               {/* Content */}
-//               {isExpanded && (
-//                 <div className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-4 sm:space-y-6">
-//                   {/* Key Points Grid */}
-//                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-//                     {keyPoints.map((point, pointIdx) => (
-//                       <div key={pointIdx} className="p-3 sm:p-4 bg-zinc-900/50 border border-cyan-900/30 rounded-lg">
-//                         <div className="flex items-start gap-2">
-//                           <span className="text-cyan-400 mt-1 text-lg">•</span>
-//                           <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">{point}.</p>
-//                         </div>
-//                       </div>
-//                     ))}
-//                   </div>
-
-//                   {/* Full Analysis */}
-//                   <details className="group">
-//                     <summary className="flex items-center gap-2 cursor-pointer text-sm text-gray-400 hover:text-white transition-colors">
-//                       <FileText className="w-4 h-4" />
-//                       <span>Voir l'analyse complète</span>
-//                       <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform" />
-//                     </summary>
-//                     <div className="mt-4 p-4 bg-zinc-900/30 rounded-lg border border-zinc-800">
-//                       <div className="prose prose-invert prose-sm max-w-none">
-//                         {section.content
-//                           .split("\n")
-//                           .filter(Boolean)
-//                           .map((paragraph, pIdx) => (
-//                             <p key={pIdx} className="text-sm text-gray-300 leading-relaxed mb-3">
-//                               {paragraph}
-//                             </p>
-//                           ))}
-//                       </div>
-//                     </div>
-//                   </details>
-//                 </div>
-//               )}
-//             </div>
-//           )
-//         })}
-//       </div>
-//     </div>
-//   )
-// }
 
 function MetricCard({
   label,

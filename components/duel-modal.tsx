@@ -135,7 +135,7 @@ function formatComparisonText(text: string) {
 }
 
 export function DuelModal({ isOpen, onClose, formData }: DuelModalProps) {
-  const { t } = useLanguage()
+  const { t, language: uiLanguage } = useLanguage()
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
   const [result, setResult] = useState<DuelResult | null>(null)
@@ -161,7 +161,13 @@ export function DuelModal({ isOpen, onClose, formData }: DuelModalProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ brand1, brand2, message, language }),
+        body: JSON.stringify({
+          brand1,
+          brand2,
+          message,
+          language,
+          uiLanguage: uiLanguage,
+        }),
       })
 
       if (!response.ok) {

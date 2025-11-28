@@ -4,6 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Search, Brain, BarChart3, Globe, CheckCircle2, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useLanguage } from "@/contexts/language-context"
 
 interface LoadingStep {
   id: string
@@ -29,11 +30,13 @@ export function InteractiveLoadingAnimation({
   currentStep,
   onComplete,
 }: InteractiveLoadingAnimationProps) {
+  const { t } = useLanguage()
+
   const [steps, setSteps] = useState<LoadingStep[]>([
     {
       id: "search",
-      label: "Recherche Google",
-      description: "Analyse de votre présence digitale",
+      label: t("loadingSteps.googleSearch"),
+      description: t("loadingSteps.googleSearchDesc"),
       icon: <Search className="w-5 h-5" />,
       color: "bg-violet-500",
       duration: 20,
@@ -42,8 +45,8 @@ export function InteractiveLoadingAnimation({
     },
     {
       id: "crawl",
-      label: "Extraction de données",
-      description: "Collecte des informations pertinentes",
+      label: t("loadingSteps.dataExtraction"),
+      description: t("loadingSteps.dataExtractionDesc"),
       icon: <Globe className="w-5 h-5" />,
       color: "bg-violet-400",
       duration: 20,
@@ -52,8 +55,8 @@ export function InteractiveLoadingAnimation({
     },
     {
       id: "analysis",
-      label: "Analyse IA",
-      description: "Traitement intelligent des données",
+      label: t("loadingSteps.aiAnalysis"),
+      description: t("loadingSteps.aiAnalysisDesc"),
       icon: <Brain className="w-5 h-5" />,
       color: "bg-violet-600",
       duration: 40,
@@ -62,8 +65,8 @@ export function InteractiveLoadingAnimation({
     },
     {
       id: "scoring",
-      label: "Calcul des scores",
-      description: "Génération des métriques finales",
+      label: t("loadingSteps.scoreCalculation"),
+      description: t("loadingSteps.scoreCalculationDesc"),
       icon: <BarChart3 className="w-5 h-5" />,
       color: "bg-violet-700",
       duration: 20,
@@ -132,14 +135,14 @@ export function InteractiveLoadingAnimation({
 
           <div>
             <h3 className="text-xl sm:text-2xl lg:text-3xl font-heading font-bold mb-2 text-white uppercase tracking-wider">
-              Analyse en cours
+              {t("analysisInProgress")}
             </h3>
-            <p className="text-sm sm:text-base text-gray-400 px-2">Le système MAK-IA analyse votre présence digitale</p>
+            <p className="text-sm sm:text-base text-gray-400 px-2">{t("loadingSteps.systemAnalyzing")}</p>
           </div>
 
           <div className="space-y-3">
             <div className="flex justify-between text-sm text-gray-500 font-mono">
-              <span>PROGRESSION</span>
+              <span>{t("loadingSteps.progression")}</span>
               <span>{Math.round(progress)}%</span>
             </div>
             <div className="relative h-3 bg-zinc-900 border border-violet-900/50 rounded-full overflow-hidden">
@@ -201,7 +204,11 @@ export function InteractiveLoadingAnimation({
                         !step.active && !step.completed && "bg-zinc-900 text-gray-600 border-white/10",
                       )}
                     >
-                      {step.completed ? "✓ Terminé" : step.active ? "● En cours" : "○ En attente"}
+                      {step.completed
+                        ? t("loadingSteps.completed")
+                        : step.active
+                          ? t("loadingSteps.inProgress")
+                          : t("loadingSteps.pending")}
                     </span>
                   </div>
 

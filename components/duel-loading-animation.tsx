@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Zap, Swords, Flame } from "lucide-react"
+import { useLanguage } from "@/contexts/language-context"
 
 interface DuelLoadingAnimationProps {
   brand1: string
@@ -9,6 +10,7 @@ interface DuelLoadingAnimationProps {
 }
 
 export function DuelLoadingAnimation({ brand1, brand2 }: DuelLoadingAnimationProps) {
+  const { t } = useLanguage()
   const [phase, setPhase] = useState(0)
   const [progress, setProgress] = useState(0)
 
@@ -38,10 +40,10 @@ export function DuelLoadingAnimation({ brand1, brand2 }: DuelLoadingAnimationPro
   }
 
   const phaseTexts = [
-    "Collecte des données...",
-    "Analyse comparative...",
-    "Évaluation des métriques...",
-    "Génération du verdict...",
+    t("duelLoading.collectingData"),
+    t("duelLoading.comparativeAnalysis"),
+    t("duelLoading.evaluatingMetrics"),
+    t("duelLoading.generatingVerdict"),
   ]
 
   return (
@@ -103,7 +105,9 @@ export function DuelLoadingAnimation({ brand1, brand2 }: DuelLoadingAnimationPro
           {/* Status indicator */}
           <div className="mt-3 flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full bg-violet-500 ${phase % 2 === 0 ? "animate-pulse" : ""}`} />
-            <span className="text-violet-400 text-xs sm:text-sm font-medium tracking-wider uppercase">Analyse...</span>
+            <span className="text-violet-400 text-xs sm:text-sm font-medium tracking-wider uppercase">
+              {t("duelLoading.analyzing")}
+            </span>
           </div>
         </div>
 
@@ -180,7 +184,9 @@ export function DuelLoadingAnimation({ brand1, brand2 }: DuelLoadingAnimationPro
           {/* Status indicator */}
           <div className="mt-3 flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full bg-violet-500 ${phase % 2 === 1 ? "animate-pulse" : ""}`} />
-            <span className="text-violet-400 text-xs sm:text-sm font-medium tracking-wider uppercase">Analyse...</span>
+            <span className="text-violet-400 text-xs sm:text-sm font-medium tracking-wider uppercase">
+              {t("duelLoading.analyzing")}
+            </span>
           </div>
         </div>
       </div>
