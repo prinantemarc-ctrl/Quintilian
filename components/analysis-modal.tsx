@@ -204,10 +204,10 @@ export function AnalysisModal({ isOpen, onClose, initialData }: AnalysisModalPro
 
   return (
     <Dialog open={isOpen && !showFullscreenView} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[95vw] sm:max-w-[90vw] lg:max-w-[1400px] w-full max-h-[92vh] flex flex-col bg-black border border-red-900/30 p-0">
-        <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 sm:py-5 border-b border-red-900/20 flex-shrink-0">
+      <DialogContent className="max-w-[95vw] sm:max-w-[90vw] lg:max-w-[1400px] w-full max-h-[92vh] flex flex-col bg-black border border-violet-900/30 p-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 sm:py-5 border-b border-violet-900/20 flex-shrink-0">
           <DialogTitle className="font-heading text-lg sm:text-xl lg:text-2xl font-bold uppercase text-white flex items-center gap-2 sm:gap-3">
-            <Brain className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-red-500" />
+            <Brain className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-violet-500" />
             {identifiedEntities.length > 0 ? "CIBLES DÉTECTÉES" : error ? "ÉCHEC MISSION" : "ANALYSE EN COURS"}
           </DialogTitle>
           <Button variant="ghost" className="h-8 w-8 p-0" onClick={handleClose}>
@@ -240,16 +240,16 @@ export function AnalysisModal({ isOpen, onClose, initialData }: AnalysisModalPro
                   <span>PHASE 3 - DÉSAMBIGUÏSATION</span>
                   <span>{progressBeforeDisambiguation}%</span>
                 </div>
-                <div className="h-2 bg-zinc-900 border border-red-900/50 rounded-full overflow-hidden">
+                <div className="h-2 bg-zinc-900 border border-violet-900/50 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-red-600 to-red-500 transition-all"
+                    className="h-full bg-gradient-to-r from-violet-600 to-violet-500 transition-all"
                     style={{ width: `${progressBeforeDisambiguation}%` }}
                   />
                 </div>
               </div>
 
-              <Alert className="bg-red-950/20 border-red-900/50">
-                <ShieldAlert className="h-4 w-4 text-red-500" />
+              <Alert className="bg-violet-950/20 border-violet-900/50">
+                <ShieldAlert className="h-4 w-4 text-violet-500" />
                 <AlertDescription>
                   Plusieurs cibles potentielles détectées. Veuillez sélectionner la bonne identité pour affiner
                   l'analyse.
@@ -262,7 +262,7 @@ export function AnalysisModal({ isOpen, onClose, initialData }: AnalysisModalPro
                   {identifiedEntities.map((entity) => (
                     <div
                       key={entity.id}
-                      className="border border-white/10 bg-zinc-900/50 hover:bg-zinc-900 hover:border-red-500/50 transition-all p-3 sm:p-4 cursor-pointer rounded-lg"
+                      className="border border-white/10 bg-zinc-900/50 hover:bg-zinc-900 hover:border-violet-500/50 transition-all p-3 sm:p-4 cursor-pointer rounded-lg"
                       onClick={() => handleIdentitySelection(entity.id)}
                     >
                       <div className="space-y-2">
@@ -298,7 +298,7 @@ export function AnalysisModal({ isOpen, onClose, initialData }: AnalysisModalPro
 
               <div className="space-y-4 sm:space-y-6">
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <Edit3 className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-red-500" />
+                  <Edit3 className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-violet-500" />
                   <p className="font-heading text-xs sm:text-sm text-gray-500 uppercase">Préciser la Cible</p>
                 </div>
                 <Textarea
@@ -320,8 +320,8 @@ export function AnalysisModal({ isOpen, onClose, initialData }: AnalysisModalPro
 
           {error && (
             <div className="text-center py-8">
-              <Alert className="mb-4 bg-red-950/20 border-red-900/50">
-                <AlertCircle className="h-4 w-4 text-red-500" />
+              <Alert className="mb-4 bg-violet-950/20 border-violet-900/50">
+                <AlertCircle className="h-4 w-4 text-violet-500" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
               <Button onClick={() => launchAnalysis()}>Réitérer l'Analyse</Button>

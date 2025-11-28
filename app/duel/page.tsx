@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,6 +15,8 @@ import { AnalysisResultsFullscreen } from "@/components/analysis-results-fullscr
 import { DuelLoadingAnimation } from "@/components/duel-loading-animation"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { useLanguage } from "@/contexts/language-context"
+import { AuthGateModal } from "@/components/auth/auth-gate-modal"
+import { createClient } from "@/lib/supabase/client"
 
 export default function DuelPage() {
   const { t } = useLanguage()
@@ -27,6 +29,28 @@ export default function DuelPage() {
   const [showLoading, setShowLoading] = useState(false)
   const [duelResult, setDuelResult] = useState<any>(null)
   const [showResults, setShowResults] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+  const [showAuthGate, setShowAuthGate] = useState(false)
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      setIsAuthenticated(!!user)
+    }
+    checkAuth()
+
+    const supabase = createClient()
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session?.user)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,7 +75,12 @@ export default function DuelPage() {
         if (apiResponse.success && apiResponse.data) {
           setDuelResult(apiResponse.data)
           setShowLoading(false)
-          setShowResults(true)
+
+          if (isAuthenticated) {
+            setShowResults(true)
+          } else {
+            setShowAuthGate(true)
+          }
         }
       } catch (error) {
         console.error("[v0] Duel error:", error)
@@ -59,6 +88,26 @@ export default function DuelPage() {
       }
     }
   }
+
+  const handleAuthSuccess = () => {
+    setShowAuthGate(false)
+    setShowResults(true)
+  }
+
+  const duelPreviewData = duelResult
+    ? {
+        brand1: formData.brand1,
+        brand2: formData.brand2,
+        brand1_score: duelResult.brand1_analysis?.global_score,
+        brand2_score: duelResult.brand2_analysis?.global_score,
+        brand1_presence: duelResult.brand1_analysis?.presence_score,
+        brand2_presence: duelResult.brand2_analysis?.presence_score,
+        brand1_sentiment: duelResult.brand1_analysis?.tone_score,
+        brand2_sentiment: duelResult.brand2_analysis?.tone_score,
+        winner: duelResult.winner,
+        verdict: duelResult.detailed_comparison?.substring(0, 200),
+      }
+    : undefined
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
@@ -140,11 +189,11 @@ export default function DuelPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="fr">🇫🇷 {t("lang.french")}</SelectItem>
-                      <SelectItem value="en">🇺🇸 {t("lang.english")}</SelectItem>
-                      <SelectItem value="es">🇪🇸 {t("lang.spanish")}</SelectItem>
-                      <SelectItem value="de">🇩🇪 {t("lang.german")}</SelectItem>
-                      <SelectItem value="it">🇮🇹 {t("lang.italian")}</SelectItem>
+                      <SelectItem value="fr">Français</SelectItem>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="es">Español</SelectItem>
+                      <SelectItem value="de">Deutsch</SelectItem>
+                      <SelectItem value="it">Italiano</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -164,11 +213,20 @@ export default function DuelPage() {
       </div>
 
       <Dialog open={showLoading} onOpenChange={() => setShowLoading(false)}>
-        <DialogContent className="max-w-[1200px] w-[95vw] max-h-[90vh] p-0 gap-0 flex flex-col bg-black border border-red-900/30">
+        <DialogContent className="max-w-[1200px] w-[95vw] max-h-[90vh] p-0 gap-0 flex flex-col bg-black border border-violet-900/30">
           <DuelLoadingAnimation brand1={formData.brand1} brand2={formData.brand2} />
         </DialogContent>
       </Dialog>
 
+      <AuthGateModal
+        isOpen={showAuthGate}
+        onAuthSuccess={handleAuthSuccess}
+        onClose={() => setShowAuthGate(false)}
+        analysisType="duel"
+        duelPreviewData={duelPreviewData}
+      />
+
+      {/* Results for authenticated users */}
       {duelResult && (
         <AnalysisResultsFullscreen
           isOpen={showResults}

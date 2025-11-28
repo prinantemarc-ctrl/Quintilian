@@ -19,7 +19,7 @@ import Link from "next/link"
 export default function RenseignementPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Section - REPRENEZ LE CONTRÔLE */}
+      {/* Hero Section */}
       <section className="py-24 bg-background">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -36,22 +36,22 @@ export default function RenseignementPage() {
               </Link>
             </div>
 
-            {/* QG TACTIQUE Dashboard Mockup */}
+            {/* QG TACTIQUE Dashboard Mockup - red to violet */}
             <div className="relative">
-              <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-6 border border-red-500/20">
+              <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-6 border border-violet-500/20">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-bold text-foreground tracking-wide">QG TACTIQUE</h3>
                   <div className="flex gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/30" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-violet-500" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-violet-500/60" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-violet-500/30" />
                   </div>
                 </div>
 
                 {/* Scores */}
                 <div className="grid grid-cols-3 gap-4 mb-6">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-red-500">94</div>
+                    <div className="text-3xl font-bold text-violet-500">94</div>
                     <div className="text-xs text-muted-foreground mt-1">SEO Score</div>
                   </div>
                   <div className="text-center">
@@ -69,22 +69,22 @@ export default function RenseignementPage() {
                   <div className="flex items-end justify-between gap-3 h-24">
                     <div className="flex-1 flex flex-col items-center gap-2">
                       <div className="w-full bg-zinc-700 rounded-t relative overflow-hidden" style={{ height: "70%" }}>
-                        <div className="absolute bottom-0 w-full h-1/2 bg-red-500/80" />
+                        <div className="absolute bottom-0 w-full h-1/2 bg-violet-500/80" />
                       </div>
                     </div>
                     <div className="flex-1 flex flex-col items-center gap-2">
                       <div className="w-full bg-zinc-700 rounded-t relative overflow-hidden" style={{ height: "85%" }}>
-                        <div className="absolute bottom-0 w-full h-1/3 bg-red-500/80" />
+                        <div className="absolute bottom-0 w-full h-1/3 bg-violet-500/80" />
                       </div>
                     </div>
                     <div className="flex-1 flex flex-col items-center gap-2">
                       <div className="w-full bg-zinc-700 rounded-t relative overflow-hidden" style={{ height: "60%" }}>
-                        <div className="absolute bottom-0 w-full h-1/4 bg-red-500/60" />
+                        <div className="absolute bottom-0 w-full h-1/4 bg-violet-500/60" />
                       </div>
                     </div>
                     <div className="flex-1 flex flex-col items-center gap-2">
                       <div className="w-full bg-zinc-700 rounded-t relative overflow-hidden" style={{ height: "90%" }}>
-                        <div className="absolute bottom-0 w-full h-2/3 bg-red-500/80" />
+                        <div className="absolute bottom-0 w-full h-2/3 bg-violet-500/80" />
                       </div>
                     </div>
                   </div>
@@ -95,7 +95,7 @@ export default function RenseignementPage() {
         </div>
       </section>
 
-      {/* NOS ARMES Section */}
+      {/* NOS ARMES Section - red to violet */}
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-4 mb-16">
@@ -105,15 +105,14 @@ export default function RenseignementPage() {
             </p>
           </div>
 
-          {/* Dashboard Tactique - Temps Réel */}
-          <Card className="border border-red-500/20 bg-gradient-to-br from-zinc-900/50 to-background mb-16">
+          <Card className="border border-violet-500/20 bg-gradient-to-br from-zinc-900/50 to-background mb-16">
             <CardContent className="p-8">
               <div className="flex items-center gap-4 mb-8">
-                <div className="p-3 bg-red-500/20 rounded-xl">
-                  <BarChart3 className="w-6 h-6 text-red-500" />
+                <div className="p-3 bg-violet-500/20 rounded-xl">
+                  <BarChart3 className="w-6 h-6 text-violet-500" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-red-500">Dashboard Tactique - Temps Réel</h3>
+                  <h3 className="text-xl font-bold text-violet-500">Dashboard Tactique - Temps Réel</h3>
                   <p className="text-muted-foreground">
                     Accédez à votre centre de commandement de réputation en temps réel
                   </p>
@@ -121,9 +120,8 @@ export default function RenseignementPage() {
               </div>
 
               <div className="grid md:grid-cols-2 gap-8 mb-8">
-                {/* Métriques Critiques */}
                 <div>
-                  <h4 className="text-sm font-semibold text-red-500 uppercase tracking-wider mb-4">
+                  <h4 className="text-sm font-semibold text-violet-500 uppercase tracking-wider mb-4">
                     Métriques Critiques
                   </h4>
                   <ul className="space-y-3">
@@ -142,9 +140,8 @@ export default function RenseignementPage() {
                   </ul>
                 </div>
 
-                {/* Analyse Comportementale */}
                 <div>
-                  <h4 className="text-sm font-semibold text-red-500 uppercase tracking-wider mb-4">
+                  <h4 className="text-sm font-semibold text-violet-500 uppercase tracking-wider mb-4">
                     Analyse Comportementale
                   </h4>
                   <ul className="space-y-3">
@@ -164,7 +161,6 @@ export default function RenseignementPage() {
                 </div>
               </div>
 
-              {/* Surveillance Banner */}
               <div className="flex items-center gap-2 text-amber-500">
                 <Zap className="w-4 h-4" />
                 <span className="text-sm">Surveillance 24/7 avec alertes et contre-mesures IA</span>
@@ -174,7 +170,7 @@ export default function RenseignementPage() {
         </div>
       </section>
 
-      {/* NOS 4 MODULES D'INTERVENTION */}
+      {/* NOS 4 MODULES D'INTERVENTION - red to violet */}
       <section className="py-20 bg-zinc-950">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-4 mb-16">
@@ -185,12 +181,11 @@ export default function RenseignementPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {/* Module H - Duplication de Masse */}
-            <Card className="border border-red-500/20 bg-gradient-to-br from-zinc-900/80 to-background">
+            <Card className="border border-violet-500/20 bg-gradient-to-br from-zinc-900/80 to-background">
               <CardContent className="p-8">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="p-3 bg-red-500/20 rounded-xl">
-                    <Globe className="w-6 h-6 text-red-500" />
+                  <div className="p-3 bg-violet-500/20 rounded-xl">
+                    <Globe className="w-6 h-6 text-violet-500" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-foreground">Module H - Duplication de Masse</h3>
@@ -220,12 +215,11 @@ export default function RenseignementPage() {
               </CardContent>
             </Card>
 
-            {/* Module A - Dôme de Fer Social */}
-            <Card className="border border-red-500/20 bg-gradient-to-br from-zinc-900/80 to-background">
+            <Card className="border border-violet-500/20 bg-gradient-to-br from-zinc-900/80 to-background">
               <CardContent className="p-8">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="p-3 bg-red-500/20 rounded-xl">
-                    <MessageSquare className="w-6 h-6 text-red-500" />
+                  <div className="p-3 bg-violet-500/20 rounded-xl">
+                    <MessageSquare className="w-6 h-6 text-violet-500" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-foreground">Module A - Dôme de Fer Social</h3>
@@ -255,12 +249,11 @@ export default function RenseignementPage() {
               </CardContent>
             </Card>
 
-            {/* Module C - Légitimité */}
-            <Card className="border border-red-500/20 bg-gradient-to-br from-zinc-900/80 to-background">
+            <Card className="border border-violet-500/20 bg-gradient-to-br from-zinc-900/80 to-background">
               <CardContent className="p-8">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="p-3 bg-red-500/20 rounded-xl">
-                    <Shield className="w-6 h-6 text-red-500" />
+                  <div className="p-3 bg-violet-500/20 rounded-xl">
+                    <Shield className="w-6 h-6 text-violet-500" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-foreground">Module C - Légitimité</h3>
@@ -288,12 +281,11 @@ export default function RenseignementPage() {
               </CardContent>
             </Card>
 
-            {/* Module P - Black Ops */}
-            <Card className="border border-red-500/20 bg-gradient-to-br from-zinc-900/80 to-background">
+            <Card className="border border-violet-500/20 bg-gradient-to-br from-zinc-900/80 to-background">
               <CardContent className="p-8">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="p-3 bg-red-500/20 rounded-xl">
-                    <Target className="w-6 h-6 text-red-500" />
+                  <div className="p-3 bg-violet-500/20 rounded-xl">
+                    <Target className="w-6 h-6 text-violet-500" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-foreground">Module P - Black Ops</h3>
@@ -324,7 +316,7 @@ export default function RenseignementPage() {
         </div>
       </section>
 
-      {/* POURQUOI MAK-IA Section */}
+      {/* POURQUOI MAK-IA Section - red to violet */}
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -369,11 +361,10 @@ export default function RenseignementPage() {
               </div>
             </div>
 
-            {/* Stratégie Card */}
             <div className="relative">
-              <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-8 border border-red-500/20">
+              <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-8 border border-violet-500/20">
                 <div className="flex flex-col items-center justify-center h-64">
-                  <TrendingUp className="w-16 h-16 text-red-500 mb-6" />
+                  <TrendingUp className="w-16 h-16 text-violet-500 mb-6" />
                   <h3 className="text-2xl font-bold text-foreground">Stratégie</h3>
                   <p className="text-muted-foreground">Approche 360°</p>
                 </div>

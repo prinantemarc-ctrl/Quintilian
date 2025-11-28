@@ -35,7 +35,7 @@ export function InteractiveLoadingAnimation({
       label: "Recherche Google",
       description: "Analyse de votre présence digitale",
       icon: <Search className="w-5 h-5" />,
-      color: "bg-red-500",
+      color: "bg-violet-500",
       duration: 20,
       completed: false,
       active: true,
@@ -45,7 +45,7 @@ export function InteractiveLoadingAnimation({
       label: "Extraction de données",
       description: "Collecte des informations pertinentes",
       icon: <Globe className="w-5 h-5" />,
-      color: "bg-red-400",
+      color: "bg-violet-400",
       duration: 20,
       completed: false,
       active: false,
@@ -55,7 +55,7 @@ export function InteractiveLoadingAnimation({
       label: "Analyse IA",
       description: "Traitement intelligent des données",
       icon: <Brain className="w-5 h-5" />,
-      color: "bg-red-600",
+      color: "bg-violet-600",
       duration: 40,
       completed: false,
       active: false,
@@ -65,7 +65,7 @@ export function InteractiveLoadingAnimation({
       label: "Calcul des scores",
       description: "Génération des métriques finales",
       icon: <BarChart3 className="w-5 h-5" />,
-      color: "bg-red-700",
+      color: "bg-violet-700",
       duration: 20,
       completed: false,
       active: false,
@@ -111,7 +111,7 @@ export function InteractiveLoadingAnimation({
         {particles.map((particle) => (
           <div
             key={particle.id}
-            className="absolute w-1 h-1 bg-red-500/30 rounded-full"
+            className="absolute w-1 h-1 bg-violet-500/30 rounded-full"
             style={{
               left: `${particle.x}%`,
               top: `${particle.y}%`,
@@ -124,10 +124,10 @@ export function InteractiveLoadingAnimation({
       <div className="max-w-2xl mx-auto space-y-6 sm:space-y-8 relative z-10">
         <div className="text-center space-y-3 sm:space-y-4">
           <div className="relative inline-block">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 mx-auto bg-gradient-to-br from-red-600 to-red-900 rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 mx-auto bg-gradient-to-br from-violet-600 to-violet-900 rounded-full flex items-center justify-center">
               <Loader2 className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-white animate-spin" />
             </div>
-            <div className="absolute -inset-2 sm:-inset-3 bg-red-500/20 rounded-full animate-pulse" />
+            <div className="absolute -inset-2 sm:-inset-3 bg-violet-500/20 rounded-full animate-pulse" />
           </div>
 
           <div>
@@ -142,9 +142,9 @@ export function InteractiveLoadingAnimation({
               <span>PROGRESSION</span>
               <span>{Math.round(progress)}%</span>
             </div>
-            <div className="relative h-3 bg-zinc-900 border border-red-900/50 rounded-full overflow-hidden">
+            <div className="relative h-3 bg-zinc-900 border border-violet-900/50 rounded-full overflow-hidden">
               <div
-                className="absolute top-0 left-0 h-full bg-gradient-to-r from-red-600 via-red-500 to-red-600 transition-all duration-500 ease-out"
+                className="absolute top-0 left-0 h-full bg-gradient-to-r from-violet-600 via-violet-500 to-violet-600 transition-all duration-500 ease-out"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -157,7 +157,7 @@ export function InteractiveLoadingAnimation({
               key={step.id}
               className={cn(
                 "border rounded-lg transition-all duration-500 p-4 sm:p-6",
-                step.active && "border-red-500/70 bg-red-950/20 shadow-lg shadow-red-500/10 scale-105",
+                step.active && "border-violet-500/70 bg-violet-950/20 shadow-lg shadow-violet-500/10 scale-105",
                 step.completed && "border-green-500/50 bg-green-950/20",
                 !step.active && !step.completed && "border-white/10 bg-zinc-900/50",
               )}
@@ -179,7 +179,7 @@ export function InteractiveLoadingAnimation({
                     )}
                   </div>
 
-                  {step.active && <div className="absolute -inset-1 bg-red-500/30 rounded-full animate-pulse" />}
+                  {step.active && <div className="absolute -inset-1 bg-violet-500/30 rounded-full animate-pulse" />}
                 </div>
 
                 <div className="flex-1 min-w-0">
@@ -187,7 +187,7 @@ export function InteractiveLoadingAnimation({
                     <h4
                       className={cn(
                         "font-heading font-bold text-base sm:text-lg transition-colors duration-300",
-                        step.completed ? "text-green-400" : step.active ? "text-red-400" : "text-gray-600",
+                        step.completed ? "text-green-400" : step.active ? "text-violet-400" : "text-gray-600",
                       )}
                     >
                       {step.label}
@@ -197,7 +197,7 @@ export function InteractiveLoadingAnimation({
                       className={cn(
                         "text-[10px] sm:text-xs uppercase font-mono px-2 py-0.5 rounded border self-start sm:self-auto",
                         step.completed && "bg-green-950/50 text-green-400 border-green-500/50",
-                        step.active && "bg-red-950/50 text-red-400 border-red-500/50",
+                        step.active && "bg-violet-950/50 text-violet-400 border-violet-500/50",
                         !step.active && !step.completed && "bg-zinc-900 text-gray-600 border-white/10",
                       )}
                     >
@@ -215,9 +215,9 @@ export function InteractiveLoadingAnimation({
                   </p>
 
                   {step.active && (
-                    <div className="mt-3 h-1.5 bg-zinc-900 border border-red-900/50 rounded-full overflow-hidden">
+                    <div className="mt-3 h-1.5 bg-zinc-900 border border-violet-900/50 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-300"
+                        className="h-full bg-gradient-to-r from-violet-600 to-violet-400 transition-all duration-300"
                         style={{ width: `${((progress % 25) / 25) * 100}%` }}
                       />
                     </div>
@@ -230,7 +230,7 @@ export function InteractiveLoadingAnimation({
                     step.completed
                       ? "bg-green-950/50 text-green-400 border border-green-500/50"
                       : step.active
-                        ? "bg-red-950/50 text-red-400 border border-red-500/50"
+                        ? "bg-violet-950/50 text-violet-400 border border-violet-500/50"
                         : "bg-zinc-900 text-gray-600 border border-white/10",
                   )}
                 >
@@ -246,7 +246,7 @@ export function InteractiveLoadingAnimation({
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="w-2 h-2 bg-red-500 rounded-full animate-bounce"
+                className="w-2 h-2 bg-violet-500 rounded-full animate-bounce"
                 style={{ animationDelay: `${i * 0.15}s` }}
               />
             ))}

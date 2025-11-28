@@ -77,7 +77,7 @@ function formatComparisonText(text: string) {
       elements.push(
         <h3
           key={key++}
-          className="text-lg font-bold text-red-500 font-heading uppercase mt-8 mb-4 first:mt-0 tracking-wider"
+          className="text-lg font-bold text-violet-500 font-heading uppercase mt-8 mb-4 first:mt-0 tracking-wider"
         >
           {title}
         </h3>,
@@ -89,7 +89,7 @@ function formatComparisonText(text: string) {
           if (line.startsWith("-")) {
             elements.push(
               <div key={key++} className="flex items-start gap-3 mb-2 ml-4">
-                <span className="text-red-500 mt-1.5">•</span>
+                <span className="text-violet-500 mt-1.5">•</span>
                 <p className="text-gray-300 leading-relaxed flex-1">{line.substring(1).trim()}</p>
               </div>,
             )
@@ -107,7 +107,7 @@ function formatComparisonText(text: string) {
         if (line.startsWith("-")) {
           elements.push(
             <div key={key++} className="flex items-start gap-3 mb-2 ml-4">
-              <span className="text-red-500 mt-1.5">•</span>
+              <span className="text-violet-500 mt-1.5">•</span>
               <p className="text-gray-300 leading-relaxed flex-1">{line.substring(1).trim()}</p>
             </div>,
           )
@@ -194,13 +194,13 @@ export function DuelModal({ isOpen, onClose, formData }: DuelModalProps) {
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
     if (score >= 60) return "text-gray-300"
-    return "text-red-500 drop-shadow-[0_0_8px_rgba(220,38,38,0.5)]"
+    return "text-violet-500 drop-shadow-[0_0_8px_rgba(139,92,246,0.5)]"
   }
 
   const getWinnerBadge = (brand: string, winner: string) => {
     if (brand === winner) {
       return (
-        <Badge className="bg-red-900/50 text-red-200 border border-red-500/50 font-heading tracking-wider">
+        <Badge className="bg-violet-900/50 text-violet-200 border border-violet-500/50 font-heading tracking-wider">
           <Crosshair className="w-3 h-3 mr-1" />
           CIBLE DOMINANTE
         </Badge>
@@ -211,13 +211,18 @@ export function DuelModal({ isOpen, onClose, formData }: DuelModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[1400px] w-[96vw] max-h-[90vh] p-0 gap-0 flex flex-col bg-black border border-red-900/30">
-        <div className="flex items-center justify-between px-8 py-5 border-b border-red-900/20 flex-shrink-0">
+      <DialogContent className="max-w-[1400px] w-[96vw] max-h-[90vh] p-0 gap-0 flex flex-col bg-black border border-violet-900/30">
+        <div className="flex items-center justify-between px-8 py-5 border-b border-violet-900/20 flex-shrink-0">
           <DialogTitle className="text-2xl font-bold flex items-center gap-3 font-heading text-white">
-            <Activity className="w-7 h-7 text-red-500" strokeWidth={2.5} />
+            <Activity className="w-7 h-7 text-violet-500" strokeWidth={2.5} />
             {isAnalyzing ? t("decrypting") : t("confrontation_report")}
           </DialogTitle>
-          <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0 text-gray-500 hover:text-red-500">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="h-8 w-8 p-0 text-gray-500 hover:text-violet-500"
+          >
             <X className="h-5 w-5" />
           </Button>
         </div>
@@ -227,12 +232,12 @@ export function DuelModal({ isOpen, onClose, formData }: DuelModalProps) {
             <DuelLoadingAnimation brand1={brand1} brand2={brand2} />
           ) : result ? (
             <div className="space-y-8">
-              <div className="border border-red-900/50 bg-gradient-to-b from-red-950/20 to-black p-8 text-center">
+              <div className="border border-violet-900/50 bg-gradient-to-b from-violet-950/20 to-black p-8 text-center">
                 {result.winner === "Match nul" ? (
                   <h3 className="text-3xl font-bold text-white">{t("perfect_equality")}</h3>
                 ) : (
                   <div>
-                    <h3 className="text-xl text-red-500 mb-2">{t("dominant_target_identified")}</h3>
+                    <h3 className="text-xl text-violet-500 mb-2">{t("dominant_target_identified")}</h3>
                     <div className="text-5xl font-bold text-white">{result.winner}</div>
                   </div>
                 )}
@@ -268,7 +273,7 @@ export function DuelModal({ isOpen, onClose, formData }: DuelModalProps) {
               </div>
 
               {result.detailed_comparison && (
-                <div className="border-t border-red-900/20">
+                <div className="border-t border-violet-900/20">
                   <button
                     onClick={() => setExpandedComparison(!expandedComparison)}
                     className="w-full flex items-center justify-between px-8 py-5"
@@ -279,7 +284,7 @@ export function DuelModal({ isOpen, onClose, formData }: DuelModalProps) {
 
                   {expandedComparison && (
                     <div className="px-8 pb-8">
-                      <div className="bg-black/40 border border-red-900/20 p-8">
+                      <div className="bg-black/40 border border-violet-900/20 p-8">
                         {formatComparisonText(result.detailed_comparison)}
                       </div>
                     </div>

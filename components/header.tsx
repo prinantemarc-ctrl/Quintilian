@@ -89,12 +89,12 @@ export function Header() {
           <div className="flex items-center shrink-0">
             <Link href="/" className="group flex items-center gap-2 sm:gap-4">
               <div className="relative shrink-0">
-                <div className="absolute inset-0 bg-red-600/20 rounded-sm blur-md group-hover:bg-red-600/30 transition-all duration-300"></div>
-                <div className="relative border border-red-900 bg-black text-red-500 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center font-heading font-black text-lg sm:text-xl tracking-tighter rounded-sm">
+                <div className="absolute inset-0 bg-violet-600/20 rounded-sm blur-md group-hover:bg-violet-600/30 transition-all duration-300"></div>
+                <div className="relative border border-violet-900 bg-black text-violet-500 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center font-heading font-black text-lg sm:text-xl tracking-tighter rounded-sm">
                   M
                 </div>
               </div>
-              <span className="text-base sm:text-xl font-heading font-bold tracking-widest text-white group-hover:text-red-500 transition-colors uppercase whitespace-nowrap">
+              <span className="text-base sm:text-xl font-heading font-bold tracking-widest text-white group-hover:text-violet-400 transition-colors uppercase whitespace-nowrap">
                 MAK-IA
               </span>
             </Link>
@@ -105,21 +105,21 @@ export function Header() {
               href="/analyze"
               className="text-xs font-medium tracking-widest text-zinc-400 hover:text-white transition-colors flex items-center gap-2 uppercase whitespace-nowrap"
             >
-              <BarChart3 className="w-4 h-4 text-blue-500/50" />
-              Analyse Basique
+              <BarChart3 className="w-4 h-4 text-violet-500/50" />
+              Analyse
             </Link>
             <Link
               href="/duel"
               className="text-xs font-medium tracking-widest text-zinc-400 hover:text-white transition-colors flex items-center gap-2 uppercase whitespace-nowrap"
             >
-              <Swords className="w-4 h-4 text-red-500/50" />
+              <Swords className="w-4 h-4 text-violet-500/50" />
               Duel
             </Link>
             <Link
               href="/renseignement"
               className="text-xs font-medium tracking-widest text-zinc-400 hover:text-white transition-colors flex items-center gap-2 uppercase whitespace-nowrap"
             >
-              <Shield className="w-4 h-4 text-emerald-500/50" />
+              <Shield className="w-4 h-4 text-violet-500/50" />
               Intel
             </Link>
           </nav>
@@ -147,7 +147,7 @@ export function Header() {
             )}
 
             <Link href="/analyze">
-              <Button className="bg-red-600 hover:bg-red-700 text-white rounded-sm font-bold text-[10px] sm:text-xs uppercase tracking-widest px-3 sm:px-6 py-4 sm:py-5 shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:shadow-[0_0_30px_rgba(220,38,38,0.5)] transition-all duration-300 border-none whitespace-nowrap">
+              <Button className="bg-violet-600 hover:bg-violet-700 text-white rounded-sm font-bold text-[10px] sm:text-xs uppercase tracking-widest px-3 sm:px-6 py-4 sm:py-5 shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] transition-all duration-300 border-none whitespace-nowrap">
                 {t("header.try_free")}
               </Button>
             </Link>
@@ -166,7 +166,7 @@ export function Header() {
             <div className="px-4 pt-4 pb-6 space-y-3">
               <Link
                 href="/analyze"
-                className="block py-2 text-sm font-sans uppercase text-zinc-400 hover:text-blue-500"
+                className="block py-2 text-sm font-sans uppercase text-zinc-400 hover:text-violet-400"
                 onClick={() => setIsMenuOpen(false)}
               >
                 <BarChart3 className="w-4 h-4 inline mr-2" />
@@ -174,7 +174,7 @@ export function Header() {
               </Link>
               <Link
                 href="/duel"
-                className="block py-2 text-sm font-sans uppercase text-zinc-400 hover:text-red-500"
+                className="block py-2 text-sm font-sans uppercase text-zinc-400 hover:text-violet-400"
                 onClick={() => setIsMenuOpen(false)}
               >
                 <Swords className="w-4 h-4 inline mr-2" />
@@ -182,7 +182,7 @@ export function Header() {
               </Link>
               <Link
                 href="/renseignement"
-                className="block py-2 text-sm font-sans uppercase text-zinc-400 hover:text-emerald-500"
+                className="block py-2 text-sm font-sans uppercase text-zinc-400 hover:text-violet-400"
                 onClick={() => setIsMenuOpen(false)}
               >
                 <Shield className="w-4 h-4 inline mr-2" />
@@ -202,7 +202,7 @@ export function Header() {
 
               <div className="pt-3 border-t border-white/10">
                 <Link href="/analyze">
-                  <Button className="w-full bg-red-600 text-white rounded-none font-medium uppercase">
+                  <Button className="w-full bg-violet-600 text-white rounded-none font-medium uppercase">
                     {t("header.try_free")}
                   </Button>
                 </Link>
