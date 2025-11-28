@@ -18,7 +18,6 @@ import {
   ExternalLink,
   Trophy,
   Star,
-  CheckCircle2,
   AlertCircle,
   Eye,
   MessageSquare,
@@ -577,16 +576,15 @@ function MetricsTab({ result, type }: any) {
       </div>
     )
   }
-  // </CHANGE>
 
   const getTierLabel = (tier: string) => {
     switch (tier) {
       case "tier1":
-        return "Tier 1 (Haute Autorité)"
+        return t("metrics.tier1HighAuthority")
       case "tier2":
-        return "Tier 2 (Autorité Moyenne)"
+        return t("metrics.tier2MediumAuthority")
       case "tier3":
-        return "Tier 3 (Faible Autorité)"
+        return t("metrics.tier3LowAuthority")
       default:
         return tier
     }
@@ -595,11 +593,11 @@ function MetricsTab({ result, type }: any) {
   const getScopeLabel = (scope: string) => {
     switch (scope) {
       case "local":
-        return "Local"
+        return t("metrics.local")
       case "national":
-        return "National"
+        return t("metrics.national")
       case "international":
-        return "International"
+        return t("metrics.international")
       default:
         return scope
     }
@@ -608,11 +606,11 @@ function MetricsTab({ result, type }: any) {
   const getCoverageLabel = (type: string) => {
     switch (type) {
       case "in_depth":
-        return t("inDepthArticles")
+        return t("metrics.inDepth")
       case "brief":
-        return t("briefs")
+        return t("metrics.briefs")
       case "mention":
-        return t("mentions")
+        return t("metrics.mentions")
       default:
         return type
     }
@@ -621,13 +619,13 @@ function MetricsTab({ result, type }: any) {
   const getBiasLabel = (bias: string) => {
     switch (bias) {
       case "neutral":
-        return t("neutral")
+        return t("metrics.neutral")
       case "slightly_biased":
-        return t("slightlyBiased")
+        return t("metrics.slightlyBiased")
       case "moderately_biased":
-        return t("moderatelyBiased")
+        return t("metrics.moderatelyBiased")
       case "highly_biased":
-        return t("highlyBiased")
+        return t("metrics.highlyBiased")
       default:
         return bias
     }
@@ -636,13 +634,13 @@ function MetricsTab({ result, type }: any) {
   const getRiskLabel = (level: string) => {
     switch (level) {
       case "low":
-        return t("low")
+        return t("metrics.low")
       case "moderate":
-        return t("moderate")
+        return t("metrics.moderate")
       case "high":
-        return t("high")
+        return t("metrics.high")
       case "critical":
-        return t("critical")
+        return t("metrics.critical")
       default:
         return level
     }
@@ -651,13 +649,13 @@ function MetricsTab({ result, type }: any) {
   const getHealthStatusLabel = (status: string) => {
     switch (status) {
       case "excellent":
-        return "Excellente"
+        return t("metrics.excellent")
       case "good":
-        return "Bonne"
+        return t("metrics.good")
       case "fair":
-        return "Correcte"
+        return t("metrics.fair")
       case "poor":
-        return "Mauvaise"
+        return t("metrics.poor")
       default:
         return status
     }
@@ -666,11 +664,11 @@ function MetricsTab({ result, type }: any) {
   const getTrendLabel = (trend: string) => {
     switch (trend) {
       case "improving":
-        return "En Amélioration"
+        return t("metrics.improving")
       case "stable":
-        return "Stable"
+        return t("metrics.stable")
       case "declining":
-        return "En Déclin"
+        return t("metrics.declining")
       default:
         return trend
     }
@@ -678,220 +676,201 @@ function MetricsTab({ result, type }: any) {
 
   return (
     <div className="space-y-8 p-4 sm:p-6">
-      {/* Qualité des Sources */}
+      {/* Source Quality */}
       <div>
-        <h3 className="text-xl font-heading font-bold mb-4 text-white">Qualité des Sources</h3>
+        <h3 className="text-xl font-heading font-bold mb-4 text-white">{t("metrics.sourceQuality")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <MetricCard
-            label="TIER 1"
+            label={t("metrics.tier1")}
             value={`${metrics.source_quality.tier1_percentage}%`}
-            description="Exemple : Wikipedia, NYT, Forbes, Le Monde"
+            description={t("metrics.tier1Example")}
             color="text-green-500"
           />
           <MetricCard
-            label="TIER 2"
+            label={t("metrics.tier2")}
             value={`${metrics.source_quality.tier2_percentage}%`}
-            description="Exemple : Médias régionaux, blogs reconnus"
+            description={t("metrics.tier2Example")}
             color="text-blue-500"
           />
           <MetricCard
-            label="TIER 3"
+            label={t("metrics.tier3")}
             value={`${metrics.source_quality.tier3_percentage}%`}
-            description="Exemple : Réseaux sociaux, annuaires"
+            description={t("metrics.tier3Example")}
             color="text-gray-500"
           />
         </div>
         <p className="text-sm text-gray-400">
-          Dominance:{" "}
+          {t("metrics.dominance")}:{" "}
           <span className="font-semibold text-white">{getTierLabel(metrics.source_quality.dominant_tier)}</span>
         </p>
       </div>
 
-      {/* Fraîcheur de l'Information */}
+      {/* Information Freshness */}
       <div>
-        <h3 className="text-xl font-heading font-bold mb-4 text-white">Fraîcheur de l'Information</h3>
+        <h3 className="text-xl font-heading font-bold mb-4 text-white">{t("metrics.informationFreshness")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <MetricCard
-            label="Sources Récentes"
+            label={t("metrics.recentSources")}
             value={`${metrics.information_freshness.recent_percentage}%`}
-            description="< 6 mois"
+            description={t("metrics.lessThan6Months")}
             color="text-green-500"
           />
           <MetricCard
-            label="Sources Anciennes"
+            label={t("metrics.oldSources")}
             value={`${metrics.information_freshness.old_percentage}%`}
-            description="> 6 mois"
+            description={t("metrics.moreThan6Months")}
             color="text-amber-500"
           />
         </div>
         <p className="text-sm text-gray-400 mt-4">
-          Âge moyen:{" "}
-          <span className="font-semibold text-white">{metrics.information_freshness.average_age_months} mois</span>
+          {t("metrics.averageAge")}:{" "}
+          <span className="font-semibold text-white">
+            {metrics.information_freshness.average_age_months} {t("metrics.months")}
+          </span>
         </p>
       </div>
 
-      {/* Diversité Géographique */}
+      {/* Geographic Diversity */}
       <div>
-        <h3 className="text-xl font-heading font-bold mb-4 text-white">Diversité Géographique</h3>
+        <h3 className="text-xl font-heading font-bold mb-4 text-white">{t("metrics.geographicDiversity")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <MetricCard
-            label="Local"
+            label={t("metrics.local")}
             value={`${metrics.geographic_diversity.local_percentage}%`}
-            description="Sources régionales"
+            description={t("metrics.localSources")}
             color="text-blue-500"
           />
           <MetricCard
-            label="National"
+            label={t("metrics.national")}
             value={`${metrics.geographic_diversity.national_percentage}%`}
-            description="Sources nationales"
+            description={t("metrics.nationalSources")}
             color="text-purple-500"
           />
           <MetricCard
-            label="International"
+            label={t("metrics.international")}
             value={`${metrics.geographic_diversity.international_percentage}%`}
-            description="Sources internationales"
+            description={t("metrics.internationalSources")}
             color="text-cyan-500"
           />
         </div>
         <p className="text-sm text-gray-400">
-          Portée dominante:{" "}
+          {t("metrics.dominantScope")}:{" "}
           <span className="font-semibold text-white">{getScopeLabel(metrics.geographic_diversity.dominant_scope)}</span>
         </p>
       </div>
 
-      {/* Type de Couverture */}
+      {/* Coverage Type */}
       <div>
-        <h3 className="text-xl font-heading font-bold mb-4 text-white">{t("coverageType")}</h3>
+        <h3 className="text-xl font-heading font-bold mb-4 text-white">{t("metrics.coverageType")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <MetricCard
-            label={t("inDepthArticles")}
+            label={t("metrics.inDepth")}
             value={`${metrics.coverage_type.in_depth_percentage}%`}
-            description={t("moreThan500Words")}
+            description={t("metrics.moreThan500Words")}
             color="text-green-500"
           />
           <MetricCard
-            label={t("briefs")}
+            label={t("metrics.briefs")}
             value={`${metrics.coverage_type.brief_percentage}%`}
-            description={t("between100And500Words")}
+            description={t("metrics.between100And500Words")}
             color="text-blue-500"
           />
           <MetricCard
-            label={t("mentions")}
+            label={t("metrics.mentions")}
             value={`${metrics.coverage_type.mention_percentage}%`}
-            description={t("lessThan100Words")}
+            description={t("metrics.lessThan100Words")}
             color="text-gray-500"
           />
         </div>
         <p className="text-sm text-gray-400">
-          {t("dominantType")}:{" "}
+          {t("metrics.dominantType")}:{" "}
           <span className="font-semibold text-white">{getCoverageLabel(metrics.coverage_type.dominant_type)}</span>
         </p>
       </div>
 
-      {/* Polarisation */}
+      {/* Polarization */}
       <div>
-        <h3 className="text-xl font-heading font-bold mb-4 text-white">{t("sourcePolarization")}</h3>
+        <h3 className="text-xl font-heading font-bold mb-4 text-white">{t("metrics.polarization")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <MetricCard
-            label={t("neutralSources")}
-            value={`${metrics.source_polarization.neutral_percentage}%`}
-            description={t("editorialObjectivity")}
+            label={t("metrics.neutralSources")}
+            value={`${metrics.polarization.neutral_percentage}%`}
+            description={t("metrics.editorialObjectivity")}
             color="text-green-500"
           />
           <MetricCard
-            label={t("biasedSources")}
-            value={`${metrics.source_polarization.biased_percentage}%`}
-            description={t("politicalEditorialBias")}
+            label={t("metrics.orientedSources")}
+            value={`${metrics.polarization.oriented_percentage}%`}
+            description={t("metrics.politicalBias")}
             color="text-amber-500"
           />
         </div>
         <p className="text-sm text-gray-400">
-          {t("biasLevel")}:{" "}
-          <span className="font-semibold text-white">{getBiasLabel(metrics.source_polarization.bias_level)}</span>
+          {t("metrics.biasLevel")}:{" "}
+          <span className="font-semibold text-white">{getBiasLabel(metrics.polarization.bias_level)}</span>
         </p>
       </div>
 
-      {/* Risque Réputationnel */}
+      {/* Risk Level */}
       <div>
-        <h3 className="text-xl font-heading font-bold mb-4 text-white">{t("reputationalRiskLevel")}</h3>
-        <div
-          className={`p-6 rounded-lg border-2 ${
-            metrics.reputation_risk.risk_level === "low"
-              ? "bg-green-500/10 border-green-500"
-              : metrics.reputation_risk.risk_level === "moderate"
-                ? "bg-yellow-500/10 border-yellow-500"
-                : metrics.reputation_risk.risk_level === "high"
-                  ? "bg-orange-500/10 border-orange-500"
-                  : "bg-red-500/10 border-red-500"
-          } mb-4`}
-        >
+        <h3 className="text-xl font-heading font-bold mb-4 text-white">{t("metrics.riskLevel")}</h3>
+        <div className="bg-background-secondary border border-border rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="text-5xl font-bold text-white">{metrics.reputation_risk.risk_score}/100</div>
-            {metrics.reputation_risk.risk_level === "low" ? (
-              <CheckCircle2 className="w-12 h-12 text-green-500" />
-            ) : metrics.reputation_risk.risk_level === "moderate" ? (
-              <AlertCircle className="w-12 h-12 text-yellow-500" />
-            ) : metrics.reputation_risk.risk_level === "high" ? (
-              <AlertTriangle className="w-12 h-12 text-orange-500" />
-            ) : (
-              <AlertTriangle className="w-12 h-12 text-red-500" />
-            )}
+            <span className="text-4xl font-bold text-white">{metrics.risk_level.score}/100</span>
+            <span
+              className={`text-lg font-semibold ${
+                metrics.risk_level.category === "low"
+                  ? "text-green-500"
+                  : metrics.risk_level.category === "moderate"
+                    ? "text-yellow-500"
+                    : metrics.risk_level.category === "high"
+                      ? "text-orange-500"
+                      : "text-red-500"
+              }`}
+            >
+              {getRiskLabel(metrics.risk_level.category)}
+            </span>
           </div>
-          <p className="text-sm text-gray-400 mb-2">
-            {t("category")}:{" "}
-            <span className="font-semibold text-white">{getRiskLabel(metrics.reputation_risk.risk_level)}</span>
+          <p className="text-sm text-gray-400">
+            {t("metrics.category")}:{" "}
+            <span className="font-semibold text-white">{getRiskLabel(metrics.risk_level.category)}</span>
+          </p>
+          <p className="text-sm text-gray-400 mt-2">
+            {t("metrics.mainThreats")}: <span className="text-white">{metrics.risk_level.main_threats}</span>
           </p>
         </div>
-
-        {metrics.reputation_risk.main_threats.length > 0 && (
-          <div>
-            <h4 className="text-sm font-semibold text-gray-300 mb-2">{t("mainThreats")}:</h4>
-            <ul className="space-y-2">
-              {metrics.reputation_risk.main_threats.map((threat, idx) => (
-                <li key={idx} className="text-sm text-gray-400 flex items-start">
-                  <span className="text-red-500 mr-2">•</span>
-                  {threat}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
 
-      {/* Indice de Réputation */}
+      {/* Reputation Index */}
       <div>
-        <h3 className="text-xl font-heading font-bold mb-4 text-white">Indice de Réputation Globale</h3>
-        <div className="bg-zinc-950 border border-red-900/30 rounded-lg p-6">
+        <h3 className="text-xl font-heading font-bold mb-4 text-white">{t("metrics.reputationIndex")}</h3>
+        <div className="bg-background-secondary border border-border rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-4xl font-bold font-mono text-white">{metrics.reputation_index.score}/100</p>
-              <p className="text-sm text-gray-400 mt-1">
-                État:{" "}
-                <span className="font-semibold text-white">
-                  {getHealthStatusLabel(metrics.reputation_index.health_status)}
-                </span>
-              </p>
+              <div className="text-sm text-gray-400 mb-1">{t("metrics.score")}</div>
+              <span className="text-4xl font-bold text-white">{metrics.reputation_index.score}/100</span>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-400">Tendance</p>
-              <p
-                className={`text-lg font-semibold ${
-                  metrics.reputation_index.trend === "improving"
-                    ? "text-green-500"
-                    : metrics.reputation_index.trend === "stable"
-                      ? "text-blue-500"
-                      : "text-red-500"
-                }`}
-              >
-                {metrics.reputation_index.trend === "improving"
-                  ? "↗"
-                  : metrics.reputation_index.trend === "stable"
-                    ? "→"
-                    : "↘"}{" "}
-                {getTrendLabel(metrics.reputation_index.trend)}
-              </p>
+              <div className="text-sm text-gray-400 mb-1">{t("metrics.healthStatus")}</div>
+              <span className="text-lg font-semibold text-white">
+                {getHealthStatusLabel(metrics.reputation_index.health_status)}
+              </span>
             </div>
           </div>
+          <p className="text-sm text-gray-400">
+            {t("metrics.trend")}:{" "}
+            <span
+              className={`font-semibold ${
+                metrics.reputation_index.trend === "improving"
+                  ? "text-green-500"
+                  : metrics.reputation_index.trend === "declining"
+                    ? "text-red-500"
+                    : "text-gray-400"
+              }`}
+            >
+              {getTrendLabel(metrics.reputation_index.trend)}
+            </span>
+          </p>
         </div>
       </div>
     </div>

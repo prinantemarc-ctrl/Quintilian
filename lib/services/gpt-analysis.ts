@@ -543,6 +543,7 @@ JSON pur sans backticks`
 
         const parsed = JSON.parse(cleanedText)
 
+        console.log("[v0] Parsed advanced_metrics:", JSON.stringify(parsed.advanced_metrics, null, 2))
         console.log("[v0] Detailed analysis completed")
 
         return {
