@@ -331,6 +331,8 @@ export function AuthGateModal({
   const hasDuelPreview = duelPreviewData && (duelPreviewData.brand1_score || duelPreviewData.brand2_score)
   const hasAnyPreview = hasPreview || hasDuelPreview
 
+  if (!isOpen) return null
+
   return (
     <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
       <div className="w-full max-w-6xl bg-gradient-to-br from-zinc-950 via-zinc-900 to-black border border-violet-900/30 rounded-2xl shadow-2xl shadow-violet-500/20 overflow-hidden">
@@ -381,40 +383,7 @@ export function AuthGateModal({
             )}
 
             {/* Duel Preview */}
-            {analysisType === "duel" && duelPreviewData && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 text-center">
-                    <div className="text-2xl font-bold text-white mb-1">{duelPreviewData.brand1_score || "?"}</div>
-                    <div className="text-sm text-gray-400">{duelPreviewData.brand1}</div>
-                  </div>
-                  <Swords className="w-6 h-6 text-violet-500 mx-4" />
-                  <div className="flex-1 text-center">
-                    <div className="text-2xl font-bold text-white mb-1">{duelPreviewData.brand2_score || "?"}</div>
-                    <div className="text-sm text-gray-400">{duelPreviewData.brand2}</div>
-                  </div>
-                </div>
-
-                {/* Partial Metrics */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-zinc-900/50 border border-violet-900/20 rounded-lg p-3 relative">
-                    <Globe className="w-4 h-4 text-violet-500 mb-1" />
-                    <div className="text-sm text-gray-500 mb-1">VISIBILITY</div>
-                    <div className="blur-sm text-xl font-bold text-white">85 vs 92</div>
-                    <Lock className="w-3 h-3 text-violet-400 absolute top-2 right-2" />
-                  </div>
-                  <div className="bg-zinc-900/50 border border-violet-900/20 rounded-lg p-3 relative">
-                    <MessageCircle className="w-4 h-4 text-violet-500 mb-1" />
-                    <div className="text-sm text-gray-500 mb-1">SENTIMENT</div>
-                    <div className="blur-sm text-xl font-bold text-white">78 vs 81</div>
-                    <Lock className="w-3 h-3 text-violet-400 absolute top-2 right-2" />
-                  </div>
-                </div>
-
-                {/* Verdict Preview */}
-                {duelPreviewData.verdict && <BlurredTextPreview text={duelPreviewData.verdict} label="VERDICT" />}
-              </div>
-            )}
+            {analysisType === "duel" && duelPreviewData && <DuelPreview data={duelPreviewData} />}
           </div>
 
           {/* Right side - Auth Form */}

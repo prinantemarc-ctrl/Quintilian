@@ -219,7 +219,11 @@ export function DuelModal({ isOpen, onClose, formData }: DuelModalProps) {
         <div className="flex items-center justify-between px-8 py-5 border-b border-violet-900/20 flex-shrink-0">
           <DialogTitle className="text-2xl font-bold flex items-center gap-3 font-heading text-white">
             <Activity className="w-7 h-7 text-violet-500" strokeWidth={2.5} />
-            {isAnalyzing ? "Decrypting..." : "Confrontation Report"}
+            {isAnalyzing
+              ? `Analyzing ${brand1} vs ${brand2}...`
+              : result
+                ? `${brand1} vs ${brand2}`
+                : "Confrontation Report"}
           </DialogTitle>
           <Button
             variant="ghost"
