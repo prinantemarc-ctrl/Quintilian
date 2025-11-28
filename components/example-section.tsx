@@ -3,33 +3,29 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { BarChart3, Swords, ArrowRight } from "lucide-react"
-import { useLanguage } from "@/contexts/language-context"
 import Link from "next/link"
 
 export function ExampleSection() {
-  const { t } = useLanguage()
-
   const analysisTypes = [
     {
       icon: BarChart3,
-      title: "Audit de Réputation",
-      description:
-        "Analysez votre présence digitale, la tonalité des mentions et la cohérence de votre message en ligne.",
+      title: "Reputation Audit",
+      description: "Analyze your digital presence, sentiment of mentions, and coherence of your online message.",
       href: "/analyze",
       color: "text-blue-600",
       bgColor: "bg-blue-50",
       borderColor: "border-blue-200",
-      features: ["Score de présence", "Analyse sentiment", "Recommandations IA"],
+      features: ["Presence score", "Sentiment analysis", "AI recommendations"],
     },
     {
       icon: Swords,
-      title: "Mode Confrontation",
-      description: "Comparez votre image en ligne à celle de votre concurrent direct et identifiez vos avantages.",
+      title: "Confrontation Mode",
+      description: "Compare your online image to your direct competitor and identify your advantages.",
       href: "/duel",
       color: "text-red-600",
       bgColor: "bg-red-50",
       borderColor: "border-red-200",
-      features: ["Comparaison directe", "Forces & faiblesses", "Verdict IA"],
+      features: ["Direct comparison", "Strengths & weaknesses", "AI verdict"],
     },
   ]
 
@@ -37,9 +33,9 @@ export function ExampleSection() {
     <section className="py-20 bg-muted/30">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-4 mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-balance">Nos 2 Protocoles d'Analyse</h2>
+          <h2 className="text-3xl lg:text-4xl font-bold text-balance">Our 2 Analysis Protocols</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
-            Choisissez le protocole adapté à votre besoin : audit individuel ou confrontation concurrentielle.
+            Choose the protocol that fits your need: individual audit or competitive confrontation.
           </p>
         </div>
 
@@ -71,7 +67,7 @@ export function ExampleSection() {
                   <Button
                     className={`w-full ${analysis.bgColor} ${analysis.color} border-2 ${analysis.borderColor} hover:opacity-90 font-semibold`}
                   >
-                    Lancer ce protocole
+                    Launch this protocol
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
@@ -81,10 +77,10 @@ export function ExampleSection() {
         </div>
 
         <div className="text-center">
-          <p className="text-lg text-muted-foreground mb-6">Vous ne savez pas quel protocole choisir ?</p>
+          <p className="text-lg text-muted-foreground mb-6">Don't know which protocol to choose?</p>
           <Link href="/analyze">
             <Button className="bg-gradient-to-r from-primary to-red-600 text-white px-8 py-6 text-lg font-semibold">
-              Commencer par l'Audit de Réputation
+              Start with Reputation Audit
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
           </Link>

@@ -2,31 +2,28 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Building2, Newspaper, User, Megaphone } from "lucide-react"
-import { useLanguage } from "@/contexts/language-context"
 
 export function UseCasesSection() {
-  const { t } = useLanguage()
-
   const useCases = [
     {
       icon: Building2,
-      title: t("usecases.companies"),
-      description: t("usecases.companies_desc"),
+      title: "Companies",
+      description: "Monitor and optimize your online reputation to attract customers and partners.",
     },
     {
       icon: Newspaper,
-      title: t("usecases.media"),
-      description: t("usecases.media_desc"),
+      title: "Media",
+      description: "Analyze your visibility and impact in the digital information ecosystem.",
     },
     {
       icon: User,
-      title: t("usecases.individuals"),
-      description: t("usecases.individuals_desc"),
+      title: "Individuals",
+      description: "Control your personal digital footprint for career and networking purposes.",
     },
     {
       icon: Megaphone,
-      title: t("usecases.agencies"),
-      description: t("usecases.agencies_desc"),
+      title: "Agencies",
+      description: "Offer advanced reputation analysis services to your clients.",
     },
   ]
 
@@ -34,8 +31,10 @@ export function UseCasesSection() {
     <section className="py-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-4 mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-balance">{t("usecases.title")}</h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">{t("usecases.subtitle")}</p>
+          <h2 className="text-3xl lg:text-4xl font-bold text-balance">Who is Quintilian For?</h2>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">
+            Tailored solutions for every digital presence challenge
+          </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">

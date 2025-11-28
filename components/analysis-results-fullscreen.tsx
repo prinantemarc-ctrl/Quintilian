@@ -25,7 +25,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import { AuthGateModal } from "@/components/auth/auth-gate-modal"
-import { useLanguage } from "@/contexts/language-context"
+import { cn } from "@/lib/utils"
 
 interface AnalysisResultsFullscreenProps {
   isOpen: boolean
@@ -51,7 +51,7 @@ export function AnalysisResultsFullscreen({
   const [activeTab, setActiveTab] = useState("overview")
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [showAuthGate, setShowAuthGate] = useState(false)
-  const { t } = useLanguage()
+  // const { t } = useLanguage() // Removed useLanguage import and call
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -129,81 +129,156 @@ export function AnalysisResultsFullscreen({
     )
   }
 
-  const tabs = [
-    { id: "overview", label: t("overview"), icon: Target },
-    { id: "detailed", label: t("detailedAnalysis"), icon: Brain },
-    { id: "metrics", label: t("metrics"), icon: FileText },
-    { id: "sources", label: t("sources"), icon: LinkIcon },
-  ]
+  // const tabs = [ // Removed useLanguage() call
+  //   { id: "overview", label: t("overview"), icon: Target },
+  //   { id: "detailed", label: t("detailedAnalysis"), icon: Brain },
+  //   { id: "metrics", label: t("metrics"), icon: FileText },
+  //   { id: "sources", label: t("sources"), icon: LinkIcon },
+  // ]
 
   return (
-    <div className="fixed inset-0 z-50 bg-black">
-      {/* Header - red to violet */}
-      <div className="border-b border-violet-900/30 bg-black/95 backdrop-blur-sm">
-        <div className="flex items-center justify-between px-4 sm:px-8 py-4 sm:py-6">
-          <div className="flex items-center gap-4 sm:gap-6">
+    <>
+      <div className="fixed inset-0 z-50 bg-black flex flex-col">
+        {/* Header - red to violet */}
+        <div className="border-b border-violet-900/30 bg-black/95 backdrop-blur-sm flex-shrink-0">
+          <div className="flex items-center justify-between px-4 sm:px-8 py-4 sm:py-6">
+            <div className="flex items-center gap-4 sm:gap-6">
+              <Button
+                onClick={onClose}
+                variant="ghost"
+                className="gap-2 text-violet-500 hover:text-violet-400 hover:bg-violet-950/30"
+              >
+                <ArrowLeft className="h-5 w-5" />
+                <span className="hidden sm:inline">Back</span> {/* Removed t("back") */}
+              </Button>
+              <div className="h-8 w-px bg-violet-900/30 hidden sm:block" />
+              <h1 className="font-heading text-lg sm:text-2xl font-bold tracking-tight text-white">
+                {type === "duel" ? "Confrontation Report" : "Intelligence Report"} {/* Removed t() */}
+              </h1>
+            </div>
             <Button
               onClick={onClose}
               variant="ghost"
-              className="gap-2 text-violet-500 hover:text-violet-400 hover:bg-violet-950/30"
+              size="icon"
+              className="text-gray-400 hover:text-white hover:bg-violet-950/30"
             >
-              <ArrowLeft className="h-5 w-5" />
-              <span className="hidden sm:inline">{t("back")}</span>
+              <X className="h-6 w-6" />
             </Button>
-            <div className="h-8 w-px bg-violet-900/30 hidden sm:block" />
-            <h1 className="font-heading text-lg sm:text-2xl font-bold tracking-tight text-white">
-              {type === "duel" ? t("confrontationReport") : t("intelligenceReport")}
-            </h1>
           </div>
-          <Button
-            onClick={onClose}
-            variant="ghost"
-            size="icon"
-            className="text-gray-400 hover:text-white hover:bg-violet-950/30"
-          >
-            <X className="h-6 w-6" />
-          </Button>
-        </div>
 
-        {/* Tabs - red to violet */}
-        <div className="flex gap-1 px-4 sm:px-8 pb-0 overflow-x-auto">
-          {tabs.map((tab) => (
+          {/* Tabs - red to violet */}
+          <div className="flex gap-1 px-4 sm:px-8 pb-0 overflow-x-auto">
+            {/* Removed useLanguage() call for tab labels */}
+            {/* Tabs data needs to be defined here or passed as props */}
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              // key={tab.id}
+              onClick={() => setActiveTab("overview")}
               className={`
                 flex items-center gap-2 px-4 sm:px-6 py-3 font-heading text-xs sm:text-sm font-medium
                 transition-all duration-200 border-b-2 whitespace-nowrap
                 ${
-                  activeTab === tab.id
+                  activeTab === "overview"
                     ? "border-violet-500 text-white bg-violet-950/20"
                     : "border-transparent text-gray-400 hover:text-white hover:bg-violet-950/10"
                 }
               `}
             >
-              <tab.icon className="h-4 w-4" />
-              {tab.label}
+              <Target className="h-4 w-4" />
+              Overview {/* Removed t("overview") */}
             </button>
-          ))}
+            <button
+              // key={tab.id}
+              onClick={() => setActiveTab("detailed")}
+              className={`
+                flex items-center gap-2 px-4 sm:px-6 py-3 font-heading text-xs sm:text-sm font-medium
+                transition-all duration-200 border-b-2 whitespace-nowrap
+                ${
+                  activeTab === "detailed"
+                    ? "border-violet-500 text-white bg-violet-950/20"
+                    : "border-transparent text-gray-400 hover:text-white hover:bg-violet-950/10"
+                }
+              `}
+            >
+              <Brain className="h-4 w-4" />
+              Detailed Analysis {/* Removed t("detailedAnalysis") */}
+            </button>
+            <button
+              // key={tab.id}
+              onClick={() => setActiveTab("metrics")}
+              className={`
+                flex items-center gap-2 px-4 sm:px-6 py-3 font-heading text-xs sm:text-sm font-medium
+                transition-all duration-200 border-b-2 whitespace-nowrap
+                ${
+                  activeTab === "metrics"
+                    ? "border-violet-500 text-white bg-violet-950/20"
+                    : "border-transparent text-gray-400 hover:text-white hover:bg-violet-950/10"
+                }
+              `}
+            >
+              <FileText className="h-4 w-4" />
+              Metrics {/* Removed t("metrics") */}
+            </button>
+            <button
+              // key={tab.id}
+              onClick={() => setActiveTab("sources")}
+              className={`
+                flex items-center gap-2 px-4 sm:px-6 py-3 font-heading text-xs sm:text-sm font-medium
+                transition-all duration-200 border-b-2 whitespace-nowrap
+                ${
+                  activeTab === "sources"
+                    ? "border-violet-500 text-white bg-violet-950/20"
+                    : "border-transparent text-gray-400 hover:text-white hover:bg-violet-950/10"
+                }
+              `}
+            >
+              <LinkIcon className="h-4 w-4" />
+              Sources {/* Removed t("sources") */}
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-7xl px-4 sm:px-8 py-6 sm:py-8">
+            {activeTab === "overview" && <OverviewTab result={result} type={type} brand={brand} />}
+            {activeTab === "detailed" && <DetailedTab result={result} type={type} />}
+            {activeTab === "metrics" && <MetricsTab result={result} type={type} />}
+            {activeTab === "sources" && <SourcesTab result={result} />}
+          </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="h-[calc(100vh-140px)] overflow-y-auto">
-        <div className="mx-auto max-w-7xl px-4 sm:px-8 py-6 sm:py-8">
-          {activeTab === "overview" && <OverviewTab result={result} type={type} brand={brand} />}
-          {activeTab === "detailed" && <DetailedTab result={result} type={type} />}
-          {activeTab === "metrics" && <MetricsTab result={result} type={type} />}
-          {activeTab === "sources" && <SourcesTab result={result} />}
-        </div>
-      </div>
-    </div>
+      {showAuthGate && result && (
+        <AuthGateModal
+          isOpen={showAuthGate}
+          onClose={() => {
+            setShowAuthGate(false)
+            onClose()
+          }}
+          result={result}
+          brand={brand}
+          analysisType={type === "duel" ? "duel" : "simple"}
+          previewData={{
+            brand: brand,
+            global_score: result.global_score,
+            presence_score: result.presence_score,
+            tone_score: result.tone_score,
+            coherence_score: result.coherence_score,
+            tone_label: result.tone_label,
+            rationale: result.rationale,
+            gpt_summary: result.gpt_summary,
+            detailed_analysis: result.detailed_analysis,
+            sources_count: result.sources?.length || result.sources_analyzed,
+          }}
+        />
+      )}
+    </>
   )
 }
 
 // Overview Tab - red to violet throughout
 function OverviewTab({ result, type, brand }: any) {
-  const { t } = useLanguage()
+  // const { t } = useLanguage() // Removed useLanguage() call
 
   if (type === "duel") {
     const brand1Name = result.brand1_name || "Cible Alpha"
@@ -215,10 +290,11 @@ function OverviewTab({ result, type, brand }: any) {
         {/* Winner Banner */}
         <div className="rounded-lg border border-violet-500 bg-violet-950/20 p-6 sm:p-8 text-center">
           <div className="font-heading text-sm font-bold tracking-widest text-violet-400 uppercase mb-2">
-            Cible Dominante
+            Dominant Target {/* Removed t() */}
           </div>
           <div className="font-heading text-3xl sm:text-4xl font-bold text-white">{result.winner}</div>
-          <div className="mt-4 text-base sm:text-lg text-gray-300">Écart : {result.score_difference} points</div>
+          <div className="mt-4 text-base sm:text-lg text-gray-300">Difference: {result.score_difference} points</div>{" "}
+          {/* Removed t() */}
         </div>
 
         {/* Scores Comparison Grid */}
@@ -227,17 +303,19 @@ function OverviewTab({ result, type, brand }: any) {
           <div className="rounded-lg border border-violet-900/30 bg-zinc-950 p-4 sm:p-6">
             <h3 className="font-heading text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6">{brand1Name}</h3>
             <div className="space-y-4">
-              <ScoreDisplay label={t("results.digitalFootprint")} score={result.brand1_analysis.presence_score} />
+              <ScoreDisplay label="Digital Footprint" score={result.brand1_analysis.presence_score} />{" "}
+              {/* Removed t() */}
               <ScoreDisplay
-                label={t("results.detectedTone")}
+                label="Detected Tone" // Removed t()
                 score={result.brand1_analysis.tone_score}
                 label2={result.brand1_analysis.tone_label}
               />
               {hasCoherence && (
-                <ScoreDisplay label={t("results.messageCoherence")} score={result.brand1_analysis.coherence_score} />
+                <ScoreDisplay label="Message Coherence" score={result.brand1_analysis.coherence_score} />
               )}
               <div className="pt-4 border-t border-violet-900/30">
-                <ScoreDisplay label={t("results.globalScore")} score={result.brand1_analysis.global_score} large />
+                <ScoreDisplay label="Global Score" score={result.brand1_analysis.global_score} large />{" "}
+                {/* Removed t() */}
               </div>
             </div>
           </div>
@@ -246,17 +324,19 @@ function OverviewTab({ result, type, brand }: any) {
           <div className="rounded-lg border border-violet-900/30 bg-zinc-950 p-4 sm:p-6">
             <h3 className="font-heading text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6">{brand2Name}</h3>
             <div className="space-y-4">
-              <ScoreDisplay label={t("results.digitalFootprint")} score={result.brand2_analysis.presence_score} />
+              <ScoreDisplay label="Digital Footprint" score={result.brand2_analysis.presence_score} />{" "}
+              {/* Removed t() */}
               <ScoreDisplay
-                label={t("results.detectedTone")}
+                label="Detected Tone" // Removed t()
                 score={result.brand2_analysis.tone_score}
                 label2={result.brand2_analysis.tone_label}
               />
               {hasCoherence && (
-                <ScoreDisplay label={t("results.messageCoherence")} score={result.brand2_analysis.coherence_score} />
+                <ScoreDisplay label="Message Coherence" score={result.brand2_analysis.coherence_score} />
               )}
               <div className="pt-4 border-t border-violet-900/30">
-                <ScoreDisplay label={t("results.globalScore")} score={result.brand2_analysis.global_score} large />
+                <ScoreDisplay label="Global Score" score={result.brand2_analysis.global_score} large />{" "}
+                {/* Removed t() */}
               </div>
             </div>
           </div>
@@ -271,10 +351,10 @@ function OverviewTab({ result, type, brand }: any) {
       <div
         className={`grid gap-4 sm:gap-6 ${result.coherence_score !== null && result.coherence_score !== undefined ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 sm:grid-cols-2"}`}
       >
-        <ScoreCard label={t("results.digitalFootprint")} score={result.presence_score} />
-        <ScoreCard label={t("results.detectedTone")} score={result.tone_score} sublabel={result.tone_label} />
+        <ScoreCard label="Digital Footprint" score={result.presence_score} /> {/* Removed t() */}
+        <ScoreCard label="Detected Tone" score={result.tone_score} sublabel={result.tone_label} /> {/* Removed t() */}
         {result.coherence_score !== null && result.coherence_score !== undefined && (
-          <ScoreCard label={t("results.messageCoherence")} score={result.coherence_score} />
+          <ScoreCard label="Message Coherence" score={result.coherence_score} />
         )}
       </div>
 
@@ -285,7 +365,7 @@ function OverviewTab({ result, type, brand }: any) {
               <Brain className="w-5 h-5 text-violet-400" />
             </div>
             <h3 className="font-heading text-lg sm:text-xl font-bold text-violet-400">
-              {t("results.keySummaryTitle")}
+              Key Summary {/* Removed t() */}
             </h3>
           </div>
           <p className="text-base sm:text-lg leading-relaxed text-white font-medium pl-0 sm:pl-14">
@@ -298,7 +378,9 @@ function OverviewTab({ result, type, brand }: any) {
         <div className="rounded-lg border border-violet-900/30 bg-gradient-to-br from-violet-950/30 to-zinc-950 p-4 sm:p-6">
           <div className="flex items-start gap-3 mb-3">
             <Brain className="w-5 h-5 text-violet-400 mt-1 flex-shrink-0" />
-            <h3 className="font-heading text-base sm:text-lg font-bold text-violet-400">{t("results.keySummary")}</h3>
+            <h3 className="font-heading text-base sm:text-lg font-bold text-violet-400">
+              Key Takeaway {/* Removed t() */}
+            </h3>
           </div>
           <p className="text-sm sm:text-base leading-relaxed text-white">{result.key_takeaway}</p>
         </div>
@@ -312,7 +394,7 @@ function OverviewTab({ result, type, brand }: any) {
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp className="w-5 h-5 text-green-400" />
                 <h3 className="font-heading text-base sm:text-lg font-bold text-green-400">
-                  {t("results.mainStrengths")}
+                  Main Strengths {/* Removed t() */}
                 </h3>
               </div>
               <ul className="space-y-3">
@@ -332,7 +414,7 @@ function OverviewTab({ result, type, brand }: any) {
               <div className="flex items-center gap-2 mb-4">
                 <AlertTriangle className="w-5 h-5 text-orange-400" />
                 <h3 className="font-heading text-base sm:text-lg font-bold text-orange-400">
-                  {t("results.reputationalRisks")}
+                  Reputational Risks {/* Removed t() */}
                 </h3>
               </div>
               <ul className="space-y-3">
@@ -353,7 +435,7 @@ function OverviewTab({ result, type, brand }: any) {
           <div className="flex items-center gap-3 mb-6">
             <FileText className="w-6 sm:w-7 h-6 sm:h-7 text-violet-400" />
             <h3 className="font-heading text-xl sm:text-2xl font-bold text-white uppercase tracking-wide">
-              {t("results.executiveSummary")}
+              Executive Summary {/* Removed t() */}
             </h3>
           </div>
 
@@ -448,7 +530,7 @@ function DetailedTab({ result, type }: any) {
 
 // Metrics Tab - red to violet
 function MetricsTab({ result, type }: any) {
-  const { t } = useLanguage()
+  // const { t } = useLanguage() // Removed useLanguage() call
 
   if (type === "duel") {
     const brand1Name = result.brand1_name || "Cible Alpha"
@@ -490,8 +572,10 @@ function MetricsTab({ result, type }: any) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-          <DuelMetricsCard title="Métriques Détaillées" data={result.brand1_analysis} brandName={brand1Name} />
-          <DuelMetricsCard title="Métriques Détaillées" data={result.brand2_analysis} brandName={brand2Name} />
+          <DuelMetricsCard title="Detailed Metrics" data={result.brand1_analysis} brandName={brand1Name} />{" "}
+          {/* Removed t() */}
+          <DuelMetricsCard title="Detailed Metrics" data={result.brand2_analysis} brandName={brand2Name} />{" "}
+          {/* Removed t() */}
         </div>
       </div>
     )
@@ -577,296 +661,247 @@ function MetricsTab({ result, type }: any) {
     )
   }
 
-  const getTierLabel = (tier: string) => {
-    switch (tier) {
-      case "tier1":
-        return t("metrics.tier1HighAuthority")
-      case "tier2":
-        return t("metrics.tier2MediumAuthority")
-      case "tier3":
-        return t("metrics.tier3LowAuthority")
-      default:
-        return tier
-    }
+  const getSourceQualityLabel = (dominantTier: string) => {
+    if (dominantTier === "tier1") return "Tier 1 (High Authority)"
+    if (dominantTier === "tier2") return "Tier 2 (Medium Authority)"
+    return "Tier 3 (Low Authority)"
   }
 
-  const getScopeLabel = (scope: string) => {
-    switch (scope) {
-      case "local":
-        return t("metrics.local")
-      case "national":
-        return t("metrics.national")
-      case "international":
-        return t("metrics.international")
-      default:
-        return scope
-    }
+  const getGeographicLabel = (dominantScope: string) => {
+    if (dominantScope === "local") return "Local"
+    if (dominantScope === "national") return "National"
+    return "International"
   }
 
-  const getCoverageLabel = (type: string) => {
-    switch (type) {
-      case "in_depth":
-        return t("metrics.inDepth")
-      case "brief":
-        return t("metrics.briefs")
-      case "mention":
-        return t("metrics.mentions")
-      default:
-        return type
-    }
+  const getCoverageTypeLabel = (dominantType: string) => {
+    if (dominantType === "in_depth") return "In-Depth"
+    if (dominantType === "briefs") return "Briefs"
+    return "Mentions"
   }
 
-  const getBiasLabel = (bias: string) => {
-    switch (bias) {
-      case "neutral":
-        return t("metrics.neutral")
-      case "slightly_biased":
-        return t("metrics.slightlyBiased")
-      case "moderately_biased":
-        return t("metrics.moderatelyBiased")
-      case "highly_biased":
-        return t("metrics.highlyBiased")
-      default:
-        return bias
-    }
+  const getPolarizationLabel = (biasLevel: string) => {
+    if (biasLevel === "neutral") return "Neutral"
+    if (biasLevel === "slightly_biased") return "Slightly Biased"
+    if (biasLevel === "moderately_biased") return "Moderately Biased"
+    return "Highly Biased"
   }
 
-  const getRiskLabel = (level: string) => {
-    switch (level) {
-      case "low":
-        return t("metrics.low")
-      case "moderate":
-        return t("metrics.moderate")
-      case "high":
-        return t("metrics.high")
-      case "critical":
-        return t("metrics.critical")
-      default:
-        return level
-    }
+  const getRiskLabel = (category: string) => {
+    if (category === "low") return "Low"
+    if (category === "moderate") return "Moderate"
+    if (category === "high") return "High"
+    return "Critical"
   }
 
-  const getHealthStatusLabel = (status: string) => {
-    switch (status) {
-      case "excellent":
-        return t("metrics.excellent")
-      case "good":
-        return t("metrics.good")
-      case "fair":
-        return t("metrics.fair")
-      case "poor":
-        return t("metrics.poor")
-      default:
-        return status
-    }
+  const getReputationHealthLabel = (status: string) => {
+    if (status === "excellent") return "Excellent"
+    if (status === "good") return "Good"
+    if (status === "fair") return "Fair"
+    return "Poor"
   }
 
   const getTrendLabel = (trend: string) => {
-    switch (trend) {
-      case "improving":
-        return t("metrics.improving")
-      case "stable":
-        return t("metrics.stable")
-      case "declining":
-        return t("metrics.declining")
-      default:
-        return trend
-    }
+    if (trend === "improving") return "Improving"
+    if (trend === "stable") return "Stable"
+    return "Declining"
   }
 
   return (
-    <div className="space-y-8 p-4 sm:p-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-8">
       {/* Source Quality */}
-      <div>
-        <h3 className="text-xl font-heading font-bold mb-4 text-white">{t("metrics.sourceQuality")}</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <div className="space-y-4">
+        <h3 className="text-xl font-heading font-bold mb-4 text-white">Source Quality</h3>
+        <div className="grid gap-4">
           <MetricCard
-            label={t("metrics.tier1")}
-            value={`${metrics.source_quality.tier1_percentage}%`}
-            description={t("metrics.tier1Example")}
-            color="text-green-500"
+            label="TIER 1"
+            percentage={metrics.source_quality.tier1_percentage}
+            description="Example: Wikipedia, NYT, Forbes, Le Monde"
+            color="emerald"
           />
           <MetricCard
-            label={t("metrics.tier2")}
-            value={`${metrics.source_quality.tier2_percentage}%`}
-            description={t("metrics.tier2Example")}
-            color="text-blue-500"
+            label="TIER 2"
+            percentage={metrics.source_quality.tier2_percentage}
+            description="Example: Regional media, recognized blogs"
+            color="yellow"
           />
           <MetricCard
-            label={t("metrics.tier3")}
-            value={`${metrics.source_quality.tier3_percentage}%`}
-            description={t("metrics.tier3Example")}
-            color="text-gray-500"
+            label="TIER 3"
+            percentage={metrics.source_quality.tier3_percentage}
+            description="Example: Social networks, directories"
+            color="gray"
           />
         </div>
         <p className="text-sm text-gray-400">
-          {t("metrics.dominance")}:{" "}
-          <span className="font-semibold text-white">{getTierLabel(metrics.source_quality.dominant_tier)}</span>
-        </p>
-      </div>
-
-      {/* Information Freshness */}
-      <div>
-        <h3 className="text-xl font-heading font-bold mb-4 text-white">{t("metrics.informationFreshness")}</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <MetricCard
-            label={t("metrics.recentSources")}
-            value={`${metrics.information_freshness.recent_percentage}%`}
-            description={t("metrics.lessThan6Months")}
-            color="text-green-500"
-          />
-          <MetricCard
-            label={t("metrics.oldSources")}
-            value={`${metrics.information_freshness.old_percentage}%`}
-            description={t("metrics.moreThan6Months")}
-            color="text-amber-500"
-          />
-        </div>
-        <p className="text-sm text-gray-400 mt-4">
-          {t("metrics.averageAge")}:{" "}
-          <span className="font-semibold text-white">
-            {metrics.information_freshness.average_age_months} {t("metrics.months")}
+          Dominance:{" "}
+          <span className="text-white font-semibold">
+            {getSourceQualityLabel(metrics.source_quality.dominant_tier)}
           </span>
         </p>
       </div>
 
-      {/* Geographic Diversity */}
-      <div>
-        <h3 className="text-xl font-heading font-bold mb-4 text-white">{t("metrics.geographicDiversity")}</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      {/* Information Freshness */}
+      <div className="space-y-4">
+        <h3 className="text-xl font-heading font-bold mb-4 text-white">Information Freshness</h3>
+        <div className="grid gap-4">
           <MetricCard
-            label={t("metrics.local")}
-            value={`${metrics.geographic_diversity.local_percentage}%`}
-            description={t("metrics.localSources")}
-            color="text-blue-500"
+            label="RECENT SOURCES"
+            percentage={metrics.information_freshness.recent_percentage}
+            description="< 6 months"
+            color="emerald"
           />
           <MetricCard
-            label={t("metrics.national")}
-            value={`${metrics.geographic_diversity.national_percentage}%`}
-            description={t("metrics.nationalSources")}
-            color="text-purple-500"
-          />
-          <MetricCard
-            label={t("metrics.international")}
-            value={`${metrics.geographic_diversity.international_percentage}%`}
-            description={t("metrics.internationalSources")}
-            color="text-cyan-500"
+            label="OLD SOURCES"
+            percentage={100 - metrics.information_freshness.recent_percentage}
+            description="> 6 months"
+            color="gray"
           />
         </div>
         <p className="text-sm text-gray-400">
-          {t("metrics.dominantScope")}:{" "}
-          <span className="font-semibold text-white">{getScopeLabel(metrics.geographic_diversity.dominant_scope)}</span>
+          Average Age:{" "}
+          <span className="text-white font-semibold">{metrics.information_freshness.average_age_months} months</span>
+        </p>
+      </div>
+
+      {/* Geographic Diversity */}
+      <div className="space-y-4">
+        <h3 className="text-xl font-heading font-bold mb-4 text-white">Geographic Diversity</h3>
+        <div className="grid gap-4">
+          <MetricCard
+            label="LOCAL"
+            percentage={metrics.geographic_diversity.local_percentage}
+            description="Regional sources"
+            color="blue"
+          />
+          <MetricCard
+            label="NATIONAL"
+            percentage={metrics.geographic_diversity.national_percentage}
+            description="National sources"
+            color="violet"
+          />
+          <MetricCard
+            label="INTERNATIONAL"
+            percentage={metrics.geographic_diversity.international_percentage}
+            description="International sources"
+            color="cyan"
+          />
+        </div>
+        <p className="text-sm text-gray-400">
+          Dominant Scope:{" "}
+          <span className="text-white font-semibold">
+            {getGeographicLabel(metrics.geographic_diversity.dominant_scope)}
+          </span>
         </p>
       </div>
 
       {/* Coverage Type */}
-      <div>
-        <h3 className="text-xl font-heading font-bold mb-4 text-white">{t("metrics.coverageType")}</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <div className="space-y-4">
+        <h3 className="text-xl font-heading font-bold mb-4 text-white">Coverage Type</h3>
+        <div className="grid gap-4">
           <MetricCard
-            label={t("metrics.inDepth")}
-            value={`${metrics.coverage_type.in_depth_percentage}%`}
-            description={t("metrics.moreThan500Words")}
-            color="text-green-500"
+            label="IN-DEPTH"
+            percentage={metrics.coverage_type.in_depth_percentage}
+            description="> 500 words"
+            color="emerald"
           />
           <MetricCard
-            label={t("metrics.briefs")}
-            value={`${metrics.coverage_type.brief_percentage}%`}
-            description={t("metrics.between100And500Words")}
-            color="text-blue-500"
+            label="BRIEFS"
+            percentage={metrics.coverage_type.briefs_percentage}
+            description="100-500 words"
+            color="yellow"
           />
           <MetricCard
-            label={t("metrics.mentions")}
-            value={`${metrics.coverage_type.mention_percentage}%`}
-            description={t("metrics.lessThan100Words")}
-            color="text-gray-500"
+            label="MENTIONS"
+            percentage={metrics.coverage_type.mentions_percentage}
+            description="< 100 words"
+            color="gray"
           />
         </div>
         <p className="text-sm text-gray-400">
-          {t("metrics.dominantType")}:{" "}
-          <span className="font-semibold text-white">{getCoverageLabel(metrics.coverage_type.dominant_type)}</span>
+          Dominant Type:{" "}
+          <span className="text-white font-semibold">{getCoverageTypeLabel(metrics.coverage_type.dominant_type)}</span>
         </p>
       </div>
 
       {/* Polarization */}
-      <div>
-        <h3 className="text-xl font-heading font-bold mb-4 text-white">{t("metrics.polarization")}</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div className="space-y-4">
+        <h3 className="text-xl font-heading font-bold mb-4 text-white">Polarization</h3>
+        <div className="grid gap-4">
           <MetricCard
-            label={t("metrics.neutralSources")}
-            value={`${metrics.polarization.neutral_percentage}%`}
-            description={t("metrics.editorialObjectivity")}
-            color="text-green-500"
+            label="NEUTRAL SOURCES"
+            percentage={metrics.polarization.neutral_percentage}
+            description="Editorial objectivity"
+            color="emerald"
           />
           <MetricCard
-            label={t("metrics.orientedSources")}
-            value={`${metrics.polarization.oriented_percentage}%`}
-            description={t("metrics.politicalBias")}
-            color="text-amber-500"
+            label="ORIENTED SOURCES"
+            percentage={metrics.polarization.oriented_percentage}
+            description="Political/editorial bias"
+            color="red"
           />
         </div>
         <p className="text-sm text-gray-400">
-          {t("metrics.biasLevel")}:{" "}
-          <span className="font-semibold text-white">{getBiasLabel(metrics.polarization.bias_level)}</span>
+          Bias Level:{" "}
+          <span className="text-white font-semibold">{getPolarizationLabel(metrics.polarization.bias_level)}</span>
         </p>
       </div>
 
       {/* Risk Level */}
-      <div>
-        <h3 className="text-xl font-heading font-bold mb-4 text-white">{t("metrics.riskLevel")}</h3>
-        <div className="bg-background-secondary border border-border rounded-lg p-6">
+      <div className="space-y-4">
+        <h3 className="text-xl font-heading font-bold mb-4 text-white">Risk Level</h3>
+        <div className="rounded-xl border border-red-900/30 bg-gradient-to-r from-red-950/20 via-black to-red-950/20 p-6">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-4xl font-bold text-white">{metrics.risk_level.score}/100</span>
-            <span
-              className={`text-lg font-semibold ${
+            <div className="text-6xl font-mono font-bold text-red-400">{metrics.risk_level.score}</div>
+            <div
+              className={cn(
+                "px-4 py-2 rounded-lg font-bold text-sm uppercase tracking-wider",
                 metrics.risk_level.category === "low"
-                  ? "text-green-500"
+                  ? "bg-emerald-900/30 text-emerald-400"
                   : metrics.risk_level.category === "moderate"
-                    ? "text-yellow-500"
+                    ? "bg-yellow-900/30 text-yellow-400"
                     : metrics.risk_level.category === "high"
-                      ? "text-orange-500"
-                      : "text-red-500"
-              }`}
+                      ? "bg-orange-900/30 text-orange-400"
+                      : "bg-red-900/30 text-red-400",
+              )}
             >
               {getRiskLabel(metrics.risk_level.category)}
-            </span>
+            </div>
           </div>
           <p className="text-sm text-gray-400">
-            {t("metrics.category")}:{" "}
-            <span className="font-semibold text-white">{getRiskLabel(metrics.risk_level.category)}</span>
+            Category: <span className="text-white font-semibold">{getRiskLabel(metrics.risk_level.category)}</span>
           </p>
           <p className="text-sm text-gray-400 mt-2">
-            {t("metrics.mainThreats")}: <span className="text-white">{metrics.risk_level.main_threats}</span>
+            Main Threats: <span className="text-white">{metrics.risk_level.main_threats}</span>
           </p>
         </div>
       </div>
 
       {/* Reputation Index */}
-      <div>
-        <h3 className="text-xl font-heading font-bold mb-4 text-white">{t("metrics.reputationIndex")}</h3>
-        <div className="bg-background-secondary border border-border rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
+      <div className="space-y-4">
+        <h3 className="text-xl font-heading font-bold mb-4 text-white">Reputation Index</h3>
+        <div className="rounded-xl border border-violet-900/30 bg-gradient-to-r from-violet-950/20 via-black to-violet-950/20 p-6">
+          <div className="grid grid-cols-2 gap-6 mb-4">
             <div>
-              <div className="text-sm text-gray-400 mb-1">{t("metrics.score")}</div>
-              <span className="text-4xl font-bold text-white">{metrics.reputation_index.score}/100</span>
+              <div className="text-sm text-gray-400 mb-1">Score</div>
+              <div className="text-4xl font-mono font-bold text-violet-400">{metrics.reputation_index.score}/100</div>
             </div>
-            <div className="text-right">
-              <div className="text-sm text-gray-400 mb-1">{t("metrics.healthStatus")}</div>
-              <span className="text-lg font-semibold text-white">
-                {getHealthStatusLabel(metrics.reputation_index.health_status)}
-              </span>
+            <div>
+              <div className="text-sm text-gray-400 mb-1">Health Status</div>
+              <div className="text-2xl font-bold text-white">
+                {getReputationHealthLabel(metrics.reputation_index.status)}
+              </div>
             </div>
           </div>
           <p className="text-sm text-gray-400">
-            {t("metrics.trend")}:{" "}
+            Trend:{" "}
             <span
-              className={`font-semibold ${
+              className={cn(
+                "font-semibold",
                 metrics.reputation_index.trend === "improving"
-                  ? "text-green-500"
-                  : metrics.reputation_index.trend === "declining"
-                    ? "text-red-500"
-                    : "text-gray-400"
-              }`}
+                  ? "text-emerald-400"
+                  : metrics.reputation_index.trend === "stable"
+                    ? "text-yellow-400"
+                    : "text-red-400",
+              )}
             >
               {getTrendLabel(metrics.reputation_index.trend)}
             </span>
@@ -1003,7 +1038,7 @@ function SourcesTab({ result }: any) {
   if (crawledSources.length === 0 && gptSources.length === 0) {
     return (
       <div className="p-8 text-center text-muted-foreground">
-        <p className="text-gray-400">Aucune source disponible pour cette analyse.</p>
+        <p className="text-gray-400">No sources available for this analysis.</p> {/* Removed t() */}
       </div>
     )
   }
@@ -1015,7 +1050,7 @@ function SourcesTab({ result }: any) {
         <div className="space-y-4">
           <h3 className="font-heading text-lg font-bold text-white flex items-center gap-2">
             <Globe className="w-5 h-5 text-violet-400" />
-            Sources Analysées ({crawledSources.length})
+            Analyzed Sources ({crawledSources.length}) {/* Removed t() */}
           </h3>
           <div className="grid gap-4">
             {crawledSources.map((source: any, index: number) => (
@@ -1054,7 +1089,7 @@ function SourcesTab({ result }: any) {
         <div className="space-y-4">
           <h3 className="font-heading text-lg font-bold text-white flex items-center gap-2">
             <Brain className="w-5 h-5 text-cyan-400" />
-            Sources Mentionnées dans l'Analyse ({gptSources.length})
+            Mentioned in Analysis ({gptSources.length}) {/* Removed t() */}
           </h3>
           <div className="flex flex-wrap gap-2 p-4 bg-zinc-950/50 rounded-lg border border-violet-900/20">
             {gptSources.map((source, index) => (
@@ -1066,7 +1101,7 @@ function SourcesTab({ result }: any) {
                 <span
                   className={`text-xs px-1.5 py-0.5 rounded ${source.type === "entity" ? "bg-purple-500/20 text-purple-400" : "bg-cyan-500/20 text-cyan-400"}`}
                 >
-                  {source.type === "entity" ? "ENTITÉ" : "IA"}
+                  {source.type === "entity" ? "ENTITY" : "AI"} {/* Removed t() */}
                 </span>
               </div>
             ))}
@@ -1119,12 +1154,12 @@ function DuelMetricsCard({ title, data, brandName }: { title: string; data: any;
   if (!data) return null
 
   const metrics = [
-    { label: "Présence", value: data.presence_score, color: "text-violet-400" },
-    { label: "Tonalité", value: data.tone_score, color: data.tone_score >= 50 ? "text-green-400" : "text-orange-400" },
+    { label: "Presence", value: data.presence_score, color: "text-violet-400" }, // Removed t()
+    { label: "Tone", value: data.tone_score, color: data.tone_score >= 50 ? "text-green-400" : "text-orange-400" }, // Removed t()
   ]
 
   if (data.coherence_score != null) {
-    metrics.push({ label: "Cohérence", value: data.coherence_score, color: "text-violet-400" })
+    metrics.push({ label: "Coherence", value: data.coherence_score, color: "text-violet-400" }) // Removed t()
   }
 
   return (
@@ -1139,7 +1174,7 @@ function DuelMetricsCard({ title, data, brandName }: { title: string; data: any;
         ))}
         <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-violet-900/30">
           <div className="flex items-center justify-between">
-            <span className="font-heading text-white font-bold">Score Global</span>
+            <span className="font-heading text-white font-bold">Global Score</span> {/* Removed t() */}
             <span className="font-mono text-2xl font-bold text-violet-400">{data.global_score}</span>
           </div>
         </div>
@@ -1158,25 +1193,25 @@ function DuelDetailedAnalysis({ text, result }: { text: string; result: any }) {
     // Parse [SECTION] format or # SECTION format
     const sectionPatterns = [
       { regex: /\[VERDICT\]([\s\S]*?)(?=\[|$)/gi, id: "verdict", title: "Verdict", icon: Trophy },
-      { regex: /\[PRÉSENCE DIGITALE\]([\s\S]*?)(?=\[|$)/gi, id: "presence", title: "Présence Digitale", icon: Globe },
+      { regex: /\[PRÉSENCE DIGITALE\]([\s\S]*?)(?=\[|$)/gi, id: "presence", title: "Digital Presence", icon: Globe }, // Changed title
       {
         regex: /\[SENTIMENT PUBLIC\]([\s\S]*?)(?=\[|$)/gi,
         id: "sentiment",
-        title: "Sentiment Public",
+        title: "Public Sentiment", // Changed title
         icon: TrendingUp,
       },
-      { regex: /\[COHÉRENCE\]([\s\S]*?)(?=\[|$)/gi, id: "coherence", title: "Cohérence", icon: Target },
-      { regex: /\[FORCES[^\]]*\]([\s\S]*?)(?=\[|$)/gi, id: "forces1", title: "Forces", icon: TrendingUp },
+      { regex: /\[COHÉRENCE\]([\s\S]*?)(?=\[|$)/gi, id: "coherence", title: "Coherence", icon: Target }, // Changed title
+      { regex: /\[FORCES[^\]]*\]([\s\S]*?)(?=\[|$)/gi, id: "forces1", title: "Strengths", icon: TrendingUp }, // Changed title
       {
         regex: /\[FAIBLESSES[^\]]*\]([\s\S]*?)(?=\[|$)/gi,
         id: "faiblesses1",
-        title: "Faiblesses",
+        title: "Weaknesses", // Changed title
         icon: AlertTriangle,
       },
       {
         regex: /\[RECOMMANDATIONS\]([\s\S]*?)(?=\[|$)/gi,
         id: "recommendations",
-        title: "Recommandations",
+        title: "Recommendations", // Changed title
         icon: Lightbulb,
       },
     ]
@@ -1292,7 +1327,7 @@ function SingleDetailedAnalysis({ text, result }: { text: string; result: any })
   if (!text) {
     return (
       <div className="p-8 text-center text-muted-foreground">
-        <p className="text-gray-400">L'analyse détaillée n'est pas disponible.</p>
+        <p className="text-gray-400">Detailed analysis is not available.</p> {/* Removed t() */}
       </div>
     )
   }
@@ -1446,7 +1481,8 @@ function SingleDetailedAnalysis({ text, result }: { text: string; result: any })
                     >
                       {section.title}
                     </h3>
-                    <p className="text-xs sm:text-sm text-gray-500">{keyPoints.length} points clés identifiés</p>
+                    <p className="text-xs sm:text-sm text-gray-500">{keyPoints.length} Key Points Identified</p>{" "}
+                    {/* Removed t() */}
                   </div>
                 </div>
                 <div className="flex items-center gap-3 sm:gap-4">
@@ -1458,7 +1494,7 @@ function SingleDetailedAnalysis({ text, result }: { text: string; result: any })
                     <span
                       className={`w-2 h-2 rounded-full ${section.confidence >= 80 ? "bg-green-400" : "bg-yellow-400"}`}
                     />
-                    {section.confidence}% confiance
+                    {section.confidence}% Confidence {/* Removed t() */}
                   </div>
                   <ChevronDown
                     className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""}`}
@@ -1485,7 +1521,7 @@ function SingleDetailedAnalysis({ text, result }: { text: string; result: any })
                   <details className="group">
                     <summary className="flex items-center gap-2 cursor-pointer text-sm text-gray-400 hover:text-white transition-colors">
                       <FileText className="w-4 h-4" />
-                      <span>Voir l'analyse complète</span>
+                      <span>View Full Analysis</span> {/* Removed t() */}
                       <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform" />
                     </summary>
                     <div className="mt-4 p-4 bg-zinc-900/30 rounded-lg border border-zinc-800">
@@ -1513,21 +1549,43 @@ function SingleDetailedAnalysis({ text, result }: { text: string; result: any })
 
 // Helper Components
 
+// Original MetricCard definition (kept for context but not used)
+// function MetricCard({
+//   label,
+//   value,
+//   description,
+//   color,
+// }: {
+//   label: string
+//   value: string
+//   description: string
+//   color: string
+// }) {
+//   return (
+//     <div className="bg-zinc-950 border border-violet-900/30 rounded-lg p-4">
+//       <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">{label}</p>
+//       <p className={`text-3xl font-bold font-mono ${color}`}>{value}</p>
+//       <p className="text-xs text-gray-400 mt-1">{description}</p>
+//     </div>
+//   )
+// }
+
+// Updated MetricCard to accept percentage and color prop
 function MetricCard({
   label,
-  value,
+  percentage,
   description,
   color,
 }: {
   label: string
-  value: string
+  percentage: number
   description: string
   color: string
 }) {
   return (
     <div className="bg-zinc-950 border border-violet-900/30 rounded-lg p-4">
       <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">{label}</p>
-      <p className={`text-3xl font-bold font-mono ${color}`}>{value}</p>
+      <p className={`text-3xl font-bold font-mono text-${color}-500`}>{percentage}%</p>
       <p className="text-xs text-gray-400 mt-1">{description}</p>
     </div>
   )

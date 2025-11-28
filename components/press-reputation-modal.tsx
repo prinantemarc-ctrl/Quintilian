@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { useLanguage } from "@/contexts/language-context"
 
 interface PressReputationModalProps {
   isOpen: boolean
@@ -14,8 +13,6 @@ interface PressReputationModalProps {
 }
 
 export function PressReputationModal({ isOpen, onClose, results, query }: PressReputationModalProps) {
-  const { t } = useLanguage()
-
   if (!results) return null
 
   const getScoreColor = (score: number) => {
@@ -35,12 +32,12 @@ export function PressReputationModal({ isOpen, onClose, results, query }: PressR
     return (
       <Badge variant={variants[sentiment as keyof typeof variants] || "secondary"}>
         {sentiment === "positive"
-          ? "Positif"
+          ? "Positive"
           : sentiment === "negative"
-            ? "Négatif"
+            ? "Negative"
             : sentiment === "neutral"
-              ? "Neutre"
-              : "Mitigé"}
+              ? "Neutral"
+              : "Mixed"}
       </Badge>
     )
   }
@@ -49,7 +46,7 @@ export function PressReputationModal({ isOpen, onClose, results, query }: PressR
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">📰 Analyse de Presse : "{query}"</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">📰 Press Analysis: "{query}"</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -58,13 +55,13 @@ export function PressReputationModal({ isOpen, onClose, results, query }: PressR
             <Card>
               <CardContent className="pt-6">
                 <div className="text-2xl font-bold">{results.results?.length || 0}</div>
-                <p className="text-xs text-muted-foreground">Pays analysés</p>
+                <p className="text-xs text-muted-foreground">Countries analyzed</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-6">
                 <div className="text-2xl font-bold">{results.totalArticles || 0}</div>
-                <p className="text-xs text-muted-foreground">Articles trouvés</p>
+                <p className="text-xs text-muted-foreground">Articles found</p>
               </CardContent>
             </Card>
             <Card>
@@ -76,7 +73,7 @@ export function PressReputationModal({ isOpen, onClose, results, query }: PressR
                       ).toFixed(1)
                     : "0.0"}
                 </div>
-                <p className="text-xs text-muted-foreground">Score moyen</p>
+                <p className="text-xs text-muted-foreground">Average score</p>
               </CardContent>
             </Card>
           </div>
@@ -137,7 +134,7 @@ export function PressReputationModal({ isOpen, onClose, results, query }: PressR
                   {/* Score Progress */}
                   <div>
                     <div className="flex justify-between text-sm mb-2">
-                      <span>Score de réputation presse</span>
+                      <span>Press reputation score</span>
                       <span>{result.score}/10</span>
                     </div>
                     <Progress value={result.score * 10} className="h-2" />
@@ -145,14 +142,14 @@ export function PressReputationModal({ isOpen, onClose, results, query }: PressR
 
                   {/* Summary */}
                   <div>
-                    <h4 className="font-semibold mb-2">Résumé</h4>
+                    <h4 className="font-semibold mb-2">Summary</h4>
                     <p className="text-sm text-muted-foreground">{result.summary}</p>
                   </div>
 
                   {/* Key Topics */}
                   {result.keyTopics && result.keyTopics.length > 0 && (
                     <div>
-                      <h4 className="font-semibold mb-2">Sujets clés</h4>
+                      <h4 className="font-semibold mb-2">Key topics</h4>
                       <div className="flex flex-wrap gap-2">
                         {result.keyTopics.map((topic: string, i: number) => (
                           <Badge key={i} variant="outline">
@@ -166,7 +163,7 @@ export function PressReputationModal({ isOpen, onClose, results, query }: PressR
                   {/* Risk Factors */}
                   {result.riskFactors && result.riskFactors.length > 0 && (
                     <div>
-                      <h4 className="font-semibold mb-2 flex items-center gap-2">⚠️ Facteurs de risque</h4>
+                      <h4 className="font-semibold mb-2 flex items-center gap-2">⚠️ Risk factors</h4>
                       <div className="flex flex-wrap gap-2">
                         {result.riskFactors.map((risk: string, i: number) => (
                           <Badge key={i} variant="destructive">
@@ -180,7 +177,7 @@ export function PressReputationModal({ isOpen, onClose, results, query }: PressR
                   {/* Articles */}
                   {result.articles && result.articles.length > 0 && (
                     <div>
-                      <h4 className="font-semibold mb-2">Articles de presse</h4>
+                      <h4 className="font-semibold mb-2">Press articles</h4>
                       <div className="space-y-2">
                         {result.articles.slice(0, 3).map((article: any, i: number) => (
                           <div key={i} className="border rounded-lg p-3">

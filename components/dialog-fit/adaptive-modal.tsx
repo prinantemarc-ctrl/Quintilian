@@ -10,7 +10,6 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { X, Maximize2, Minimize2, Copy, Share2, Printer, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useLanguage } from "@/contexts/language-context"
 
 export type DialogFitSize = "sm" | "md" | "lg" | "xl" | "fullscreen"
 
@@ -130,7 +129,6 @@ export function AdaptiveModal({
   error,
   className,
 }: DialogFitProps) {
-  const { t } = useLanguage()
   const isMobile = useIsMobile()
   const adaptiveSize = useAdaptiveSize(content, autoSize)
   const finalSize = variant || adaptiveSize
@@ -229,7 +227,7 @@ export function AdaptiveModal({
         <div className="flex items-center justify-center py-12">
           <div className="text-center space-y-4">
             <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
-            <p className="text-muted-foreground">Chargement en cours...</p>
+            <p className="text-muted-foreground">Loading...</p>
           </div>
         </div>
       )
@@ -243,7 +241,7 @@ export function AdaptiveModal({
               <X className="w-6 h-6 text-red-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-red-900 mb-2">Erreur</h3>
+              <h3 className="font-semibold text-red-900 mb-2">Error</h3>
               <p className="text-red-700 text-sm">{error}</p>
             </div>
           </div>
@@ -350,10 +348,8 @@ export function AdaptiveModal({
 
           {content.metadata && (
             <div className="flex-shrink-0 pt-2 border-t text-xs text-muted-foreground text-center">
-              {content.metadata.processingTime && <span>Traité en {content.metadata.processingTime}ms</span>}
-              {content.metadata.totalResults && (
-                <span className="ml-2">• {content.metadata.totalResults} résultats</span>
-              )}
+              {content.metadata.processingTime && <span>Processed in {content.metadata.processingTime}ms</span>}
+              {content.metadata.totalResults && <span className="ml-2">• {content.metadata.totalResults} results</span>}
             </div>
           )}
         </SheetContent>
@@ -374,7 +370,7 @@ export function AdaptiveModal({
               <div className="flex-1 pr-4">
                 <DialogTitle className="text-xl font-semibold leading-tight">{content.title}</DialogTitle>
                 {content.metadata?.query && (
-                  <p className="text-sm text-muted-foreground mt-1">Recherche : "{content.metadata.query}"</p>
+                  <p className="text-sm text-muted-foreground mt-1">Search: "{content.metadata.query}"</p>
                 )}
               </div>
 
@@ -404,12 +400,12 @@ export function AdaptiveModal({
                 {navigation?.hasPrevious && (
                   <Button variant="ghost" size="sm" onClick={navigation.onPrevious} className="h-8">
                     <ChevronLeft className="w-4 h-4 mr-1" />
-                    Précédent
+                    Previous
                   </Button>
                 )}
                 {navigation?.hasNext && (
                   <Button variant="ghost" size="sm" onClick={navigation.onNext} className="h-8">
-                    Suivant
+                    Next
                     <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
                 )}
@@ -418,15 +414,15 @@ export function AdaptiveModal({
               <div className="flex items-center gap-1">
                 <Button variant="ghost" size="sm" onClick={handleCopy} className="h-8">
                   <Copy className="w-4 h-4 mr-1" />
-                  Copier
+                  Copy
                 </Button>
                 <Button variant="ghost" size="sm" onClick={handleShare} className="h-8">
                   <Share2 className="w-4 h-4 mr-1" />
-                  Partager
+                  Share
                 </Button>
                 <Button variant="ghost" size="sm" onClick={handlePrint} className="h-8">
                   <Printer className="w-4 h-4 mr-1" />
-                  Imprimer
+                  Print
                 </Button>
               </div>
             </div>
@@ -443,8 +439,8 @@ export function AdaptiveModal({
           <div className="flex-shrink-0 border-t bg-muted/30 px-6 py-3">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <div className="flex items-center gap-4">
-                {content.metadata.processingTime && <span>Traité en {content.metadata.processingTime}ms</span>}
-                {content.metadata.totalResults && <span>{content.metadata.totalResults} résultats analysés</span>}
+                {content.metadata.processingTime && <span>Processed in {content.metadata.processingTime}ms</span>}
+                {content.metadata.totalResults && <span>{content.metadata.totalResults} results analyzed</span>}
               </div>
               <Badge variant="outline" className="text-xs">
                 DialogFit v1.0

@@ -15,11 +15,9 @@ import Link from "next/link"
 import { AnalysisResultsFullscreen } from "@/components/analysis-results-fullscreen"
 import { DuelLoadingAnimation } from "@/components/duel-loading-animation"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { useLanguage } from "@/contexts/language-context"
 import { createClient } from "@/lib/supabase/client"
 
 export default function DuelPage() {
-  const { t, language: uiLanguage } = useLanguage()
   const [formData, setFormData] = useState({
     brand1: "",
     brand2: "",
@@ -65,7 +63,7 @@ export default function DuelPage() {
           },
           body: JSON.stringify({
             ...formData,
-            uiLanguage: uiLanguage,
+            uiLanguage: "en",
           }),
         })
 
@@ -120,28 +118,28 @@ export default function DuelPage() {
           <div className="text-center mb-8">
             <Link href="/" className="inline-flex items-center gap-2 text-primary hover:underline mb-4">
               <ArrowLeft className="w-4 h-4" />
-              {t("legal.back_home")}
+              Back Home
             </Link>
             <div className="flex items-center justify-center gap-3 mb-4">
               <Swords className="w-8 h-8 text-primary" />
               <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                {t("duel.title")}
+                Brand Duel
               </h1>
             </div>
-            <p className="text-muted-foreground text-lg">{t("duel.subtitle")}</p>
+            <p className="text-muted-foreground text-lg">Compare two brands head-to-head</p>
           </div>
 
           {/* Form */}
           <Card className="border-2 border-primary/20 shadow-lg">
             <CardHeader>
-              <CardTitle className="text-center text-xl">{t("duel.title")} - Configuration</CardTitle>
+              <CardTitle className="text-center text-xl">Brand Duel - Configuration</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="brand1" className="text-sm font-medium">
-                      {t("duel.name1_placeholder")} 🥊
+                      Brand Name 1 🥊
                     </Label>
                     <Input
                       id="brand1"
@@ -154,7 +152,7 @@ export default function DuelPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="brand2" className="text-sm font-medium">
-                      {t("duel.name2_placeholder")} 🥊
+                      Brand Name 2 🥊
                     </Label>
                     <Input
                       id="brand2"
@@ -169,11 +167,11 @@ export default function DuelPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="message" className="text-sm font-medium">
-                    {t("hero.message_label")} <span className="text-muted-foreground text-xs">(optionnel)</span>
+                    Message <span className="text-muted-foreground text-xs">(optional)</span>
                   </Label>
                   <Textarea
                     id="message"
-                    placeholder={t("hero.message_placeholder")}
+                    placeholder="Enter your message here"
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     className="min-h-[100px] border-primary/20 focus:border-primary"
@@ -182,7 +180,7 @@ export default function DuelPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="language" className="text-sm font-medium">
-                    {t("hero.language_label")}
+                    Language
                   </Label>
                   <Select
                     value={formData.language}
@@ -207,7 +205,7 @@ export default function DuelPage() {
                   size="lg"
                 >
                   <Swords className="w-5 h-5 mr-2" />
-                  {t("duel.start_duel")} !
+                  Start Duel!
                 </Button>
               </form>
             </CardContent>

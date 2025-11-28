@@ -259,7 +259,7 @@ export async function generateDetailedAnalysis(
 > {
   console.log(`[v0] Starting detailed analysis generation for: ${brand}`)
 
-  const responseLanguage = presentationLanguage || language
+  const responseLanguage = "en"
 
   const cacheKey = {
     brand,
@@ -269,7 +269,7 @@ export async function generateDetailedAnalysis(
     analysisType,
     presentationLanguage: responseLanguage,
     hasMessage,
-    type: "detailed-analysis-v5", // Updated cache version for new metrics
+    type: "detailed-analysis-v7-english-forced", // Force cache invalidation
   }
 
   const { data: analysisResult, fromCache } = await analysisCache.getOrSet(
@@ -284,8 +284,8 @@ export async function generateDetailedAnalysis(
         const googleContent = googleResults
           .slice(0, 10)
           .map((item) => {
-            const title = item.title || "Sans titre"
-            const snippet = item.snippet || "Pas de description"
+            const title = item.title || "No title"
+            const snippet = item.snippet || "No description"
             return `**${title}**\n   ${snippet}\n   ${item.link}`
           })
           .join("\n\n")
@@ -293,119 +293,119 @@ export async function generateDetailedAnalysis(
         let prompt: string
 
         const metricsSection = `
-**MÉTRIQUES AVANCÉES À CALCULER (advanced_metrics):**
+**ADVANCED METRICS TO CALCULATE (advanced_metrics):**
 
-1. **source_quality**: Analyse la qualité des sources crawlées:
-   - tier1_percentage: % de sources haute autorité (Wikipedia, NYT, Le Monde, Forbes, sites .edu/.gov)
-   - tier2_percentage: % médias régionaux, presse spécialisée, blogs reconnus
-   - tier3_percentage: % réseaux sociaux, annuaires, sites de faible autorité
-   - dominant_tier: "tier1"|"tier2"|"tier3" (la catégorie majoritaire)
+1. **source_quality**: Analyze quality of crawled sources:
+   - tier1_percentage: % high authority sources (Wikipedia, NYT, Forbes, .edu/.gov sites)
+   - tier2_percentage: % regional media, specialized press, recognized blogs
+   - tier3_percentage: % social networks, directories, low authority sites
+   - dominant_tier: "tier1"|"tier2"|"tier3" (majority category)
 
-2. **information_freshness**: Fraîcheur des informations:
-   - recent_percentage: % de sources datant de moins de 6 mois
-   - old_percentage: % de sources de plus de 6 mois
-   - average_age_months: âge moyen estimé en mois
+2. **information_freshness**: Information freshness:
+   - recent_percentage: % sources less than 6 months old
+   - old_percentage: % sources older than 6 months
+   - average_age_months: average estimated age in months
 
-3. **geographic_diversity**: Distribution géographique:
-   - local_percentage: % sources locales/régionales
-   - national_percentage: % sources nationales
-   - international_percentage: % sources internationales
+3. **geographic_diversity**: Geographic distribution:
+   - local_percentage: % local/regional sources
+   - national_percentage: % national sources
+   - international_percentage: % international sources
    - dominant_scope: "local"|"national"|"international"
 
-4. **coverage_type**: Type de couverture médiatique:
-   - in_depth_percentage: % articles de fond (>500 mots estimés)
-   - brief_percentage: % brèves (100-500 mots estimés)
-   - mention_percentage: % simples mentions (<100 mots estimés)
+4. **coverage_type**: Type of media coverage:
+   - in_depth_percentage: % in-depth articles (>500 estimated words)
+   - brief_percentage: % brief articles (100-500 estimated words)
+   - mention_percentage: % simple mentions (<100 estimated words)
    - dominant_type: "in_depth"|"brief"|"mention"
 
-5. **polarization**: Orientation politique/éditoriale:
-   - neutral_percentage: % sources neutres/objectives
-   - oriented_percentage: % sources orientées politiquement
+5. **polarization**: Political/editorial orientation:
+   - neutral_percentage: % neutral/objective sources
+   - oriented_percentage: % politically oriented sources
    - bias_level: "neutral"|"slightly_biased"|"highly_biased"
 
-6. **risk_level**: Niveau de risque réputationnel:
-   - score: 0-100 (0=aucun risque, 100=risque critique)
+6. **risk_level**: Reputational risk level:
+   - score: 0-100 (0=no risk, 100=critical risk)
    - category: "low"|"moderate"|"high"|"critical"
-   - main_threats: array de 2-3 menaces principales identifiées
+   - main_threats: array of 2-3 main identified threats
 
-7. **reputation_index**: Indice de réputation global:
-   - score: 0-100 (santé globale de la réputation)
-   - trend: "improving"|"stable"|"declining" (tendance)
+7. **reputation_index**: Global reputation index:
+   - score: 0-100 (overall reputation health)
+   - trend: "improving"|"stable"|"declining" (trend)
    - health_status: "excellent"|"good"|"fair"|"poor"
 `
 
         if (hasMessage) {
-          prompt = `Tu es un analyste OSINT opérationnel spécialisé en intelligence digitale. Target: "${brand}". Langue de sortie: ${responseLanguage}.
+          prompt = `You are an operational OSINT analyst specialized in digital intelligence. Target: "${brand}". Output language: ENGLISH.
 
-**INTEL SOURCES (en ${language}):**
+**INTEL SOURCES (in ${language}):**
 ${googleContent}
 
-**HYPOTHÈSE À VÉRIFIER:** "${message}"
+**HYPOTHESIS TO VERIFY:** "${message}"
 
-**⚠️ PROTOCOLE: Ne référence JAMAIS les sources par numéro. Utilise: "selon les renseignements recueillis", "l'analyse OSINT révèle", "les traces numériques montrent", "selon les données crawlées", "les sources ouvertes indiquent".**
+**⚠️ PROTOCOL: NEVER reference sources by number. Use: "according to intelligence gathered", "OSINT analysis reveals", "digital traces show", "according to crawled data", "open sources indicate".**
 
-**VECTEURS D'ANALYSE:**
+**ANALYSIS VECTORS:**
 
-1. **EMPREINTE NUMÉRIQUE (score/100)**: Visibilité cross-platform, diversité des vecteurs d'exposition, autorité des domaines indexés
-2. **SENTIMENT GLOBAL (score/100)**: Polarisation de l'opinion (hostile=0, neutre=50, favorable=100)
-3. **ALIGNEMENT INTEL (score/100)**: Corrélation entre hypothèse et data crawlée
+1. **DIGITAL FOOTPRINT (score/100)**: Cross-platform visibility, diversity of exposure vectors, indexed domain authority
+2. **GLOBAL SENTIMENT (score/100)**: Opinion polarization (hostile=0, neutral=50, favorable=100)
+3. **INTEL ALIGNMENT (score/100)**: Correlation between hypothesis and crawled data
 ${metricsSection}
 
-**RAPPORT EXÉCUTIF (structured_conclusion) - 3-4 sections markdown, 150+ mots/section:**
+**EXECUTIVE REPORT (structured_conclusion) - 3-4 markdown sections, 150+ words/section:**
 
-## Empreinte Numérique
-Mapping détaillé de la présence: vecteurs identifiés (encyclopédies en ligne, médias mainstream/alternatifs, plateformes officielles, réseaux sociaux, forums), autorité PageRank des domaines, distribution géographique, timestamps de publication. Identification des canaux dominants et zones aveugles. Langage opérationnel, pas de numérotation de sources.
+## Digital Footprint
+Detailed presence mapping: identified vectors (online encyclopedias, mainstream/alternative media, official platforms, social networks, forums), domain PageRank authority, geographic distribution, publication timestamps. Identification of dominant channels and blind spots. Operational language, no source numbering.
 
-## Polarisation du Sentiment
-Analyse comportementale approfondie avec cas d'usage concrets (pas de "source X"): distribution hostile/neutre/favorable avec patterns extraits du crawl, triggers émotionnels identifiés, analyse des narratives, évolution temporelle, divergences entre communication officielle et perception communautaire.
+## Sentiment Polarization
+In-depth behavioral analysis with concrete use cases (no "source X"): hostile/neutral/favorable distribution with patterns extracted from crawl, identified emotional triggers, narrative analysis, temporal evolution, divergences between official communication and community perception.
 
-## Risques et Atouts Stratégiques
-Atouts: Leviers réputationnels (leadership sectoriel, expertise reconnue, capital communautaire, achievements documentés, couverture médiatique positive)
-Risques: Menaces réputationnelles (controverses actives, critiques récurrentes, compétition agressive, vulnérabilités de communication)
+## Strategic Risks and Assets
+Assets: Reputational levers (sector leadership, recognized expertise, community capital, documented achievements, positive media coverage)
+Risks: Reputational threats (active controversies, recurring criticism, aggressive competition, communication vulnerabilities)
 
-**ANALYSE TERRAIN (detailed_analysis) - 3 sections obligatoires, 200+ mots/section:**
+**FIELD ANALYSIS (detailed_analysis) - 3 mandatory sections, 200+ words/section:**
 
-## Analyse OSINT des Résultats Crawlés
-Dissection méthodique des traces web de manière FLUIDE et PROFESSIONNELLE:
-- **Classification**: Typologie (Wikipédia, médias tier-1/tier-2, presse spécialisée, sites officiels, social platforms, underground forums)
-- **Trustrank**: Crédibilité des domaines (mentionne "sources haute autorité", "médias vérifiés", "plateformes tier-1")
-- **Freshness**: Fraîcheur temporelle des traces
-- **Sémantique**: Keywords dominants, clusters thématiques
-- **Narratives**: Storytelling détecté, convergences/contradictions
-- **Anomalies**: Patterns suspects, contradictions, data gaps
-- **Géolocalisation**: Distribution géo et linguistique des sources
-**PROTOCOLE: Nomme les sources par type (ex: "Wikipédia révèle", "les médias sportifs couvrent"), JAMAIS par index numérique.**
+## OSINT Analysis of Crawled Results
+Methodical dissection of web traces in a FLUID and PROFESSIONAL manner:
+- **Classification**: Typology (Wikipedia, tier-1/tier-2 media, specialized press, official sites, social platforms, underground forums)
+- **Trustrank**: Domain credibility (mention "high authority sources", "verified media", "tier-1 platforms")
+- **Freshness**: Temporal freshness of traces
+- **Semantics**: Dominant keywords, thematic clusters
+- **Narratives**: Detected storytelling, convergences/contradictions
+- **Anomalies**: Suspicious patterns, contradictions, data gaps
+- **Geolocation**: Geographic and linguistic distribution of sources
+**PROTOCOL: Name sources by type (e.g., "Wikipedia reveals", "sports media cover"), NEVER by numeric index.**
 
-## Projection IA Générative
-Perception algorithmique par les LLMs (ChatGPT, Claude, Gemini, Perplexity):
-- Knowledge base des IA
-- Sources primaires exploitées par les modèles
-- Biais de représentation potentiels
-- Risques de hallucination/désinformation
-- Opportunités d'optimisation SEO-IA
-- Recommandations actionnables
+## Generative AI Projection
+Algorithmic perception by LLMs (ChatGPT, Claude, Gemini, Perplexity):
+- AI knowledge base
+- Primary sources exploited by models
+- Potential representation biases
+- Hallucination/misinformation risks
+- SEO-AI optimization opportunities
+- Actionable recommendations
 
-## Vue Stratégique OSINT Complète
-Synthèse globale avec méthodologie renseignement open source:
-- Cartographie exhaustive de la surface d'attaque digitale
-- Forces structurelles et avantages tactiques
-- Vulnérabilités systémiques et vecteurs d'attaque
-- Benchmarking contextuel si applicable
-- Détection de signaux faibles et tendances émergentes
-- Forecast réputationnel
-- Recommandations stratégiques opérationnelles
+## Complete OSINT Strategic View
+Global synthesis with open source intelligence methodology:
+- Exhaustive mapping of digital attack surface
+- Structural strengths and tactical advantages
+- Systemic vulnerabilities and attack vectors
+- Contextual benchmarking if applicable
+- Detection of weak signals and emerging trends
+- Reputational forecast
+- Operational strategic recommendations
 
-**OUTPUT JSON:**
+**JSON OUTPUT - ALL TEXT MUST BE IN ENGLISH:**
 {
   "presence_score": <0-100>,
   "tone_score": <0-100>,
   "coherence_score": <0-100>,
-  "tone_label": "<positif|neutre|négatif>",
-  "rationale": "<synthèse analytique 4-5 phrases, langage renseignement>",
-  "google_summary": "<rapport factuel avec données concrètes, SANS numéros (100+ mots)>",
-  "gpt_summary": "<analyse contextuelle intel, SANS numéros (100+ mots)>",
-  "structured_conclusion": "<markdown ##, MINIMUM 450 mots, SANS numéros>",
-  "detailed_analysis": "<markdown 3 sections, MINIMUM 600 mots, SANS numéros>",
+  "tone_label": "<positive|neutral|negative>",
+  "rationale": "<analytical synthesis 4-5 sentences, intelligence language, IN ENGLISH>",
+  "google_summary": "<factual report with concrete data, NO numbers (100+ words), IN ENGLISH>",
+  "gpt_summary": "<contextual intel analysis, NO numbers (100+ words), IN ENGLISH>",
+  "structured_conclusion": "<markdown ##, MINIMUM 450 words, NO numbers, IN ENGLISH>",
+  "detailed_analysis": "<markdown 3 sections, MINIMUM 600 words, NO numbers, IN ENGLISH>",
   "advanced_metrics": {
     "source_quality": { "tier1_percentage": <0-100>, "tier2_percentage": <0-100>, "tier3_percentage": <0-100>, "dominant_tier": "<tier1|tier2|tier3>" },
     "information_freshness": { "recent_percentage": <0-100>, "old_percentage": <0-100>, "average_age_months": <number> },
@@ -417,92 +417,93 @@ Synthèse globale avec méthodologie renseignement open source:
   }
 }
 
-**RÈGLES D'ENGAGEMENT:**
-- INTERDIT: "(source 1)", "(sources 2, 5)", numérotation quelconque
-- OBLIGATOIRE: Langage OSINT/renseignement underground pro - "traces", "vecteurs", "intel", "crawl", "surface d'attaque", "signaux"
-- Style: Analyste stratégique, pas académique
-- Précision, données factuelles, approche terrain
-- MINIMUM 750 mots detailed_analysis, 450 structured_conclusion
-- CALCULER les métriques avancées avec précision
+**RULES OF ENGAGEMENT:**
+- FORBIDDEN: "(source 1)", "(sources 2, 5)", any numbering
+- MANDATORY: OSINT/underground pro language - "traces", "vectors", "intel", "crawl", "attack surface", "signals"
+- Style: Strategic analyst, not academic
+- Precision, factual data, field approach
+- MINIMUM 750 words detailed_analysis, 450 structured_conclusion
+- CALCULATE advanced metrics accurately
+- **ALL OUTPUT TEXT MUST BE IN ENGLISH**
 
-Réponds UNIQUEMENT avec le JSON, sans backticks.`
+Respond ONLY with JSON, no backticks.`
         } else {
-          prompt = `Tu es un analyste OSINT opérationnel en intelligence digitale. Mission: profiling de "${brand}". Output en ${responseLanguage}.
+          prompt = `You are an operational OSINT analyst in digital intelligence. Mission: profiling "${brand}". Output in ENGLISH.
 
-**DONNÉES CRAWLÉES (en ${language}):**
+**CRAWLED DATA (in ${language}):**
 ${googleContent}
 
-**⚠️ PROTOCOLE: Jamais de numéros de sources. Utilise: "les renseignements collectés", "l'OSINT révèle", "selon les traces crawlées", "les données ouvertes montrent", "les plateformes indexées indiquent".**
+**⚠️ PROTOCOL: Never use source numbers. Use: "intelligence collected", "OSINT reveals", "according to crawled traces", "open data shows", "indexed platforms indicate".**
 
-**VECTEURS D'ANALYSE (SANS hypothèse à vérifier):**
+**ANALYSIS VECTORS (WITHOUT hypothesis to verify):**
 
-1. **EMPREINTE DIGITALE (score/100)**: Présence cross-platform, diversité des vecteurs, autorité domain, couverture médiatique
-2. **POLARISATION GLOBALE (score/100)**: Sentiment agrégé (hostile=0, neutre=50, favorable=100)
-3. **PAS DE SCORE D'ALIGNEMENT** (pas d'hypothèse à checker)
+1. **DIGITAL FOOTPRINT (score/100)**: Cross-platform presence, vector diversity, domain authority, media coverage
+2. **GLOBAL POLARIZATION (score/100)**: Aggregated sentiment (hostile=0, neutral=50, favorable=100)
+3. **NO ALIGNMENT SCORE** (no hypothesis to check)
 ${metricsSection}
 
-**ÉLÉMENTS TACTIQUES:**
-- **key_takeaway**: UNE phrase percutante résumant l'essentiel (max 20 mots)
-- **risks**: 3 menaces réputationnelles factuelles (courts, précis)
-- **strengths**: 3 atouts stratégiques factuels (courts, précis)
+**TACTICAL ELEMENTS:**
+- **key_takeaway**: ONE impactful sentence summarizing the essence (max 20 words)
+- **risks**: 3 factual reputational threats (short, precise)
+- **strengths**: 3 factual strategic assets (short, precise)
 
-**RAPPORT EXÉCUTIF (structured_conclusion) - 3 sections markdown, 150+ mots/section:**
+**EXECUTIVE REPORT (structured_conclusion) - 3 markdown sections, 150+ words/section:**
 
-## Empreinte Digitale
-Audit approfondi de la visibilité: typologie des traces (encyclopédies type Wikipédia, médias mainstream/alternatifs, plateformes officielles, réseaux sociaux, forums), autorité des domaines, couverture géographique, freshness temporelle. Analyse des vecteurs dominants et blind spots. **Langage opérationnel, pas de numéros.**
+## Digital Footprint
+In-depth visibility audit: trace typology (encyclopedias like Wikipedia, mainstream/alternative media, official platforms, social networks, forums), domain authority, geographic coverage, temporal freshness. Analysis of dominant vectors and blind spots. **Operational language, no numbers.**
 
-## Polarisation du Sentiment
-Analyse comportementale avec cas concrets (jamais "source X"): distribution hostile/neutre/favorable, triggers émotionnels, narratives détectées, controverses vs consensus, comparaison communication officielle vs perception communautaire.
+## Sentiment Polarization
+Behavioral analysis with concrete cases (never "source X"): hostile/neutral/favorable distribution, emotional triggers, detected narratives, controversies vs consensus, comparison official communication vs community perception.
 
-## Briefing Stratégique
-Synthèse consolidée: identité et positionnement, atouts (leadership, expertise, notoriété), vulnérabilités (controverses, critiques, failles), recommandations, forecast. **Nomme les sources par type, jamais par index.**
+## Strategic Briefing
+Consolidated synthesis: identity and positioning, assets (leadership, expertise, notoriety), vulnerabilities (controversies, criticism, flaws), recommendations, forecast. **Name sources by type, never by index.**
 
-**ANALYSE TERRAIN (detailed_analysis) - 3 sections obligatoires, 250+ mots/section:**
+**FIELD ANALYSIS (detailed_analysis) - 3 mandatory sections, 250+ words/section:**
 
-## Analyse OSINT des Sources Crawlées
-Approche méthodique renseignement sur les résultats, langage NATUREL:
-- **Classification**: Catégorisation (Wikipédia, médias tier-1/2, presse spécialisée, plateformes officielles, social media, underground)
-- **Trustrank**: Fiabilité des domaines (utilise "sources haute autorité", "plateformes vérifiées")
-- **Freshness**: Récence des traces
-- **Sémantique**: Keywords, clusters thématiques
+## OSINT Analysis of Crawled Sources
+Methodical intelligence approach on results, NATURAL language:
+- **Classification**: Categorization (Wikipedia, tier-1/2 media, specialized press, official platforms, social media, underground)
+- **Trustrank**: Domain reliability (use "high authority sources", "verified platforms")
+- **Freshness**: Trace recency
+- **Semantics**: Keywords, thematic clusters
 - **Storytelling**: Narratives, convergences/divergences
-- **Anomalies**: Patterns suspects, contradictions, gaps
-- **Distribution**: Géographique, linguistique, segmentation audience
-**Réfère aux sources par nature (ex: "Wikipédia documente", "les médias rapportent"), JAMAIS par numéro.**
+- **Anomalies**: Suspicious patterns, contradictions, gaps
+- **Distribution**: Geographic, linguistic, audience segmentation
+**Refer to sources by nature (e.g., "Wikipedia documents", "media report"), NEVER by number.**
 
-## Projection IA Générative
-Perception de la target par les LLMs (ChatGPT, Claude, Gemini, Perplexity):
-- Synthèse knowledge base IA
-- Sources primaires LLM
-- Biais de représentation potentiels
-- Risques informationnels (hallucinations)
-- Optimisations possibles
-- Actions recommandées
+## Generative AI Projection
+Target perception by LLMs (ChatGPT, Claude, Gemini, Perplexity):
+- AI knowledge base synthesis
+- LLM primary sources
+- Potential representation biases
+- Information risks (hallucinations)
+- Possible optimizations
+- Recommended actions
 
-## Vue Stratégique Complète OSINT
-Synthèse globale avec méthodologie renseignement rigoureuse:
-- Cartographie complète surface digitale
-- Forces structurelles et avantages compétitifs
-- Vulnérabilités et vecteurs d'attaque
-- Benchmarking contextuel si pertinent
-- Signaux faibles et tendances émergentes
-- Forecast trajectoire
-- Recommandations stratégiques actionnables
+## Complete OSINT Strategic View
+Global synthesis with rigorous intelligence methodology:
+- Complete digital surface mapping
+- Structural strengths and competitive advantages
+- Vulnerabilities and attack vectors
+- Contextual benchmarking if relevant
+- Weak signals and emerging trends
+- Trajectory forecast
+- Actionable strategic recommendations
 
-**OUTPUT JSON:**
+**JSON OUTPUT - ALL TEXT MUST BE IN ENGLISH:**
 {
   "presence_score": <0-100>,
   "tone_score": <0-100>,
   "coherence_score": null,
-  "tone_label": "<positif|neutre|négatif>",
-  "rationale": "<synthèse narrative PRÉCISE, langage renseignement, 4-5 phrases>",
-  "google_summary": "<rapport factuel avec NOMS, FAITS, DATES, SANS numéros (150+ mots)>",
-  "gpt_summary": "<analyse contextuelle approfondie, SANS numéros (150+ mots)>",
-  "structured_conclusion": "<markdown ##, MINIMUM 450 mots, SANS numéros>",
-  "detailed_analysis": "<markdown 3 sections complètes, MINIMUM 750 mots, SANS numéros>",
-  "key_takeaway": "<phrase percutante (15-20 mots max)>",
-  "risks": ["<risque 1>", "<risque 2>", "<risque 3>"],
-  "strengths": ["<force 1>", "<force 2>", "<force 3>"],
+  "tone_label": "<positive|neutral|negative>",
+  "rationale": "<PRECISE narrative synthesis, intelligence language, 4-5 sentences, IN ENGLISH>",
+  "google_summary": "<factual report with NAMES, FACTS, DATES, NO numbers (150+ words), IN ENGLISH>",
+  "gpt_summary": "<in-depth contextual analysis, NO numbers (150+ words), IN ENGLISH>",
+  "structured_conclusion": "<markdown ##, MINIMUM 450 words, NO numbers, IN ENGLISH>",
+  "detailed_analysis": "<markdown 3 complete sections, MINIMUM 750 words, NO numbers, IN ENGLISH>",
+  "key_takeaway": "<impactful sentence (15-20 words max), IN ENGLISH>",
+  "risks": ["<risk 1 IN ENGLISH>", "<risk 2 IN ENGLISH>", "<risk 3 IN ENGLISH>"],
+  "strengths": ["<strength 1 IN ENGLISH>", "<strength 2 IN ENGLISH>", "<strength 3 IN ENGLISH>"],
   "advanced_metrics": {
     "source_quality": { "tier1_percentage": <0-100>, "tier2_percentage": <0-100>, "tier3_percentage": <0-100>, "dominant_tier": "<tier1|tier2|tier3>" },
     "information_freshness": { "recent_percentage": <0-100>, "old_percentage": <0-100>, "average_age_months": <number> },
@@ -514,15 +515,16 @@ Synthèse globale avec méthodologie renseignement rigoureuse:
   }
 }
 
-**RÈGLES D'ENGAGEMENT:**
-- INTERDIT: "(source 1)", "(sources 2, 5, 9)", numérotation
-- OBLIGATOIRE: Langage OSINT/underground pro - "traces", "vecteurs", "intel", "crawl", "surface d'attaque", "signaux"
-- Style: Analyste renseignement, pas académique
-- Précision, données factuelles, approche terrain
-- MINIMUM 750 mots detailed_analysis, 450 structured_conclusion
-- CALCULER les métriques avancées avec précision
+**RULES OF ENGAGEMENT:**
+- FORBIDDEN: "(source 1)", "(sources 2, 5, 9)", numbering
+- MANDATORY: OSINT/underground pro language - "traces", "vectors", "intel", "crawl", "attack surface", "signals"
+- Style: Intelligence analyst, not academic
+- Precision, factual data, field approach
+- MINIMUM 750 words detailed_analysis, 450 structured_conclusion
+- CALCULATE advanced metrics accurately
+- **ALL OUTPUT TEXT MUST BE IN ENGLISH**
 
-JSON pur sans backticks`
+Pure JSON without backticks`
         }
 
         console.log("[v0] Calling OpenAI API for detailed analysis...")
@@ -550,7 +552,7 @@ JSON pur sans backticks`
           presence_score: parsed.presence_score || 50,
           tone_score: parsed.tone_score || 50,
           coherence_score: hasMessage ? parsed.coherence_score || 50 : null,
-          tone_label: parsed.tone_label || "neutre",
+          tone_label: parsed.tone_label || "neutral",
           rationale: parsed.rationale || "Analyse complète disponible.",
           google_summary: parsed.google_summary || "",
           gpt_summary: parsed.gpt_summary || "",
@@ -711,7 +713,7 @@ function normalizeAnalysisResponse(analysis: any): DetailedAnalysis {
     presence_score: analysis.presence_score || 0,
     tone_score: analysis.tone_score || 0,
     coherence_score: analysis.coherence_score || 0,
-    tone_label: analysis.tone_label || "neutre",
+    tone_label: analysis.tone_label || "neutral",
     rationale: analysis.rationale || "Analyse non disponible",
     google_summary: analysis.google_summary || "Résumé non disponible",
     gpt_summary: analysis.gpt_summary || "Analyse non disponible",
@@ -736,7 +738,7 @@ function generateFallbackAnalysis(): DetailedAnalysis {
     presence_score: randomVariance(),
     tone_score: randomVariance(),
     coherence_score: randomVariance(),
-    tone_label: "neutre",
+    tone_label: "neutral",
     rationale:
       "⚠️ DONNÉES DE FALLBACK - Analyse réalisée sans IA comparative en raison d'une erreur technique. Veuillez réessayer.",
     google_summary: "⚠️ Résumé non disponible - erreur API ou clé manquante",

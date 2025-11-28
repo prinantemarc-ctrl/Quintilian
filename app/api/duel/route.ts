@@ -223,7 +223,7 @@ export async function POST(request: NextRequest) {
 
     const hasMessage = message && message.trim().length > 0
 
-    const userLanguage = body.uiLanguage || request.headers.get("accept-language")?.split(",")[0]?.split("-")[0] || "fr"
+    const userLanguage = "en"
     console.log(
       `[v0] Processing duel: ${brand1} vs ${brand2}`,
       country ? `(Country: ${country})` : "",

@@ -4,17 +4,14 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X, Swords, BarChart3, Shield } from "lucide-react"
 import Link from "next/link"
-import { useLanguage } from "@/contexts/language-context"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { LanguageSelector } from "@/components/language-selector-new"
 import { UserMenu } from "@/components/auth/user-menu-new"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const { language, setLanguage, t } = useLanguage()
   const router = useRouter()
   const [supabase, setSupabase] = useState<any>(null)
 
@@ -106,7 +103,7 @@ export function Header() {
               className="text-xs font-medium tracking-widest text-zinc-400 hover:text-white transition-colors flex items-center gap-2 uppercase whitespace-nowrap"
             >
               <BarChart3 className="w-4 h-4 text-violet-500/50" />
-              Analyse
+              Analysis
             </Link>
             <Link
               href="/duel"
@@ -125,10 +122,6 @@ export function Header() {
           </nav>
 
           <div className="hidden md:flex items-center gap-4 lg:gap-8 shrink-0">
-            <div className="hidden lg:flex items-center">
-              <LanguageSelector />
-            </div>
-
             {!isLoading && (
               <>
                 {user ? (
@@ -148,7 +141,7 @@ export function Header() {
 
             <Link href="/analyze">
               <Button className="bg-violet-600 hover:bg-violet-700 text-white rounded-sm font-bold text-[10px] sm:text-xs uppercase tracking-widest px-3 sm:px-6 py-4 sm:py-5 shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] transition-all duration-300 border-none whitespace-nowrap">
-                {t("header.try_free")}
+                TRY FREE
               </Button>
             </Link>
           </div>
@@ -170,7 +163,7 @@ export function Header() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 <BarChart3 className="w-4 h-4 inline mr-2" />
-                Analyse Basique
+                Basic Analysis
               </Link>
               <Link
                 href="/duel"
@@ -197,13 +190,9 @@ export function Header() {
               </Link>
 
               <div className="pt-3 border-t border-white/10">
-                <LanguageSelector />
-              </div>
-
-              <div className="pt-3 border-t border-white/10">
                 <Link href="/analyze">
                   <Button className="w-full bg-violet-600 text-white rounded-none font-medium uppercase">
-                    {t("header.try_free")}
+                    TRY FREE
                   </Button>
                 </Link>
               </div>

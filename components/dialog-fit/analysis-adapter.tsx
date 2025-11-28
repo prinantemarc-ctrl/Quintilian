@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { AdaptiveModal, useModal, type DialogFitContent } from "@/components/dialog-fit"
 import { InfoModal } from "@/components/info-modal"
 import { analysisHistory } from "@/lib/history"
-import { useLanguage } from "@/contexts/language-context"
 
 interface AnalysisAdapterProps {
   isOpen: boolean
@@ -62,7 +61,6 @@ interface IdentitySelectionResponse {
 
 export function AnalysisAdapter({ isOpen, onClose, searchTerm, message, language }: AnalysisAdapterProps) {
   const modal = useModal()
-  const { language: uiLanguage } = useLanguage()
   const [showInfo, setShowInfo] = useState(false)
   const [result, setResult] = useState<AnalysisResult | null>(null)
   const [identitySelection, setIdentitySelection] = useState<IdentitySelectionResponse | null>(null)
@@ -78,7 +76,7 @@ export function AnalysisAdapter({ isOpen, onClose, searchTerm, message, language
 
   useEffect(() => {
     if (isOpen && !modal.isOpen) {
-      modal.showLoading("Analyse en cours...")
+      modal.showLoading("Analysis in progress...")
     } else if (!isOpen && modal.isOpen) {
       modal.closeModal()
     }
@@ -86,7 +84,7 @@ export function AnalysisAdapter({ isOpen, onClose, searchTerm, message, language
 
   const startAnalysis = async (identity?: string) => {
     setLoadingProgress(0)
-    modal.showLoading("Analyse en cours...")
+    modal.showLoading("Analysis in progress...")
 
     const progressInterval = setInterval(() => {
       setLoadingProgress((prev) => {
@@ -101,7 +99,7 @@ export function AnalysisAdapter({ isOpen, onClose, searchTerm, message, language
             brand: searchTerm,
             message: message,
             language: language,
-            uiLanguage: uiLanguage,
+            uiLanguage: "en",
             selected_identity: identity,
             search_results: identitySelection?.search_results || [],
           }
@@ -109,7 +107,7 @@ export function AnalysisAdapter({ isOpen, onClose, searchTerm, message, language
             brand: searchTerm,
             message: message,
             language: language,
-            uiLanguage: uiLanguage,
+            uiLanguage: "en",
           }
 
       const response = await fetch("/api/analyze", {
@@ -121,18 +119,17 @@ export function AnalysisAdapter({ isOpen, onClose, searchTerm, message, language
       })
 
       if (!response.ok) {
-        let errorMessage = "Erreur lors de l'analyse"
+        let errorMessage = "Analysis error"
         try {
           const errorData = await response.json()
           errorMessage = errorData.message || errorData.error || errorMessage
 
           if (response.status === 429 || errorData.error === "RATE_LIMIT_EXCEEDED") {
             errorMessage =
-              errorData.message ||
-              "L'API Google a atteint sa limite de requêtes. Veuillez réessayer dans quelques minutes."
+              errorData.message || "Google API has reached its request limit. Please try again in a few minutes."
           }
         } catch (jsonError) {
-          errorMessage = response.statusText || `Erreur ${response.status}`
+          errorMessage = response.statusText || `Error ${response.status}`
         }
         throw new Error(errorMessage)
       }
@@ -181,22 +178,22 @@ export function AnalysisAdapter({ isOpen, onClose, searchTerm, message, language
     } catch (err) {
       clearInterval(progressInterval)
       console.error("Analysis error:", err)
-      modal.showError("Erreur d'Analyse", err instanceof Error ? err.message : "Une erreur est survenue")
+      modal.showError("Analysis Error", err instanceof Error ? err.message : "An error occurred")
     }
   }
 
   const showIdentitySelection = (identityData: IdentitySelectionResponse) => {
     const content: DialogFitContent = {
-      title: "Sélection d'identité",
+      title: "Identity Selection",
       content: `
 **${identityData.message}**
 
-Plusieurs identités ont été trouvées pour "${searchTerm}". Veuillez sélectionner celle qui correspond le mieux à votre recherche ou préciser votre identité.
+Multiple identities were found for "${searchTerm}". Please select the one that best matches your search or specify your identity.
 
-**Identités trouvées :**
+**Identities found:**
 ${identityData.identified_entities.map((entity, index) => `${index + 1}. ${entity}`).join("\n")}
 
-Vous pouvez également préciser votre identité en utilisant le champ de texte ci-dessous.
+You can also specify your identity using the text field below.
       `,
       metadata: {
         query: searchTerm,
@@ -215,37 +212,35 @@ Vous pouvez également préciser votre identité en utilisant le champ de texte 
 
     const tabs = []
 
-    // Onglet Résumés
     if (resultData.google_summary || resultData.gpt_summary) {
-      let resumeContent = "## Résumés de l'Analyse\n\n"
+      let resumeContent = "## Analysis Summaries\n\n"
 
       if (resultData.google_summary) {
-        resumeContent += "### 🔍 Résumé Google\n"
-        resumeContent += "*Basé sur les résultats de recherche Google*\n\n"
+        resumeContent += "### 🔍 Google Summary\n"
+        resumeContent += "*Based on Google search results*\n\n"
         resumeContent += resultData.google_summary + "\n\n"
       }
 
       if (resultData.gpt_summary) {
-        resumeContent += "### 🤖 Résumé GPT\n"
-        resumeContent += "*Analyse IA avancée et contextuelle*\n\n"
+        resumeContent += "### 🤖 GPT Summary\n"
+        resumeContent += "*Advanced AI and contextual analysis*\n\n"
         resumeContent += resultData.gpt_summary + "\n\n"
       }
 
       resumeContent += "---\n\n"
-      resumeContent += "### 🚀 Votre score ne vous satisfait pas ?\n"
-      resumeContent += "Vous voulez influer dessus ? Nous avons les solutions qu'il vous faut.\n\n"
-      resumeContent += "**📞 Contactez-nous dès maintenant !**"
+      resumeContent += "### 🚀 Not satisfied with your score?\n"
+      resumeContent += "Want to improve it? We have the solutions you need.\n\n"
+      resumeContent += "**📞 Contact us now!**"
 
       tabs.push({
         id: "resume",
-        label: "Résumés",
+        label: "Summaries",
         content: resumeContent,
       })
     }
 
-    // Onglet Analyse Détaillée
     if (resultData.detailed_analysis || resultData.rationale) {
-      let detailContent = "## Analyse Détaillée\n\n"
+      let detailContent = "## Detailed Analysis\n\n"
 
       if (resultData.detailed_analysis) {
         detailContent += resultData.detailed_analysis
@@ -254,26 +249,25 @@ Vous pouvez également préciser votre identité en utilisant le champ de texte 
       }
 
       detailContent += "\n\n---\n\n"
-      detailContent += "### 🚀 Votre score ne vous satisfait pas ?\n"
-      detailContent += "Vous voulez influer dessus ? Nous avons les solutions qu'il vous faut.\n\n"
-      detailContent += "**📞 Contactez-nous dès maintenant !**"
+      detailContent += "### 🚀 Not satisfied with your score?\n"
+      detailContent += "Want to improve it? We have the solutions you need.\n\n"
+      detailContent += "**📞 Contact us now!**"
 
       tabs.push({
         id: "analyse",
-        label: "Analyse Détaillée",
+        label: "Detailed Analysis",
         content: detailContent,
       })
     }
 
-    // Onglet Conclusion
     if (resultData.structured_conclusion) {
-      let conclusionContent = "## Conclusion Stratégique\n\n"
+      let conclusionContent = "## Strategic Conclusion\n\n"
       conclusionContent += resultData.structured_conclusion
 
       conclusionContent += "\n\n---\n\n"
-      conclusionContent += "### 🚀 Votre score ne vous satisfait pas ?\n"
-      conclusionContent += "Vous voulez influer dessus ? Nous avons les solutions qu'il vous faut.\n\n"
-      conclusionContent += "**📞 Contactez-nous dès maintenant !**"
+      conclusionContent += "### 🚀 Not satisfied with your score?\n"
+      conclusionContent += "Want to improve it? We have the solutions you need.\n\n"
+      conclusionContent += "**📞 Contact us now!**"
 
       tabs.push({
         id: "conclusion",
@@ -282,30 +276,29 @@ Vous pouvez également préciser votre identité en utilisant le champ de texte 
       })
     }
 
-    // Si pas d'onglets, créer un contenu simple
     let content = ""
     if (tabs.length === 0) {
-      content = `## Analyse de "${searchTerm}"\n\n`
-      content += `**Message analysé :** ${message}\n\n`
-      content += `**Score Global :** ${globalScore}/100\n\n`
+      content = `## Analysis of "${searchTerm}"\n\n`
+      content += `**Analyzed Message:** ${message}\n\n`
+      content += `**Global Score:** ${globalScore}/100\n\n`
 
-      content += `### Scores Détaillés\n\n`
-      content += `- **Présence Digitale :** ${resultData.presence_score}/100\n`
-      content += `- **Sentiment :** ${resultData.tone_score}/100 (${resultData.tone_label})\n`
-      content += `- **Cohérence :** ${resultData.coherence_score}/100\n\n`
+      content += `### Detailed Scores\n\n`
+      content += `- **Digital Presence:** ${resultData.presence_score}/100\n`
+      content += `- **Sentiment:** ${resultData.tone_score}/100 (${resultData.tone_label})\n`
+      content += `- **Coherence:** ${resultData.coherence_score}/100\n\n`
 
       if (resultData.rationale) {
-        content += `### Analyse\n\n${resultData.rationale}\n\n`
+        content += `### Analysis\n\n${resultData.rationale}\n\n`
       }
 
       content += "---\n\n"
-      content += "### 🚀 Votre score ne vous satisfait pas ?\n"
-      content += "Vous voulez influer dessus ? Nous avons les solutions qu'il vous faut.\n\n"
-      content += "**📞 Contactez-nous dès maintenant !**"
+      content += "### 🚀 Not satisfied with your score?\n"
+      content += "Want to improve it? We have the solutions you need.\n\n"
+      content += "**📞 Contact us now!**"
     }
 
     const analysisContent: DialogFitContent = {
-      title: `Analyse de "${searchTerm}" - Score: ${globalScore}/100`,
+      title: `Analysis of "${searchTerm}" - Score: ${globalScore}/100`,
       content: tabs.length === 0 ? content : undefined,
       tabs: tabs.length > 0 ? tabs : undefined,
       metadata: {
@@ -336,11 +329,11 @@ Vous pouvez également préciser votre identité en utilisant le champ de texte 
 
   const getLanguageLabel = (lang: string) => {
     const labels: Record<string, string> = {
-      fr: "Français",
-      en: "Anglais",
-      es: "Español",
-      de: "Allemand",
-      it: "Italien",
+      fr: "French",
+      en: "English",
+      es: "Spanish",
+      de: "German",
+      it: "Italian",
     }
     return labels[lang] || lang
   }

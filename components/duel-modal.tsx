@@ -7,7 +7,6 @@ import { X, Crosshair, Activity, ChevronUp, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { JSX } from "react/jsx-runtime"
-import { useLanguage } from "@/contexts/language-context"
 import { DuelLoadingAnimation } from "@/components/duel-loading-animation"
 
 interface DuelModalProps {
@@ -135,7 +134,6 @@ function formatComparisonText(text: string) {
 }
 
 export function DuelModal({ isOpen, onClose, formData }: DuelModalProps) {
-  const { t, language: uiLanguage } = useLanguage()
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
   const [result, setResult] = useState<DuelResult | null>(null)
@@ -166,25 +164,25 @@ export function DuelModal({ isOpen, onClose, formData }: DuelModalProps) {
           brand2,
           message,
           language,
-          uiLanguage: uiLanguage,
+          uiLanguage: "en",
         }),
       })
 
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(`Erreur lors du duel: ${response.status} - ${errorText}`)
+        throw new Error(`Duel error: ${response.status} - ${errorText}`)
       }
 
       const apiResponse = await response.json()
 
       if (!apiResponse || !apiResponse.success || !apiResponse.data) {
-        throw new Error("Structure de réponse API invalide")
+        throw new Error("Structure of response API invalid")
       }
 
       const duelResult = apiResponse.data
 
       if (!duelResult || !duelResult.brand1_analysis || !duelResult.brand2_analysis) {
-        throw new Error("Structure de données de duel invalide")
+        throw new Error("Structure of duel data invalid")
       }
 
       setResult(duelResult)
@@ -193,7 +191,7 @@ export function DuelModal({ isOpen, onClose, formData }: DuelModalProps) {
     } catch (error) {
       console.error("[v0] Duel error details:", error)
       setIsAnalyzing(false)
-      setError(error instanceof Error ? error.message : "Une erreur est survenue")
+      setError(error instanceof Error ? error.message : "An error occurred")
     }
   }
 
@@ -208,7 +206,7 @@ export function DuelModal({ isOpen, onClose, formData }: DuelModalProps) {
       return (
         <Badge className="bg-violet-900/50 text-violet-200 border border-violet-500/50 font-heading tracking-wider">
           <Crosshair className="w-3 h-3 mr-1" />
-          CIBLE DOMINANTE
+          DOMINANT TARGET
         </Badge>
       )
     }
@@ -221,7 +219,7 @@ export function DuelModal({ isOpen, onClose, formData }: DuelModalProps) {
         <div className="flex items-center justify-between px-8 py-5 border-b border-violet-900/20 flex-shrink-0">
           <DialogTitle className="text-2xl font-bold flex items-center gap-3 font-heading text-white">
             <Activity className="w-7 h-7 text-violet-500" strokeWidth={2.5} />
-            {isAnalyzing ? t("decrypting") : t("confrontation_report")}
+            {isAnalyzing ? "Decrypting..." : "Confrontation Report"}
           </DialogTitle>
           <Button
             variant="ghost"
@@ -239,11 +237,11 @@ export function DuelModal({ isOpen, onClose, formData }: DuelModalProps) {
           ) : result ? (
             <div className="space-y-8">
               <div className="border border-violet-900/50 bg-gradient-to-b from-violet-950/20 to-black p-8 text-center">
-                {result.winner === "Match nul" ? (
-                  <h3 className="text-3xl font-bold text-white">{t("perfect_equality")}</h3>
+                {result.winner === "Draw" ? (
+                  <h3 className="text-3xl font-bold text-white">Perfect Equality</h3>
                 ) : (
                   <div>
-                    <h3 className="text-xl text-violet-500 mb-2">{t("dominant_target_identified")}</h3>
+                    <h3 className="text-xl text-violet-500 mb-2">Dominant Target Identified</h3>
                     <div className="text-5xl font-bold text-white">{result.winner}</div>
                   </div>
                 )}
@@ -258,7 +256,7 @@ export function DuelModal({ isOpen, onClose, formData }: DuelModalProps) {
 
                 <div className="space-y-4">
                   <div>
-                    <div className="text-xs text-gray-500 mb-2">{t("visibility")}</div>
+                    <div className="text-xs text-gray-500 mb-2">Visibility</div>
                     <div className="flex items-center gap-2">
                       <span className={cn("font-bold w-8", getScoreColor(result.brand1_analysis.presence_score))}>
                         {result.brand1_analysis.presence_score}
@@ -284,7 +282,7 @@ export function DuelModal({ isOpen, onClose, formData }: DuelModalProps) {
                     onClick={() => setExpandedComparison(!expandedComparison)}
                     className="w-full flex items-center justify-between px-8 py-5"
                   >
-                    <h3 className="text-xl font-bold text-white">{t("detailed_comparative_analysis")}</h3>
+                    <h3 className="text-xl font-bold text-white">Detailed Comparative Analysis</h3>
                     {expandedComparison ? <ChevronUp /> : <ChevronDown />}
                   </button>
 

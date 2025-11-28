@@ -7,11 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { AnalysisModal } from "@/components/analysis-modal"
-import { useLanguage } from "@/contexts/language-context"
 import { Eye, Lock, Fingerprint, Activity, Globe } from "lucide-react"
 
 export function HeroSection() {
-  const { t, language } = useLanguage()
   const [formData, setFormData] = useState({
     brand: "",
     message: "",
@@ -42,22 +40,21 @@ export function HeroSection() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-500"></span>
             </span>
-            {t("hero.badge")}
+            AI-Powered Intelligence Platform
           </div>
 
           {/* Main Title */}
           <div className="space-y-4 sm:space-y-6">
             <h1 className="text-3xl sm:text-5xl lg:text-7xl xl:text-8xl font-heading font-black tracking-tighter text-white leading-none px-2">
-              <span className="block text-violet-500 drop-shadow-[0_0_15px_rgba(139,92,246,0.5)]">
-                {t("hero.title_measure")}
-              </span>
+              <span className="block text-violet-500 drop-shadow-[0_0_15px_rgba(139,92,246,0.5)]">MAK-IA</span>
               <span className="block text-lg sm:text-2xl lg:text-4xl text-neutral-400 font-normal tracking-widest mt-3 sm:mt-4 uppercase">
-                {t("hero.title_reputation")}
+                Measure Your Digital Reputation
               </span>
             </h1>
 
             <p className="max-w-2xl mx-auto text-sm sm:text-base lg:text-lg text-neutral-500 leading-relaxed px-4">
-              {t("hero.subtitle_desc")}
+              Discover how the world really perceives your brand. Get instant AI-powered analysis of your online
+              presence, sentiment, and reputation across the web.
             </p>
           </div>
 
@@ -76,11 +73,11 @@ export function HeroSection() {
                   <div className="space-y-2 text-left">
                     <Label className="text-xs font-medium text-violet-400 uppercase tracking-wider flex items-center gap-2">
                       <Fingerprint className="w-3 h-3" />
-                      {t("hero.name_label")} <span className="text-violet-300">*</span>
+                      Target Name <span className="text-violet-300">*</span>
                     </Label>
                     <Input
                       id="brand"
-                      placeholder={t("hero.name_placeholder")}
+                      placeholder="Enter a brand, person, or organization"
                       value={formData.brand}
                       onChange={(e) => setFormData((prev) => ({ ...prev, brand: e.target.value }))}
                       className="bg-black border-zinc-800 focus:border-violet-900 text-white placeholder:text-zinc-700 h-12 rounded-none"
@@ -90,12 +87,11 @@ export function HeroSection() {
                   <div className="space-y-2 text-left">
                     <Label className="text-[10px] sm:text-xs font-medium text-violet-400 uppercase tracking-wider flex items-center gap-2">
                       <Activity className="w-3 h-3" />
-                      {t("hero.message_label")}{" "}
-                      <span className="text-zinc-500 text-[9px] sm:text-[10px]">(optionnel)</span>
+                      Strategic Message <span className="text-zinc-500 text-[9px] sm:text-[10px]">(optional)</span>
                     </Label>
                     <Textarea
                       id="message"
-                      placeholder={t("hero.message_placeholder")}
+                      placeholder="Add context about your strategic positioning or message..."
                       value={formData.message}
                       onChange={(e) => setFormData((prev) => ({ ...prev, message: e.target.value }))}
                       className="min-h-[80px] sm:min-h-[100px] text-sm sm:text-base resize-none border-zinc-800 focus:border-violet-900 text-white bg-background/50"
@@ -106,31 +102,31 @@ export function HeroSection() {
                 <div className="space-y-2 text-left">
                   <Label className="text-xs font-medium text-violet-400 uppercase tracking-wider flex items-center gap-2">
                     <Globe className="w-3 h-3" />
-                    {t("hero.language_label")} <span className="text-zinc-500 text-[10px]">(optionnel)</span>
+                    Search Region <span className="text-zinc-500 text-[10px]">(optional)</span>
                   </Label>
                   <Select
                     value={formData.language}
                     onValueChange={(value) => setFormData((prev) => ({ ...prev, language: value }))}
                   >
                     <SelectTrigger className="bg-black border-zinc-800 focus:border-violet-900 text-white h-12 rounded-none">
-                      <SelectValue placeholder={t("hero.language_placeholder")} />
+                      <SelectValue placeholder="Select search region" />
                     </SelectTrigger>
                     <SelectContent className="bg-black border-zinc-800 text-white rounded-none">
-                      <SelectItem value="fr">{t("lang.french")}</SelectItem>
-                      <SelectItem value="en">{t("lang.english")}</SelectItem>
-                      <SelectItem value="es">{t("lang.spanish")}</SelectItem>
-                      <SelectItem value="de">{t("lang.german")}</SelectItem>
-                      <SelectItem value="it">{t("lang.italian")}</SelectItem>
-                      <SelectItem value="pt">{t("lang.portuguese")}</SelectItem>
-                      <SelectItem value="nl">{t("lang.dutch")}</SelectItem>
-                      <SelectItem value="ru">{t("lang.russian")}</SelectItem>
-                      <SelectItem value="zh">{t("lang.chinese")}</SelectItem>
-                      <SelectItem value="ja">{t("lang.japanese")}</SelectItem>
-                      <SelectItem value="ar">{t("lang.arabic")}</SelectItem>
-                      <SelectItem value="hi">{t("lang.hindi")}</SelectItem>
-                      <SelectItem value="ko">{t("lang.korean")}</SelectItem>
-                      <SelectItem value="sv">{t("lang.swedish")}</SelectItem>
-                      <SelectItem value="no">{t("lang.norwegian")}</SelectItem>
+                      <SelectItem value="fr">French</SelectItem>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="es">Spanish</SelectItem>
+                      <SelectItem value="de">German</SelectItem>
+                      <SelectItem value="it">Italian</SelectItem>
+                      <SelectItem value="pt">Portuguese</SelectItem>
+                      <SelectItem value="nl">Dutch</SelectItem>
+                      <SelectItem value="ru">Russian</SelectItem>
+                      <SelectItem value="zh">Chinese</SelectItem>
+                      <SelectItem value="ja">Japanese</SelectItem>
+                      <SelectItem value="ar">Arabic</SelectItem>
+                      <SelectItem value="hi">Hindi</SelectItem>
+                      <SelectItem value="ko">Korean</SelectItem>
+                      <SelectItem value="sv">Swedish</SelectItem>
+                      <SelectItem value="no">Norwegian</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -141,7 +137,7 @@ export function HeroSection() {
                   className="w-full h-12 sm:h-14 bg-violet-700 hover:bg-violet-600 text-white font-medium uppercase tracking-[0.15em] sm:tracking-[0.2em] text-xs sm:text-sm rounded-none border border-transparent hover:border-violet-400 transition-all duration-300 disabled:opacity-50 disabled:grayscale"
                 >
                   <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3" />
-                  {t("hero.analyze_button")}
+                  Launch Analysis
                 </Button>
               </div>
             </div>
@@ -154,7 +150,7 @@ export function HeroSection() {
               </div>
               <div className="flex items-center gap-2">
                 <Lock className="w-3 h-3" />
-                {t("hero.secure")}
+                Encrypted & Secure
               </div>
             </div>
           </div>

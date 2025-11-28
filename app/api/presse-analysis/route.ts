@@ -66,7 +66,8 @@ export async function POST(request: NextRequest) {
   try {
     console.log("[v0] Presse API: Starting request processing")
 
-    const { query, countries, entityType, entityContext, userLanguage = "fr", selected_identity } = await request.json()
+    const { query, countries, entityType, entityContext, selected_identity } = await request.json()
+    const userLanguage = "en"
 
     if (!query) {
       return NextResponse.json({ error: "Query is required" }, { status: 400 })

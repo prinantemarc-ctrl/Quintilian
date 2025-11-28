@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { Zap, Swords, Flame } from "lucide-react"
-import { useLanguage } from "@/contexts/language-context"
 
 interface DuelLoadingAnimationProps {
   brand1: string
@@ -10,7 +9,6 @@ interface DuelLoadingAnimationProps {
 }
 
 export function DuelLoadingAnimation({ brand1, brand2 }: DuelLoadingAnimationProps) {
-  const { t } = useLanguage()
   const [phase, setPhase] = useState(0)
   const [progress, setProgress] = useState(0)
 
@@ -39,12 +37,7 @@ export function DuelLoadingAnimation({ brand1, brand2 }: DuelLoadingAnimationPro
     return parts.length > 0 ? parts[0].charAt(0).toUpperCase() : "?"
   }
 
-  const phaseTexts = [
-    t("duelLoading.collectingData"),
-    t("duelLoading.comparativeAnalysis"),
-    t("duelLoading.evaluatingMetrics"),
-    t("duelLoading.generatingVerdict"),
-  ]
+  const phaseTexts = ["Collecting data...", "Comparative analysis...", "Evaluating metrics...", "Generating verdict..."]
 
   return (
     <div className="relative w-full min-h-[500px] flex flex-col items-center justify-center p-8 bg-gradient-to-b from-black via-violet-950/20 to-black overflow-hidden">
@@ -105,9 +98,7 @@ export function DuelLoadingAnimation({ brand1, brand2 }: DuelLoadingAnimationPro
           {/* Status indicator */}
           <div className="mt-3 flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full bg-violet-500 ${phase % 2 === 0 ? "animate-pulse" : ""}`} />
-            <span className="text-violet-400 text-xs sm:text-sm font-medium tracking-wider uppercase">
-              {t("duelLoading.analyzing")}
-            </span>
+            <span className="text-violet-400 text-xs sm:text-sm font-medium tracking-wider uppercase">Analyzing</span>
           </div>
         </div>
 
@@ -184,9 +175,7 @@ export function DuelLoadingAnimation({ brand1, brand2 }: DuelLoadingAnimationPro
           {/* Status indicator */}
           <div className="mt-3 flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full bg-violet-500 ${phase % 2 === 1 ? "animate-pulse" : ""}`} />
-            <span className="text-violet-400 text-xs sm:text-sm font-medium tracking-wider uppercase">
-              {t("duelLoading.analyzing")}
-            </span>
+            <span className="text-violet-400 text-xs sm:text-sm font-medium tracking-wider uppercase">Analyzing</span>
           </div>
         </div>
       </div>

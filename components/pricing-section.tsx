@@ -3,11 +3,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Check } from "lucide-react"
-import { useLanguage } from "@/contexts/language-context"
 
 export function PricingSection() {
-  const { t } = useLanguage()
-
   const scrollToHero = () => {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
@@ -21,49 +18,44 @@ export function PricingSection() {
 
   const plans = [
     {
-      name: t("pricing.free_title"),
-      price: t("pricing.free_price"),
-      period: t("pricing.free_period"),
-      features: [
-        t("pricing.free_feature1"),
-        t("pricing.free_feature2"),
-        t("pricing.free_feature3"),
-        t("pricing.free_feature4"),
-      ],
-      cta: t("pricing.free_cta"),
+      name: "Free Trial",
+      price: "Free",
+      period: "",
+      features: ["1 basic analysis", "Presence & sentiment scores", "Basic recommendations", "Limited to 10 sources"],
+      cta: "Start Free Analysis",
       action: scrollToHero,
       popular: false,
     },
     {
-      name: t("pricing.pro_title"),
-      price: t("pricing.pro_price"),
-      period: t("pricing.pro_period"),
+      name: "Professional",
+      price: "Custom",
+      period: "",
       features: [
-        t("pricing.pro_feature1"),
-        t("pricing.pro_feature2"),
-        t("pricing.pro_feature3"),
-        t("pricing.pro_feature4"),
-        t("pricing.pro_feature5"),
-        t("pricing.pro_feature6"),
+        "Unlimited analyses",
+        "Advanced metrics & insights",
+        "Competitor comparison (Duel mode)",
+        "Full intelligence reports",
+        "Priority support",
+        "API access",
       ],
-      cta: t("pricing.pro_cta"),
+      cta: "Contact Sales",
       action: scrollToContact,
       popular: true,
     },
     {
-      name: t("pricing.ultimate_title"),
-      price: t("pricing.ultimate_price"),
+      name: "Enterprise",
+      price: "Custom",
       period: "",
       features: [
-        t("pricing.ultimate_feature1"),
-        t("pricing.ultimate_feature2"),
-        t("pricing.ultimate_feature3"),
-        t("pricing.ultimate_feature4"),
-        t("pricing.ultimate_feature5"),
-        t("pricing.ultimate_feature6"),
-        t("pricing.ultimate_feature7"),
+        "Everything in Professional",
+        "Dedicated account manager",
+        "Custom integrations",
+        "White-label options",
+        "Advanced analytics dashboard",
+        "SLA guarantees",
+        "Training & onboarding",
       ],
-      cta: t("pricing.ultimate_cta"),
+      cta: "Contact Sales",
       action: scrollToContact,
       popular: false,
     },
@@ -73,8 +65,10 @@ export function PricingSection() {
     <section id="pricing" className="py-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-4 mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-balance">{t("pricing.title")}</h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">{t("pricing.subtitle")}</p>
+          <h2 className="text-3xl lg:text-4xl font-bold text-balance">Simple, Transparent Pricing</h2>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">
+            Choose the plan that fits your needs
+          </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -83,7 +77,7 @@ export function PricingSection() {
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                   <span className="bg-accent text-accent-foreground px-4 py-1 rounded-full text-sm font-medium">
-                    {t("pricing.popular")}
+                    Most Popular
                   </span>
                 </div>
               )}
