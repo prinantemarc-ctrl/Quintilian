@@ -97,7 +97,7 @@ export default function DashboardPage() {
   }, [supabase.auth])
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("fr-FR", {
+    return new Date(dateString).toLocaleDateString("en-US", {
       day: "numeric",
       month: "short",
       year: "numeric",
@@ -109,7 +109,7 @@ export default function DashboardPage() {
   const getAnalysisTypeLabel = (type: string) => {
     switch (type) {
       case "single":
-        return "Analyse simple"
+        return "Simple Analysis"
       case "duel":
         return "Duel"
       default:
@@ -142,7 +142,7 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Chargement...</p>
+          <p>Loading...</p>
         </div>
       </div>
     )
@@ -153,17 +153,17 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>Accès restreint</CardTitle>
-            <CardDescription>Vous devez être connecté pour accéder au dashboard</CardDescription>
+            <CardTitle>Restricted Access</CardTitle>
+            <CardDescription>You must be logged in to access the dashboard</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Button asChild className="w-full">
-              <Link href="/auth/login">Se connecter</Link>
+              <Link href="/auth/login">Sign In</Link>
             </Button>
             <Button asChild variant="outline" className="w-full bg-transparent">
               <Link href="/">
                 <Search className="w-4 h-4 mr-2" />
-                Retour à l'accueil
+                Back to Home
               </Link>
             </Button>
           </CardContent>
@@ -178,11 +178,11 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-            <p className="text-muted-foreground">Bienvenue, {user.email}</p>
+            <p className="text-muted-foreground">Welcome, {user.email}</p>
           </div>
           <Button onClick={refreshData} variant="outline" size="sm" disabled={isRefreshing}>
             <TrendingUp className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
-            {isRefreshing ? "Actualisation..." : "Actualiser"}
+            {isRefreshing ? "Refreshing..." : "Refresh"}
           </Button>
         </div>
 
@@ -190,47 +190,47 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Analyses totales</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Analyses</CardTitle>
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats?.totalAnalyses || 0}</div>
-              <p className="text-xs text-muted-foreground">Depuis votre inscription</p>
+              <p className="text-xs text-muted-foreground">Since registration</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Ce mois</CardTitle>
+              <CardTitle className="text-sm font-medium">This Month</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats?.thisMonth || 0}</div>
-              <p className="text-xs text-muted-foreground">Analyses effectuées</p>
+              <p className="text-xs text-muted-foreground">Analyses completed</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Score moyen</CardTitle>
+              <CardTitle className="text-sm font-medium">Average Score</CardTitle>
               <Zap className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats?.avgScore || 0}/10</div>
-              <p className="text-xs text-muted-foreground">Toutes analyses confondues</p>
+              <p className="text-xs text-muted-foreground">All analyses combined</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Statut</CardTitle>
+              <CardTitle className="text-sm font-medium">Status</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
                 <Badge variant="secondary">Freemium</Badge>
               </div>
-              <p className="text-xs text-muted-foreground">Plan actuel</p>
+              <p className="text-xs text-muted-foreground">Current plan</p>
             </CardContent>
           </Card>
         </div>
@@ -245,14 +245,14 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Nouvelle analyse</CardTitle>
-              <CardDescription>Analysez l'image de marque d'une entreprise</CardDescription>
+              <CardTitle>New Analysis</CardTitle>
+              <CardDescription>Analyze the brand image of a company</CardDescription>
             </CardHeader>
             <CardContent>
               <Button asChild className="w-full">
                 <Link href="/analyze">
                   <Zap className="w-4 h-4 mr-2" />
-                  Commencer une analyse
+                  Start Analysis
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
               </Button>
@@ -261,14 +261,14 @@ export default function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Gérer mes crédits</CardTitle>
-              <CardDescription>Achetez des crédits pour débloquer plus de fonctionnalités</CardDescription>
+              <CardTitle>Manage Credits</CardTitle>
+              <CardDescription>Purchase credits to unlock more features</CardDescription>
             </CardHeader>
             <CardContent>
               <Button asChild variant="outline" className="w-full bg-transparent">
                 <Link href="/dashboard/credits">
                   <CreditCard className="w-4 h-4 mr-2" />
-                  Voir mes crédits
+                  View Credits
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
               </Button>
@@ -279,19 +279,19 @@ export default function DashboardPage() {
         {/* Recent Activity */}
         <Card>
           <CardHeader>
-            <CardTitle>Historique des recherches</CardTitle>
-            <CardDescription>Vos dernières analyses avec détails complets</CardDescription>
+            <CardTitle>Search History</CardTitle>
+            <CardDescription>Your recent analyses with full details</CardDescription>
           </CardHeader>
           <CardContent>
             {searches.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Aucune analyse récente</p>
-                <p className="text-sm">Commencez votre première analyse pour voir l'historique ici</p>
+                <p>No recent analyses</p>
+                <p className="text-sm">Start your first analysis to see history here</p>
                 <Button asChild className="mt-4">
                   <Link href="/dashboard/search">
                     <Search className="w-4 h-4 mr-2" />
-                    Commencer maintenant
+                    Start Now
                   </Link>
                 </Button>
               </div>
@@ -332,7 +332,7 @@ export default function DashboardPage() {
                                 <div className={`text-2xl font-bold ${getScoreColor(search.scores.presence_score)}`}>
                                   {search.scores.presence_score}/10
                                 </div>
-                                <div className="text-xs text-muted-foreground">Présence</div>
+                                <div className="text-xs text-muted-foreground">Presence</div>
                               </div>
                             )}
                             {search.scores.sentiment_score !== undefined && (
@@ -348,7 +348,7 @@ export default function DashboardPage() {
                                 <div className={`text-2xl font-bold ${getScoreColor(search.scores.coherence_score)}`}>
                                   {search.scores.coherence_score}/10
                                 </div>
-                                <div className="text-xs text-muted-foreground">Cohérence</div>
+                                <div className="text-xs text-muted-foreground">Coherence</div>
                               </div>
                             )}
                           </div>
@@ -357,15 +357,15 @@ export default function DashboardPage() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Eye className="w-4 h-4" />
-                            <span>Résultats disponibles</span>
+                            <span>Results available</span>
                           </div>
                           <div className="flex gap-2">
                             <Button variant="outline" size="sm" onClick={() => openSearchDetails(search)}>
                               <Eye className="w-4 h-4 mr-2" />
-                              Voir l'analyse complète
+                              View Full Analysis
                             </Button>
                             <Button variant="outline" size="sm" asChild>
-                              <Link href="/dashboard/history">Voir tout l'historique</Link>
+                              <Link href="/dashboard/history">View All History</Link>
                             </Button>
                           </div>
                         </div>

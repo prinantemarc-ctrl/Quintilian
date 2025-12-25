@@ -35,7 +35,7 @@ export function DuelAnalysisForm() {
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="brand1" className="text-sm font-semibold">
-                  Premier concurrent 🥊
+                  First Competitor 🥊
                 </Label>
                 <Input
                   id="brand1"
@@ -47,7 +47,7 @@ export function DuelAnalysisForm() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="brand2" className="text-sm font-semibold">
-                  Second concurrent 🥊
+                  Second Competitor 🥊
                 </Label>
                 <Input
                   id="brand2"
@@ -61,11 +61,11 @@ export function DuelAnalysisForm() {
 
             <div className="space-y-2">
               <Label htmlFor="message" className="text-sm font-semibold">
-                Message à analyser <span className="text-gray-500 font-normal text-xs">(optionnel)</span>
+                Message to analyze <span className="text-gray-500 font-normal text-xs">(optional)</span>
               </Label>
               <Textarea
                 id="message"
-                placeholder="Ex: Leader de l'innovation technologique"
+                placeholder="Ex: Leader in technological innovation"
                 value={formData.message}
                 onChange={(e) => setFormData((prev) => ({ ...prev, message: e.target.value }))}
                 className="min-h-[100px] text-base resize-none"
@@ -74,7 +74,7 @@ export function DuelAnalysisForm() {
 
             <div className="space-y-2">
               <Label htmlFor="language" className="text-sm font-semibold">
-                Langue d'analyse
+                Analysis Language
               </Label>
               <Select
                 value={formData.language}
@@ -84,11 +84,11 @@ export function DuelAnalysisForm() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="fr">🇫🇷 Français</SelectItem>
-                  <SelectItem value="en">🇺🇸 Anglais</SelectItem>
-                  <SelectItem value="es">🇪🇸 Espagnol</SelectItem>
-                  <SelectItem value="de">🇩🇪 Allemand</SelectItem>
-                  <SelectItem value="it">🇮🇹 Italien</SelectItem>
+                  <SelectItem value="fr">🇫🇷 French</SelectItem>
+                  <SelectItem value="en">🇺🇸 English</SelectItem>
+                  <SelectItem value="es">🇪🇸 Spanish</SelectItem>
+                  <SelectItem value="de">🇩🇪 German</SelectItem>
+                  <SelectItem value="it">🇮🇹 Italian</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -99,7 +99,7 @@ export function DuelAnalysisForm() {
               className="w-full h-14 px-8 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold text-lg"
             >
               <Swords className="w-5 h-5 mr-2" />
-              Lancer le Duel !
+              Start the Duel!
             </Button>
           </div>
         </CardContent>

@@ -33,13 +33,13 @@ export default function DashboardLayout({
                   href="/dashboard/search"
                   className="transition-colors hover:text-foreground/80 text-foreground/60"
                 >
-                  Recherche
+                  Search
                 </Link>
                 <Link
                   href="/dashboard/credits"
                   className="transition-colors hover:text-foreground/80 text-foreground/60"
                 >
-                  Crédits
+                  Credits
                 </Link>
               </nav>
               <UserMenu />
@@ -64,28 +64,28 @@ export default function DashboardLayout({
                     className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
                   >
                     <LayoutDashboard className="h-4 w-4" />
-                    Vue d'ensemble
+                    Overview
                   </Link>
                   <Link
                     href="/dashboard/search"
                     className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
                   >
                     <Search className="h-4 w-4" />
-                    Recherche IA
+                    AI Search
                   </Link>
                   <Link
                     href="/dashboard/credits"
                     className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
                   >
                     <CreditCard className="h-4 w-4" />
-                    Mes crédits
+                    My Credits
                   </Link>
                   <Link
                     href="/dashboard/history"
                     className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
                   >
                     <History className="h-4 w-4" />
-                    Historique
+                    History
                   </Link>
                   <Separator className="my-2" />
                   <Link
@@ -93,7 +93,7 @@ export default function DashboardLayout({
                     className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
                   >
                     <Settings className="h-4 w-4" />
-                    Paramètres
+                    Settings
                   </Link>
                 </Suspense>
               </nav>

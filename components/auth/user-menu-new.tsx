@@ -45,7 +45,7 @@ export function UserMenu() {
   if (!user) {
     return (
       <Button asChild variant="outline">
-        <Link href="/auth/login">Se connecter</Link>
+        <Link href="/auth/login">Sign in</Link>
       </Button>
     )
   }
@@ -77,7 +77,7 @@ export function UserMenu() {
                 </Avatar>
                 <div className="flex flex-col">
                   <span className="text-sm font-medium">{user.email}</span>
-                  <span className="text-xs text-muted-foreground">Utilisateur connecté</span>
+                  <span className="text-xs text-muted-foreground">Signed in</span>
                 </div>
               </div>
 
@@ -102,7 +102,7 @@ export function UserMenu() {
                 >
                   <Link href="/dashboard/credits">
                     <UserIcon className="h-4 w-4" />
-                    Mes crédits
+                    My Credits
                   </Link>
                 </Button>
 
@@ -114,7 +114,7 @@ export function UserMenu() {
                   className="w-full justify-start gap-2 h-auto py-2 px-3 font-normal text-destructive hover:text-destructive hover:bg-destructive/10"
                 >
                   <LogOut className="h-4 w-4" />
-                  Se déconnecter
+                  Sign out
                 </Button>
               </div>
             </CardContent>

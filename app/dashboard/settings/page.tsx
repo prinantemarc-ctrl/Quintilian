@@ -42,7 +42,7 @@ export default function SettingsPage() {
   }
 
   const handleDeleteAccount = async () => {
-    if (confirm("Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.")) {
+    if (confirm("Are you sure you want to delete your account? This action is irreversible.")) {
       // Implement account deletion logic
       console.log("Account deletion requested")
     }
@@ -65,7 +65,7 @@ export default function SettingsPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Chargement des paramètres...</p>
+          <p>Loading settings...</p>
         </div>
       </div>
     )
@@ -74,8 +74,8 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Paramètres</h1>
-        <p className="text-muted-foreground">Gérez votre compte et vos préférences</p>
+        <h1 className="text-3xl font-bold text-foreground">Settings</h1>
+        <p className="text-muted-foreground">Manage your account and preferences</p>
       </div>
 
       {/* Account Information */}
@@ -83,18 +83,18 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            Informations du compte
+            Account Information
           </CardTitle>
-          <CardDescription>Vos informations personnelles et statut du compte</CardDescription>
+          <CardDescription>Your personal information and account status</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <Label htmlFor="email">Adresse email</Label>
+              <Label htmlFor="email">Email Address</Label>
               <Input id="email" type="email" value={user?.email || ""} disabled />
             </div>
             <div>
-              <Label>Statut du compte</Label>
+              <Label>Account Status</Label>
               <div className="mt-2">
                 <Badge variant="secondary">Freemium</Badge>
               </div>
@@ -102,15 +102,15 @@ export default function SettingsPage() {
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <Label>Membre depuis</Label>
+              <Label>Member Since</Label>
               <div className="mt-2 text-sm text-muted-foreground">
-                {user?.created_at ? new Date(user.created_at).toLocaleDateString("fr-FR") : "N/A"}
+                {user?.created_at ? new Date(user.created_at).toLocaleDateString("en-US") : "N/A"}
               </div>
             </div>
             <div>
-              <Label>Dernière connexion</Label>
+              <Label>Last Login</Label>
               <div className="mt-2 text-sm text-muted-foreground">
-                {user?.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString("fr-FR") : "N/A"}
+                {user?.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString("en-US") : "N/A"}
               </div>
             </div>
           </div>
@@ -124,13 +124,13 @@ export default function SettingsPage() {
             <Bell className="h-5 w-5" />
             Notifications
           </CardTitle>
-          <CardDescription>Configurez vos préférences de notification</CardDescription>
+          <CardDescription>Configure your notification preferences</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Notifications par email</Label>
-              <div className="text-sm text-muted-foreground">Recevez des notifications sur vos analyses</div>
+              <Label>Email Notifications</Label>
+              <div className="text-sm text-muted-foreground">Receive notifications about your analyses</div>
             </div>
             <Switch
               checked={notifications.email}
@@ -140,8 +140,8 @@ export default function SettingsPage() {
           <Separator />
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Emails marketing</Label>
-              <div className="text-sm text-muted-foreground">Recevez des nouvelles sur les fonctionnalités</div>
+              <Label>Marketing Emails</Label>
+              <div className="text-sm text-muted-foreground">Receive news about new features</div>
             </div>
             <Switch
               checked={notifications.marketing}
@@ -151,8 +151,8 @@ export default function SettingsPage() {
           <Separator />
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Alertes de sécurité</Label>
-              <div className="text-sm text-muted-foreground">Notifications importantes sur votre compte</div>
+              <Label>Security Alerts</Label>
+              <div className="text-sm text-muted-foreground">Important notifications about your account</div>
             </div>
             <Switch
               checked={notifications.security}
@@ -167,30 +167,30 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            Sécurité
+            Security
           </CardTitle>
-          <CardDescription>Gérez la sécurité de votre compte</CardDescription>
+          <CardDescription>Manage your account security</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Changer le mot de passe</Label>
-              <div className="text-sm text-muted-foreground">Mettez à jour votre mot de passe</div>
+              <Label>Change Password</Label>
+              <div className="text-sm text-muted-foreground">Update your password</div>
             </div>
             <Button variant="outline" size="sm">
               <Key className="w-4 h-4 mr-2" />
-              Modifier
+              Change
             </Button>
           </div>
           <Separator />
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Sessions actives</Label>
-              <div className="text-sm text-muted-foreground">Gérez vos sessions de connexion</div>
+              <Label>Active Sessions</Label>
+              <div className="text-sm text-muted-foreground">Manage your login sessions</div>
             </div>
             <Button variant="outline" size="sm">
               <Shield className="w-4 h-4 mr-2" />
-              Voir les sessions
+              View Sessions
             </Button>
           </div>
         </CardContent>
@@ -201,19 +201,19 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Download className="h-5 w-5" />
-            Gestion des données
+            Data Management
           </CardTitle>
-          <CardDescription>Exportez ou supprimez vos données</CardDescription>
+          <CardDescription>Export or delete your data</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Exporter mes données</Label>
-              <div className="text-sm text-muted-foreground">Téléchargez toutes vos données</div>
+              <Label>Export My Data</Label>
+              <div className="text-sm text-muted-foreground">Download all your data</div>
             </div>
             <Button variant="outline" size="sm" onClick={exportData}>
               <Download className="w-4 h-4 mr-2" />
-              Exporter
+              Export
             </Button>
           </div>
         </CardContent>
@@ -225,17 +225,17 @@ export default function SettingsPage() {
           {saving ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              Sauvegarde...
+              Saving...
             </>
           ) : (
             <>
               <Save className="w-4 h-4 mr-2" />
-              Sauvegarder
+              Save
             </>
           )}
         </Button>
         <Button variant="outline" onClick={handleSignOut}>
-          Se déconnecter
+          Sign Out
         </Button>
       </div>
 
@@ -244,21 +244,19 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-red-600">
             <AlertTriangle className="h-5 w-5" />
-            Zone de danger
+            Danger Zone
           </CardTitle>
-          <CardDescription>Actions irréversibles sur votre compte</CardDescription>
+          <CardDescription>Irreversible actions on your account</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label className="text-red-600">Supprimer le compte</Label>
-              <div className="text-sm text-muted-foreground">
-                Supprime définitivement votre compte et toutes vos données
-              </div>
+              <Label className="text-red-600">Delete Account</Label>
+              <div className="text-sm text-muted-foreground">Permanently deletes your account and all your data</div>
             </div>
             <Button variant="destructive" size="sm" onClick={handleDeleteAccount}>
               <Trash2 className="w-4 h-4 mr-2" />
-              Supprimer
+              Delete
             </Button>
           </div>
         </CardContent>

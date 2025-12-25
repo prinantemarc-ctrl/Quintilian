@@ -76,7 +76,7 @@ export default function AdminPage() {
       setIsAuthenticated(true)
       fetchData()
     } else {
-      alert("Mot de passe incorrect")
+      alert("Incorrect password")
     }
   }
 
@@ -262,12 +262,12 @@ export default function AdminPage() {
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Accès Admin</CardTitle>
-            <CardDescription>Entrez le mot de passe pour accéder au dashboard</CardDescription>
+            <CardDescription>Enter password to access the dashboard</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Input
               type="password"
-              placeholder="Mot de passe"
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && authenticate()}
@@ -348,7 +348,7 @@ export default function AdminPage() {
 
           <Card className="border-l-4 border-l-chart-4">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Taux d'erreur</CardTitle>
+              <CardTitle className="text-sm font-medium">Error Rate</CardTitle>
               <AlertTriangle className="h-4 w-4 text-chart-4" />
             </CardHeader>
             <CardContent>
@@ -489,11 +489,11 @@ export default function AdminPage() {
                       <span className="font-bold">{stats.total}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Aujourd'hui</span>
+                      <span>Today</span>
                       <span className="font-bold text-chart-1">{stats.today}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Cette semaine</span>
+                      <span>This Week</span>
                       <span className="font-bold text-chart-2">{stats.week}</span>
                     </div>
                     <div className="flex justify-between">

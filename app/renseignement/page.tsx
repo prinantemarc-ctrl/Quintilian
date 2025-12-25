@@ -13,6 +13,7 @@ import {
   Zap,
   TrendingUp,
   Eye,
+  Activity,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -24,69 +25,176 @@ export default function RenseignementPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
-              <h1 className="text-5xl md:text-6xl font-black tracking-tight text-foreground">REPRENEZ LE CONTRÔLE</h1>
+              <h1 className="text-5xl md:text-6xl font-black tracking-tight text-foreground">TAKE BACK CONTROL</h1>
               <p className="text-lg text-muted-foreground">
-                Opérations spéciales pour améliorer vos scores de présence, tonalité et cohérence.
+                Special operations to improve your presence, tone, and coherence scores.
               </p>
               <Link href="/#analysis-form">
                 <Button className="bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-3">
-                  Lancer l'Opération
+                  Launch Operation
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
             </div>
 
-            {/* QG TACTIQUE Dashboard Mockup - red to violet */}
             <div className="relative">
-              <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-6 border border-violet-500/20">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-bold text-foreground tracking-wide">QG TACTIQUE</h3>
+              <div className="bg-gradient-to-br from-zinc-900 via-zinc-950 to-black rounded-2xl p-8 border border-violet-500/30 shadow-2xl shadow-violet-500/10">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-violet-500/10 rounded-lg border border-violet-500/20">
+                      <Activity className="w-5 h-5 text-violet-500" />
+                    </div>
+                    <h3 className="text-xl font-bold text-foreground tracking-wide">TACTICAL HQ</h3>
+                  </div>
                   <div className="flex gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-violet-500" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-violet-500/60" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-violet-500/30" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-violet-500 animate-pulse" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-violet-500/60 animate-pulse delay-75" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-violet-500/30 animate-pulse delay-150" />
                   </div>
                 </div>
 
-                {/* Scores */}
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-violet-500">94</div>
-                    <div className="text-xs text-muted-foreground mt-1">SEO Score</div>
+                {/* Metrics Cards Grid */}
+                <div className="grid grid-cols-3 gap-6 mb-8">
+                  {/* SEO Score Card */}
+                  <div className="group relative bg-gradient-to-br from-violet-500/10 to-violet-600/5 rounded-xl p-6 border border-violet-500/20 hover:border-violet-500/40 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-violet-500/20">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="relative">
+                        <svg className="w-24 h-24 transform -rotate-90">
+                          <circle
+                            cx="48"
+                            cy="48"
+                            r="40"
+                            stroke="currentColor"
+                            strokeWidth="6"
+                            fill="none"
+                            className="text-zinc-800"
+                          />
+                          <circle
+                            cx="48"
+                            cy="48"
+                            r="40"
+                            stroke="currentColor"
+                            strokeWidth="6"
+                            fill="none"
+                            strokeDasharray={`${2 * Math.PI * 40}`}
+                            strokeDashoffset={`${2 * Math.PI * 40 * (1 - 0.94)}`}
+                            className="text-violet-500 transition-all duration-1000"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-3xl font-black text-violet-500">94</span>
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-sm font-semibold text-violet-400 mb-1">SEO Score</div>
+                        <div className="text-xs text-muted-foreground">Excellent visibility</div>
+                      </div>
+                    </div>
+                    <div className="absolute inset-0 rounded-xl bg-violet-500/0 group-hover:bg-violet-500/5 transition-colors duration-300" />
                   </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-muted-foreground">87</div>
-                    <div className="text-xs text-muted-foreground mt-1">IA Analysis</div>
+
+                  {/* IA Analysis Card */}
+                  <div className="group relative bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-xl p-6 border border-blue-500/20 hover:border-blue-500/40 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="relative">
+                        <svg className="w-24 h-24 transform -rotate-90">
+                          <circle
+                            cx="48"
+                            cy="48"
+                            r="40"
+                            stroke="currentColor"
+                            strokeWidth="6"
+                            fill="none"
+                            className="text-zinc-800"
+                          />
+                          <circle
+                            cx="48"
+                            cy="48"
+                            r="40"
+                            stroke="currentColor"
+                            strokeWidth="6"
+                            fill="none"
+                            strokeDasharray={`${2 * Math.PI * 40}`}
+                            strokeDashoffset={`${2 * Math.PI * 40 * (1 - 0.87)}`}
+                            className="text-blue-500 transition-all duration-1000"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-3xl font-black text-blue-500">87</span>
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-sm font-semibold text-blue-400 mb-1">AI Analysis</div>
+                        <div className="text-xs text-muted-foreground">Strong intelligence</div>
+                      </div>
+                    </div>
+                    <div className="absolute inset-0 rounded-xl bg-blue-500/0 group-hover:bg-blue-500/5 transition-colors duration-300" />
                   </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-muted-foreground">92</div>
-                    <div className="text-xs text-muted-foreground mt-1">Reputation</div>
+
+                  {/* Reputation Card */}
+                  <div className="group relative bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 rounded-xl p-6 border border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-emerald-500/20">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="relative">
+                        <svg className="w-24 h-24 transform -rotate-90">
+                          <circle
+                            cx="48"
+                            cy="48"
+                            r="40"
+                            stroke="currentColor"
+                            strokeWidth="6"
+                            fill="none"
+                            className="text-zinc-800"
+                          />
+                          <circle
+                            cx="48"
+                            cy="48"
+                            r="40"
+                            stroke="currentColor"
+                            strokeWidth="6"
+                            fill="none"
+                            strokeDasharray={`${2 * Math.PI * 40}`}
+                            strokeDashoffset={`${2 * Math.PI * 40 * (1 - 0.92)}`}
+                            className="text-emerald-500 transition-all duration-1000"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-3xl font-black text-emerald-500">92</span>
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-sm font-semibold text-emerald-400 mb-1">Reputation</div>
+                        <div className="text-xs text-muted-foreground">Outstanding trust</div>
+                      </div>
+                    </div>
+                    <div className="absolute inset-0 rounded-xl bg-emerald-500/0 group-hover:bg-emerald-500/5 transition-colors duration-300" />
                   </div>
                 </div>
 
-                {/* Bars */}
-                <div className="bg-zinc-800/50 rounded-lg p-4">
-                  <div className="flex items-end justify-between gap-3 h-24">
-                    <div className="flex-1 flex flex-col items-center gap-2">
-                      <div className="w-full bg-zinc-700 rounded-t relative overflow-hidden" style={{ height: "70%" }}>
-                        <div className="absolute bottom-0 w-full h-1/2 bg-violet-500/80" />
+                {/* Activity Timeline - Modern bar chart */}
+                <div className="bg-zinc-900/50 rounded-xl p-6 border border-zinc-800/50 backdrop-blur-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                      Activity Timeline
+                    </h4>
+                    <span className="text-xs text-violet-500 font-medium">Last 7 days</span>
+                  </div>
+                  <div className="flex items-end justify-between gap-3 h-32">
+                    {[70, 85, 60, 90, 75, 95, 80].map((height, i) => (
+                      <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
+                        <div
+                          className="w-full bg-gradient-to-t from-violet-500/80 via-violet-500/50 to-violet-500/20 rounded-t-lg relative overflow-hidden transition-all duration-500 hover:from-violet-400 hover:via-violet-400/50 hover:to-violet-400/20 cursor-pointer"
+                          style={{ height: `${height}%` }}
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        </div>
+                        <span className="text-[10px] text-muted-foreground font-medium opacity-60 group-hover:opacity-100 transition-opacity">
+                          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][i]}
+                        </span>
                       </div>
-                    </div>
-                    <div className="flex-1 flex flex-col items-center gap-2">
-                      <div className="w-full bg-zinc-700 rounded-t relative overflow-hidden" style={{ height: "85%" }}>
-                        <div className="absolute bottom-0 w-full h-1/3 bg-violet-500/80" />
-                      </div>
-                    </div>
-                    <div className="flex-1 flex flex-col items-center gap-2">
-                      <div className="w-full bg-zinc-700 rounded-t relative overflow-hidden" style={{ height: "60%" }}>
-                        <div className="absolute bottom-0 w-full h-1/4 bg-violet-500/60" />
-                      </div>
-                    </div>
-                    <div className="flex-1 flex flex-col items-center gap-2">
-                      <div className="w-full bg-zinc-700 rounded-t relative overflow-hidden" style={{ height: "90%" }}>
-                        <div className="absolute bottom-0 w-full h-2/3 bg-violet-500/80" />
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -95,13 +203,12 @@ export default function RenseignementPage() {
         </div>
       </section>
 
-      {/* NOS ARMES Section - red to violet */}
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-4 mb-16">
-            <h2 className="text-4xl md:text-5xl font-black tracking-tight">NOS ARMES</h2>
+            <h2 className="text-4xl md:text-5xl font-black tracking-tight">OUR WEAPONS</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Une approche systémique pour dominer votre écosystème digital et neutraliser les menaces
+              A systematic approach to dominate your digital ecosystem and neutralize threats
             </p>
           </div>
 
@@ -112,50 +219,48 @@ export default function RenseignementPage() {
                   <BarChart3 className="w-6 h-6 text-violet-500" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-violet-500">Dashboard Tactique - Temps Réel</h3>
-                  <p className="text-muted-foreground">
-                    Accédez à votre centre de commandement de réputation en temps réel
-                  </p>
+                  <h3 className="text-xl font-bold text-violet-500">Real-Time Tactical Dashboard</h3>
+                  <p className="text-muted-foreground">Access your real-time reputation command center</p>
                 </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-8 mb-8">
                 <div>
                   <h4 className="text-sm font-semibold text-violet-500 uppercase tracking-wider mb-4">
-                    Métriques Critiques
+                    Critical Metrics
                   </h4>
                   <ul className="space-y-3">
                     <li className="flex items-center gap-3 text-muted-foreground">
                       <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                      <span>Présence IA - Visibilité dans les réseaux neuronaux</span>
+                      <span>AI Presence - Visibility in neural networks</span>
                     </li>
                     <li className="flex items-center gap-3 text-muted-foreground">
                       <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                      <span>Présence SEO - Occupation du terrain Google</span>
+                      <span>SEO Presence - Google territory occupation</span>
                     </li>
                     <li className="flex items-center gap-3 text-muted-foreground">
                       <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                      <span>Impact Presse - Couverture médiatique</span>
+                      <span>Press Impact - Media coverage</span>
                     </li>
                   </ul>
                 </div>
 
                 <div>
                   <h4 className="text-sm font-semibold text-violet-500 uppercase tracking-wider mb-4">
-                    Analyse Comportementale
+                    Behavioral Analysis
                   </h4>
                   <ul className="space-y-3">
                     <li className="flex items-center gap-3 text-muted-foreground">
                       <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                      <span>Présence Sociale - Force de frappe réseaux</span>
+                      <span>Social Presence - Network strike force</span>
                     </li>
                     <li className="flex items-center gap-3 text-muted-foreground">
                       <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                      <span>Sentiment - Analyse tonalité et perception</span>
+                      <span>Sentiment - Tone and perception analysis</span>
                     </li>
                     <li className="flex items-center gap-3 text-muted-foreground">
                       <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                      <span>Cohérence Message - Discipline narrative</span>
+                      <span>Message Coherence - Narrative discipline</span>
                     </li>
                   </ul>
                 </div>
@@ -163,21 +268,18 @@ export default function RenseignementPage() {
 
               <div className="flex items-center gap-2 text-amber-500">
                 <Zap className="w-4 h-4" />
-                <span className="text-sm">Surveillance 24/7 avec alertes et contre-mesures IA</span>
+                <span className="text-sm">24/7 monitoring with alerts and AI countermeasures</span>
               </div>
             </CardContent>
           </Card>
         </div>
       </section>
 
-      {/* NOS 4 MODULES D'INTERVENTION - red to violet */}
       <section className="py-20 bg-zinc-950">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-4 mb-16">
-            <h2 className="text-4xl md:text-5xl font-black tracking-tight">NOS 4 MODULES D'INTERVENTION</h2>
-            <p className="text-lg text-muted-foreground">
-              Solutions opérationnelles pour transformer la réalité digitale
-            </p>
+            <h2 className="text-4xl md:text-5xl font-black tracking-tight">OUR 4 INTERVENTION MODULES</h2>
+            <p className="text-lg text-muted-foreground">Operational solutions to transform digital reality</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
@@ -188,28 +290,28 @@ export default function RenseignementPage() {
                     <Globe className="w-6 h-6 text-violet-500" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-foreground">Module H - Duplication de Masse</h3>
+                    <h3 className="text-xl font-bold text-foreground">Module H - Mass Duplication</h3>
                     <p className="text-sm text-muted-foreground">
-                      Déploiement éclair de contenu sur réseau mondial (103 pays, 35 langues)
+                      Lightning deployment of content on global network (103 countries, 35 languages)
                     </p>
                   </div>
                 </div>
                 <ul className="space-y-3">
                   <li className="flex items-center gap-3 text-muted-foreground">
                     <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                    <span>Saturation des algorithmes GPT</span>
+                    <span>GPT algorithm saturation</span>
                   </li>
                   <li className="flex items-center gap-3 text-muted-foreground">
                     <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                    <span>Impact SEO massif et immédiat</span>
+                    <span>Massive and immediate SEO impact</span>
                   </li>
                   <li className="flex items-center gap-3 text-muted-foreground">
                     <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                    <span>Réseau de sites fantômes</span>
+                    <span>Ghost site network</span>
                   </li>
                   <li className="flex items-center gap-3 text-muted-foreground">
                     <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                    <span>Déploiement automatisé</span>
+                    <span>Automated deployment</span>
                   </li>
                 </ul>
               </CardContent>
@@ -222,28 +324,28 @@ export default function RenseignementPage() {
                     <MessageSquare className="w-6 h-6 text-violet-500" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-foreground">Module A - Dôme de Fer Social</h3>
+                    <h3 className="text-xl font-bold text-foreground">Module A - Social Iron Dome</h3>
                     <p className="text-sm text-muted-foreground">
-                      Système de défense et promotion sur réseaux sociaux (Focus X)
+                      Defense and promotion system on social networks (Focus X)
                     </p>
                   </div>
                 </div>
                 <ul className="space-y-3">
                   <li className="flex items-center gap-3 text-muted-foreground">
                     <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                    <span>Signal social amplifié</span>
+                    <span>Amplified social signal</span>
                   </li>
                   <li className="flex items-center gap-3 text-muted-foreground">
                     <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                    <span>Influence sur recherches temps réel</span>
+                    <span>Real-time search influence</span>
                   </li>
                   <li className="flex items-center gap-3 text-muted-foreground">
                     <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                    <span>Manipulation algorithmique</span>
+                    <span>Algorithmic manipulation</span>
                   </li>
                   <li className="flex items-center gap-3 text-muted-foreground">
                     <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                    <span>Riposte automatisée</span>
+                    <span>Automated counterattack</span>
                   </li>
                 </ul>
               </CardContent>
@@ -256,26 +358,26 @@ export default function RenseignementPage() {
                     <Shield className="w-6 h-6 text-violet-500" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-foreground">Module C - Légitimité</h3>
-                    <p className="text-sm text-muted-foreground">Réseau de sites d'autorité pour ancrage durable</p>
+                    <h3 className="text-xl font-bold text-foreground">Module C - Legitimacy</h3>
+                    <p className="text-sm text-muted-foreground">Authority site network for lasting anchoring</p>
                   </div>
                 </div>
                 <ul className="space-y-3">
                   <li className="flex items-center gap-3 text-muted-foreground">
                     <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                    <span>SEO pérenne</span>
+                    <span>Sustainable SEO</span>
                   </li>
                   <li className="flex items-center gap-3 text-muted-foreground">
                     <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                    <span>Influence structurelle IA</span>
+                    <span>Structural AI influence</span>
                   </li>
                   <li className="flex items-center gap-3 text-muted-foreground">
                     <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                    <span>Sites Haute Autorité</span>
+                    <span>High Authority Sites</span>
                   </li>
                   <li className="flex items-center gap-3 text-muted-foreground">
                     <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                    <span>Crédibilité Institutionnelle</span>
+                    <span>Institutional Credibility</span>
                   </li>
                 </ul>
               </CardContent>
@@ -289,25 +391,25 @@ export default function RenseignementPage() {
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-foreground">Module P - Black Ops</h3>
-                    <p className="text-sm text-muted-foreground">Opérateurs OSINT et techniques d'influence avancées</p>
+                    <p className="text-sm text-muted-foreground">OSINT operators and advanced influence techniques</p>
                   </div>
                 </div>
                 <ul className="space-y-3">
                   <li className="flex items-center gap-3 text-muted-foreground">
                     <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                    <span>OSINT Profond</span>
+                    <span>Deep OSINT</span>
                   </li>
                   <li className="flex items-center gap-3 text-muted-foreground">
                     <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                    <span>Guerre Psychologique</span>
+                    <span>Psychological Warfare</span>
                   </li>
                   <li className="flex items-center gap-3 text-muted-foreground">
                     <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                    <span>Influence ciblée</span>
+                    <span>Targeted influence</span>
                   </li>
                   <li className="flex items-center gap-3 text-muted-foreground">
                     <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
-                    <span>Stratégie Fantôme</span>
+                    <span>Ghost Strategy</span>
                   </li>
                 </ul>
               </CardContent>
@@ -316,16 +418,13 @@ export default function RenseignementPage() {
         </div>
       </section>
 
-      {/* POURQUOI MAK-IA Section - red to violet */}
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
               <div>
-                <h2 className="text-4xl md:text-5xl font-black tracking-tight italic mb-4">POURQUOI MAK-IA ?</h2>
-                <p className="text-lg text-muted-foreground">
-                  Une expertise du renseignement au service de votre image
-                </p>
+                <h2 className="text-4xl md:text-5xl font-black tracking-tight italic mb-4">WHY MAK-IA?</h2>
+                <p className="text-lg text-muted-foreground">Intelligence expertise serving your reputation</p>
               </div>
 
               <div className="space-y-8">
@@ -334,8 +433,8 @@ export default function RenseignementPage() {
                     <Eye className="w-5 h-5 text-muted-foreground" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black tracking-wide">DOMINATION VISUELLE</h3>
-                    <p className="text-muted-foreground">Occupation totale de l'espace Google</p>
+                    <h3 className="text-xl font-black tracking-wide">VISUAL DOMINATION</h3>
+                    <p className="text-muted-foreground">Total occupation of Google space</p>
                   </div>
                 </div>
 
@@ -344,8 +443,8 @@ export default function RenseignementPage() {
                     <Shield className="w-5 h-5 text-muted-foreground" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black tracking-wide">RÉPUTATION VERROUILLÉE</h3>
-                    <p className="text-muted-foreground">Contrôle total du narratif</p>
+                    <h3 className="text-xl font-black tracking-wide">LOCKED REPUTATION</h3>
+                    <p className="text-muted-foreground">Total control of the narrative</p>
                   </div>
                 </div>
 
@@ -354,8 +453,8 @@ export default function RenseignementPage() {
                     <TrendingUp className="w-5 h-5 text-muted-foreground" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black tracking-wide">INFLUENCE MESURABLE</h3>
-                    <p className="text-muted-foreground">ROI transparent et KPIs tactiques</p>
+                    <h3 className="text-xl font-black tracking-wide">MEASURABLE INFLUENCE</h3>
+                    <p className="text-muted-foreground">Transparent ROI and tactical KPIs</p>
                   </div>
                 </div>
               </div>
@@ -365,8 +464,8 @@ export default function RenseignementPage() {
               <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-8 border border-violet-500/20">
                 <div className="flex flex-col items-center justify-center h-64">
                   <TrendingUp className="w-16 h-16 text-violet-500 mb-6" />
-                  <h3 className="text-2xl font-bold text-foreground">Stratégie</h3>
-                  <p className="text-muted-foreground">Approche 360°</p>
+                  <h3 className="text-2xl font-bold text-foreground">Strategy</h3>
+                  <p className="text-muted-foreground">360° Approach</p>
                 </div>
               </div>
             </div>

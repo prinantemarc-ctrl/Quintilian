@@ -66,7 +66,7 @@ export default function CreditsPage() {
   }, [])
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("fr-FR", {
+    return new Date(dateString).toLocaleDateString("en-US", {
       day: "numeric",
       month: "short",
       year: "numeric",
@@ -91,11 +91,11 @@ export default function CreditsPage() {
   const getTransactionLabel = (type: string) => {
     switch (type) {
       case "purchase":
-        return "Achat"
+        return "Purchase"
       case "usage":
-        return "Utilisation"
+        return "Usage"
       case "refund":
-        return "Remboursement"
+        return "Refund"
       default:
         return type
     }
@@ -114,7 +114,7 @@ export default function CreditsPage() {
         <Alert className="border-green-200 bg-green-50">
           <CheckCircle className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800">
-            Paiement réussi ! Vos crédits ont été ajoutés à votre compte.
+            Payment successful! Credits have been added to your account.
           </AlertDescription>
         </Alert>
       )}
@@ -122,21 +122,19 @@ export default function CreditsPage() {
       {paymentStatus === "canceled" && (
         <Alert className="border-yellow-200 bg-yellow-50">
           <XCircle className="h-4 w-4 text-yellow-600" />
-          <AlertDescription className="text-yellow-800">
-            Paiement annulé. Vous pouvez réessayer quand vous le souhaitez.
-          </AlertDescription>
+          <AlertDescription className="text-yellow-800">Payment canceled. You can try again anytime.</AlertDescription>
         </Alert>
       )}
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Mes crédits</h1>
-          <p className="text-muted-foreground">Gérez vos crédits et consultez votre historique</p>
+          <h1 className="text-3xl font-bold text-foreground">My Credits</h1>
+          <p className="text-muted-foreground">Manage your credits and view your history</p>
         </div>
         <Button asChild variant="outline">
           <Link href="/dashboard/history">
             <History className="w-4 h-4 mr-2" />
-            Historique complet
+            Full History
           </Link>
         </Button>
       </div>
@@ -150,9 +148,9 @@ export default function CreditsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
-            Acheter des crédits
+            Purchase Credits
           </CardTitle>
-          <CardDescription>Choisissez le package qui correspond à vos besoins</CardDescription>
+          <CardDescription>Choose the package that fits your needs</CardDescription>
         </CardHeader>
         <CardContent>
           <CreditPackages />
@@ -163,9 +161,9 @@ export default function CreditsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <History className="h-5 w-5" />
-            Transactions récentes
+            Recent Transactions
           </CardTitle>
-          <CardDescription>Vos dernières transactions de crédits</CardDescription>
+          <CardDescription>Your latest credit transactions</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -188,8 +186,8 @@ export default function CreditsPage() {
           ) : transactions.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Coins className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Aucune transaction</p>
-              <p className="text-sm">Vos achats et utilisations de crédits apparaîtront ici</p>
+              <p>No transactions</p>
+              <p className="text-sm">Your credit purchases and usage will appear here</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -212,7 +210,7 @@ export default function CreditsPage() {
                   </div>
                   <div className={`font-bold ${getAmountColor(transaction.type, transaction.amount)}`}>
                     {transaction.amount > 0 ? "+" : ""}
-                    {transaction.amount} crédits
+                    {transaction.amount} credits
                   </div>
                 </div>
               ))}
@@ -221,7 +219,7 @@ export default function CreditsPage() {
                 <div className="text-center pt-4">
                   <Button asChild variant="outline">
                     <Link href="/dashboard/history">
-                      Voir toutes les transactions
+                      View All Transactions
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Link>
                   </Button>
@@ -234,32 +232,26 @@ export default function CreditsPage() {
 
       <Card className="border-dashed">
         <CardHeader>
-          <CardTitle className="text-lg">Besoin d'aide ?</CardTitle>
-          <CardDescription>Questions fréquentes sur les crédits</CardDescription>
+          <CardTitle className="text-lg">Need Help?</CardTitle>
+          <CardDescription>Frequently Asked Questions about credits</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <h4 className="font-medium mb-2">Comment fonctionnent les crédits ?</h4>
-              <p className="text-sm text-muted-foreground">
-                Chaque recherche IA consomme 1 crédit. Les crédits n'expirent jamais.
-              </p>
+              <h4 className="font-medium mb-2">How do credits work?</h4>
+              <p className="text-sm text-muted-foreground">Each AI search consumes 1 credit. Credits never expire.</p>
             </div>
             <div>
-              <h4 className="font-medium mb-2">Puis-je obtenir un remboursement ?</h4>
-              <p className="text-sm text-muted-foreground">
-                Les crédits non utilisés peuvent être remboursés sous 30 jours.
-              </p>
+              <h4 className="font-medium mb-2">Can I get a refund?</h4>
+              <p className="text-sm text-muted-foreground">Unused credits can be refunded within 30 days.</p>
             </div>
             <div>
-              <h4 className="font-medium mb-2">Y a-t-il des réductions ?</h4>
-              <p className="text-sm text-muted-foreground">
-                Plus vous achetez de crédits, plus le prix unitaire diminue.
-              </p>
+              <h4 className="font-medium mb-2">Are there any discounts?</h4>
+              <p className="text-sm text-muted-foreground">The more credits you buy, the lower the unit price.</p>
             </div>
             <div>
-              <h4 className="font-medium mb-2">Support client</h4>
-              <p className="text-sm text-muted-foreground">Contactez-nous pour toute question sur vos crédits.</p>
+              <h4 className="font-medium mb-2">Customer Support</h4>
+              <p className="text-sm text-muted-foreground">Contact us for any questions about your credits.</p>
             </div>
           </div>
         </CardContent>

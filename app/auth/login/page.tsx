@@ -33,9 +33,9 @@ export default function LoginPage() {
 
       if (loginError) {
         if (loginError.message.includes("Invalid login credentials")) {
-          throw new Error("Email ou mot de passe incorrect")
+          throw new Error("Invalid email or password")
         } else if (loginError.message.includes("Email not confirmed")) {
-          throw new Error("Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.")
+          throw new Error("Please confirm your email before signing in. Check your inbox.")
         }
         throw loginError
       }
@@ -43,7 +43,7 @@ export default function LoginPage() {
       router.push("/dashboard")
       router.refresh()
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "Une erreur s'est produite")
+      setError(error instanceof Error ? error.message : "An error occurred")
     } finally {
       setIsLoading(false)
     }
@@ -55,14 +55,14 @@ export default function LoginPage() {
         <div className="mb-6">
           <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Retour à l'accueil
+            Back to home
           </Link>
         </div>
 
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">Connexion</CardTitle>
-            <CardDescription>Connectez-vous à votre compte MAK-IA</CardDescription>
+            <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
+            <CardDescription>Sign in to your MAK-IA account</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
@@ -71,14 +71,14 @@ export default function LoginPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="votre@email.com"
+                  placeholder="your@email.com"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Mot de passe</Label>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -89,13 +89,13 @@ export default function LoginPage() {
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Connexion..." : "Se connecter"}
+                {isLoading ? "Signing in..." : "Sign in"}
               </Button>
             </form>
             <div className="mt-4 text-center text-sm">
-              Pas encore de compte ?{" "}
+              Don't have an account?{" "}
               <Link href="/auth/sign-up" className="text-primary hover:underline">
-                Créer un compte
+                Create account
               </Link>
             </div>
           </CardContent>

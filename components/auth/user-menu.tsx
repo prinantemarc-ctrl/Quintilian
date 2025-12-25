@@ -46,7 +46,7 @@ export function UserMenu() {
   if (!user) {
     return (
       <Button asChild variant="outline">
-        <a href="/auth/login">Se connecter</a>
+        <a href="/auth/login">Sign in</a>
       </Button>
     )
   }
@@ -72,10 +72,10 @@ export function UserMenu() {
           <a href="/dashboard">Dashboard</a>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <a href="/dashboard/credits">Mes crédits</a>
+          <a href="/dashboard/credits">My Credits</a>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut}>Se déconnecter</DropdownMenuItem>
+        <DropdownMenuItem onClick={handleSignOut}>Sign out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

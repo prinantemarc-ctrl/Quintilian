@@ -25,12 +25,12 @@ export default function SignUpPage() {
     e.preventDefault()
 
     if (password !== confirmPassword) {
-      setError("Les mots de passe ne correspondent pas")
+      setError("Passwords do not match")
       return
     }
 
     if (password.length < 6) {
-      setError("Le mot de passe doit contenir au moins 6 caractères")
+      setError("Password must be at least 6 characters")
       return
     }
 
@@ -54,18 +54,18 @@ export default function SignUpPage() {
 
       if (signUpError) {
         if (signUpError.message.includes("after")) {
-          throw new Error("Trop de tentatives. Veuillez patienter 60 secondes avant de réessayer.")
+          throw new Error("Too many attempts. Please wait 60 seconds before trying again.")
         } else if (signUpError.message.includes("already registered")) {
-          throw new Error("Cet email est déjà enregistré. Connectez-vous ou réinitialisez votre mot de passe.")
+          throw new Error("This email is already registered. Sign in or reset your password.")
         }
         throw signUpError
       }
 
       setMessage(
-        `Un email de confirmation a été envoyé à ${email}. Vérifiez votre boîte de réception et vos spams, puis cliquez sur le lien pour activer votre compte.`,
+        `A confirmation email has been sent to ${email}. Check your inbox and spam folder, then click the link to activate your account.`,
       )
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "Une erreur s'est produite")
+      setError(error instanceof Error ? error.message : "An error occurred")
     } finally {
       setIsLoading(false)
     }
@@ -73,7 +73,6 @@ export default function SignUpPage() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 sm:p-6">
-      {/* Responsive card width */}
       <div className="w-full max-w-md">
         <div className="mb-4 sm:mb-6">
           <Link
@@ -81,15 +80,14 @@ export default function SignUpPage() {
             className="inline-flex items-center text-xs sm:text-sm text-muted-foreground hover:text-primary"
           >
             <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-            Retour à l'accueil
+            Back to home
           </Link>
         </div>
 
         <Card>
           <CardHeader className="text-center px-4 sm:px-6">
-            {/* Responsive title */}
-            <CardTitle className="text-xl sm:text-2xl font-bold">Créer un compte</CardTitle>
-            <CardDescription className="text-sm">Rejoignez MAK-IA pour accéder à vos analyses</CardDescription>
+            <CardTitle className="text-xl sm:text-2xl font-bold">Create Account</CardTitle>
+            <CardDescription className="text-sm">Join MAK-IA to access your analyses</CardDescription>
           </CardHeader>
           <CardContent className="px-4 sm:px-6">
             <form onSubmit={handleSignUp} className="space-y-3 sm:space-y-4">
@@ -98,14 +96,14 @@ export default function SignUpPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="votre@email.com"
+                  placeholder="your@email.com"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Mot de passe</Label>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -114,10 +112,10 @@ export default function SignUpPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   minLength={6}
                 />
-                <p className="text-xs text-muted-foreground">Minimum 6 caractères</p>
+                <p className="text-xs text-muted-foreground">Minimum 6 characters</p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -132,15 +130,14 @@ export default function SignUpPage() {
                   <p className="text-sm text-green-600 dark:text-green-400">{message}</p>
                 </div>
               )}
-              {/* Responsive button */}
               <Button type="submit" className="w-full h-11 sm:h-12 text-sm sm:text-base" disabled={isLoading}>
-                {isLoading ? "Création..." : "Créer un compte"}
+                {isLoading ? "Creating..." : "Create Account"}
               </Button>
             </form>
             <div className="mt-3 sm:mt-4 text-center text-xs sm:text-sm">
-              Déjà un compte ?{" "}
+              Already have an account?{" "}
               <Link href="/auth/login" className="text-primary hover:underline">
-                Se connecter
+                Sign in
               </Link>
             </div>
           </CardContent>

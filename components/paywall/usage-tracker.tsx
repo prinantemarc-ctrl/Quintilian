@@ -66,21 +66,21 @@ export function UsageTracker() {
 
   const getStatusBadge = () => {
     if (usage.remainingCredits === 0) {
-      return <Badge variant="destructive">Épuisé</Badge>
+      return <Badge variant="destructive">Exhausted</Badge>
     }
     if (usage.usagePercentage >= 90) {
-      return <Badge variant="destructive">Critique</Badge>
+      return <Badge variant="destructive">Critical</Badge>
     }
     if (usage.usagePercentage >= 70) {
-      return <Badge variant="secondary">Attention</Badge>
+      return <Badge variant="secondary">Warning</Badge>
     }
-    return <Badge variant="default">Bon</Badge>
+    return <Badge variant="default">Good</Badge>
   }
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">Utilisation des crédits</CardTitle>
+        <CardTitle className="text-sm font-medium">Credit Usage</CardTitle>
         <div className="flex items-center gap-2">
           {getStatusBadge()}
           <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -90,14 +90,14 @@ export function UsageTracker() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className={`text-2xl font-bold ${getStatusColor()}`}>{usage.remainingCredits}</span>
-            <span className="text-sm text-muted-foreground">sur {usage.totalCredits} crédits</span>
+            <span className="text-sm text-muted-foreground">on {usage.totalCredits} credits</span>
           </div>
 
           <Progress value={usage.usagePercentage} className="h-2" />
 
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">
-              {usage.usedCredits} utilisés ({usage.usagePercentage.toFixed(1)}%)
+              {usage.usedCredits} used ({usage.usagePercentage.toFixed(1)}%)
             </span>
           </div>
 
@@ -105,15 +105,15 @@ export function UsageTracker() {
             <div className="flex items-center gap-2 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
               <AlertTriangle className="h-4 w-4 text-yellow-600" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-yellow-800">Crédits faibles</p>
+                <p className="text-sm font-medium text-yellow-800">Low Credits</p>
                 <p className="text-xs text-yellow-600">
-                  Il ne vous reste que {usage.remainingCredits} crédit{usage.remainingCredits > 1 ? "s" : ""}
+                  You only have {usage.remainingCredits} credit{usage.remainingCredits > 1 ? "s" : ""} left
                 </p>
               </div>
               <Button size="sm" asChild>
                 <a href="/dashboard/credits">
                   <CreditCard className="mr-1 h-3 w-3" />
-                  Recharger
+                  Recharge
                 </a>
               </Button>
             </div>

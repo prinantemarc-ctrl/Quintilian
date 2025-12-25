@@ -49,11 +49,11 @@ export function SearchDetailsModal({
         setFullText(data.full_response_text)
         setHasLoaded(true)
       } else {
-        toast.error("Impossible de charger le texte complet")
+        toast.error("Unable to load full text")
       }
     } catch (error) {
-      console.error("Erreur lors du chargement:", error)
-      toast.error("Erreur lors du chargement")
+      console.error("Loading error:", error)
+      toast.error("Loading error")
     } finally {
       setIsLoading(false)
     }
@@ -62,7 +62,7 @@ export function SearchDetailsModal({
   const copyToClipboard = () => {
     if (fullText) {
       navigator.clipboard.writeText(fullText)
-      toast.success("Texte copié dans le presse-papiers")
+      toast.success("Text copied to clipboard")
     }
   }
 
@@ -72,17 +72,17 @@ export function SearchDetailsModal({
       const url = URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      a.download = `analyse-${query.replace(/\s+/g, "-")}-${new Date(createdAt).toISOString().split("T")[0]}.txt`
+      a.download = `analysis-${query.replace(/\s+/g, "-")}-${new Date(createdAt).toISOString().split("T")[0]}.txt`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
-      toast.success("Fichier téléchargé")
+      toast.success("File downloaded")
     }
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("fr-FR", {
+    return new Date(dateString).toLocaleDateString("en-US", {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -94,9 +94,9 @@ export function SearchDetailsModal({
   const getAnalysisTypeLabel = (type: string) => {
     switch (type) {
       case "analyze":
-        return "Analyse simple"
+        return "Simple Analysis"
       case "duel":
-        return "Duel comparatif"
+        return "Comparative Duel"
       default:
         return type
     }
@@ -114,13 +114,13 @@ export function SearchDetailsModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Eye className="w-5 h-5" />
-            Détails de l'analyse
+            Analysis Details
           </DialogTitle>
-          <DialogDescription>Consultation complète de votre analyse</DialogDescription>
+          <DialogDescription>Complete review of your analysis</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Métadonnées */}
+          {/* Metadata */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
@@ -148,7 +148,7 @@ export function SearchDetailsModal({
                     <div className={`text-lg font-bold ${getScoreColor(scores.presence_score)}`}>
                       {scores.presence_score}/10
                     </div>
-                    <div className="text-xs text-muted-foreground">Présence</div>
+                    <div className="text-xs text-muted-foreground">Presence</div>
                   </div>
                 )}
                 {scores.sentiment_score !== undefined && (
@@ -164,7 +164,7 @@ export function SearchDetailsModal({
                     <div className={`text-lg font-bold ${getScoreColor(scores.coherence_score)}`}>
                       {scores.coherence_score}/10
                     </div>
-                    <div className="text-xs text-muted-foreground">Cohérence</div>
+                    <div className="text-xs text-muted-foreground">Coherence</div>
                   </div>
                 )}
               </div>
@@ -175,30 +175,30 @@ export function SearchDetailsModal({
 
           {/* Actions */}
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Texte complet de l'analyse</h3>
+            <h3 className="text-lg font-semibold">Full Analysis Text</h3>
             <div className="flex gap-2">
               {!hasLoaded && (
                 <Button onClick={loadFullText} disabled={isLoading} size="sm">
                   <Zap className="w-4 h-4 mr-2" />
-                  {isLoading ? "Chargement..." : "Charger le texte"}
+                  {isLoading ? "Loading..." : "Load Text"}
                 </Button>
               )}
               {fullText && (
                 <>
                   <Button onClick={copyToClipboard} variant="outline" size="sm">
                     <Copy className="w-4 h-4 mr-2" />
-                    Copier
+                    Copy
                   </Button>
                   <Button onClick={downloadAsText} variant="outline" size="sm">
                     <Download className="w-4 h-4 mr-2" />
-                    Télécharger
+                    Download
                   </Button>
                 </>
               )}
             </div>
           </div>
 
-          {/* Contenu */}
+          {/* Content */}
           <ScrollArea className="flex-1 max-h-[60vh] border rounded-lg p-4 overflow-y-auto">
             {isLoading && (
               <div className="flex items-center justify-center py-8">
@@ -213,7 +213,7 @@ export function SearchDetailsModal({
               !isLoading && (
                 <div className="text-center py-8 text-muted-foreground">
                   <Eye className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Cliquez sur "Charger le texte" pour voir l'analyse complète</p>
+                  <p>Click "Load Text" to view the complete analysis</p>
                 </div>
               )
             )}

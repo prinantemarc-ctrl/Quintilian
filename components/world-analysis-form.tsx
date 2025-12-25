@@ -11,22 +11,22 @@ import { Globe, MapPin, TrendingUp, Loader2 } from "lucide-react"
 
 const AVAILABLE_COUNTRIES = [
   { code: "FR", name: "France", flag: "🇫🇷" },
-  { code: "DE", name: "Allemagne", flag: "🇩🇪" },
-  { code: "ES", name: "Espagne", flag: "🇪🇸" },
-  { code: "IT", name: "Italie", flag: "🇮🇹" },
-  { code: "GB", name: "Royaume-Uni", flag: "🇬🇧" },
-  { code: "AE", name: "Émirats Arabes Unis", flag: "🇦🇪" },
-  { code: "SA", name: "Arabie Saoudite", flag: "🇸🇦" },
-  { code: "JP", name: "Japon", flag: "🇯🇵" },
-  { code: "CN", name: "Chine", flag: "🇨🇳" },
-  { code: "US", name: "États-Unis", flag: "🇺🇸" },
+  { code: "DE", name: "Germany", flag: "🇩🇪" },
+  { code: "ES", name: "Spain", flag: "🇪🇸" },
+  { code: "IT", name: "Italy", flag: "🇮🇹" },
+  { code: "GB", name: "United Kingdom", flag: "🇬🇧" },
+  { code: "AE", name: "United Arab Emirates", flag: "🇦🇪" },
+  { code: "SA", name: "Saudi Arabia", flag: "🇸🇦" },
+  { code: "JP", name: "Japan", flag: "🇯🇵" },
+  { code: "CN", name: "China", flag: "🇨🇳" },
+  { code: "US", name: "United States", flag: "🇺🇸" },
   { code: "CA", name: "Canada", flag: "🇨🇦" },
-  { code: "AR", name: "Argentine", flag: "🇦🇷" },
-  { code: "BR", name: "Brésil", flag: "🇧🇷" },
-  { code: "ZA", name: "Afrique du Sud", flag: "🇿🇦" },
+  { code: "AR", name: "Argentina", flag: "🇦🇷" },
+  { code: "BR", name: "Brazil", flag: "🇧🇷" },
+  { code: "ZA", name: "South Africa", flag: "🇿🇦" },
   { code: "CD", name: "Congo", flag: "🇨🇩" },
-  { code: "IN", name: "Inde", flag: "🇮🇳" },
-  { code: "AU", name: "Australie", flag: "🇦🇺" },
+  { code: "IN", name: "India", flag: "🇮🇳" },
+  { code: "AU", name: "Australia", flag: "🇦🇺" },
 ]
 
 export function WorldAnalysisForm() {
@@ -83,15 +83,15 @@ export function WorldAnalysisForm() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Globe className="w-5 h-5" />
-              Recherche à analyser
+              Search to analyze
             </CardTitle>
             <CardDescription>
-              Entrez le nom, la marque ou le sujet que vous souhaitez analyser dans différents pays
+              Enter the name, brand, or subject you want to analyze across different countries
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <Label htmlFor="query">Terme de recherche</Label>
+              <Label htmlFor="query">Search term</Label>
               <Input
                 id="query"
                 value={query}
@@ -108,9 +108,9 @@ export function WorldAnalysisForm() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MapPin className="w-5 h-5" />
-              Sélection des pays ({selectedCountries.length}/5)
+              Country Selection ({selectedCountries.length}/5)
             </CardTitle>
-            <CardDescription>Choisissez jusqu'à 5 pays pour comparer la réputation géographiquement</CardDescription>
+            <CardDescription>Choose up to 5 countries to compare reputation geographically</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -138,7 +138,7 @@ export function WorldAnalysisForm() {
 
             {selectedCountries.length > 0 && (
               <div className="mt-4 p-4 bg-muted rounded-lg">
-                <p className="text-sm text-muted-foreground mb-2">Pays sélectionnés :</p>
+                <p className="text-sm text-muted-foreground mb-2">Selected countries:</p>
                 <div className="flex flex-wrap gap-2">
                   {selectedCountries.map((code) => {
                     const country = AVAILABLE_COUNTRIES.find((c) => c.code === code)
@@ -165,19 +165,19 @@ export function WorldAnalysisForm() {
             {isAnalyzing ? (
               <>
                 <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Analyse en cours...
+                Analysis in progress...
               </>
             ) : (
               <>
                 <TrendingUp className="w-5 h-5 mr-2" />
-                Analyser dans {selectedCountries.length} pays
+                Analyze in {selectedCountries.length} countries
               </>
             )}
           </Button>
 
           {selectedCountries.length > 0 && (
             <p className="text-sm text-muted-foreground mt-2">
-              Coût estimé : {selectedCountries.length * 3} recherches Google
+              Estimated cost: {selectedCountries.length * 3} Google searches
             </p>
           )}
         </div>
