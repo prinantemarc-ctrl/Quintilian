@@ -53,8 +53,7 @@ export function HeroSection() {
             </h1>
 
             <p className="max-w-2xl mx-auto text-sm sm:text-base lg:text-lg text-neutral-500 leading-relaxed px-4">
-              Discover how the world really perceives your brand. Get instant AI-powered analysis of your online
-              presence, sentiment, and reputation across the web.
+              Discover how the world really perceives your name. Get instant AI-powered analysis of your online presence, sentiment, and reputation across the web.
             </p>
           </div>
 

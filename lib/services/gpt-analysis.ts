@@ -406,6 +406,7 @@ Global synthesis with open source intelligence methodology:
   "gpt_summary": "<contextual intel analysis, NO numbers (100+ words), IN ENGLISH>",
   "structured_conclusion": "<markdown ##, MINIMUM 450 words, NO numbers, IN ENGLISH>",
   "detailed_analysis": "<markdown 3 sections, MINIMUM 600 words, NO numbers, IN ENGLISH>",
+  "coherence_details": "<MANDATORY: 150+ words detailed analysis of how the hypothesis '${message}' aligns with or contradicts the crawled intelligence data. Include specific evidence from sources, quantify alignment percentage, explain gaps between claimed message and digital reality, IN ENGLISH>",
   "advanced_metrics": {
     "source_quality": { "tier1_percentage": <0-100>, "tier2_percentage": <0-100>, "tier3_percentage": <0-100>, "dominant_tier": "<tier1|tier2|tier3>" },
     "information_freshness": { "recent_percentage": <0-100>, "old_percentage": <0-100>, "average_age_months": <number> },
@@ -501,9 +502,7 @@ Global synthesis with rigorous intelligence methodology:
   "gpt_summary": "<in-depth contextual analysis, NO numbers (150+ words), IN ENGLISH>",
   "structured_conclusion": "<markdown ##, MINIMUM 450 words, NO numbers, IN ENGLISH>",
   "detailed_analysis": "<markdown 3 complete sections, MINIMUM 750 words, NO numbers, IN ENGLISH>",
-  "key_takeaway": "<impactful sentence (15-20 words max), IN ENGLISH>",
-  "risks": ["<risk 1 IN ENGLISH>", "<risk 2 IN ENGLISH>", "<risk 3 IN ENGLISH>"],
-  "strengths": ["<strength 1 IN ENGLISH>", "<strength 2 IN ENGLISH>", "<strength 3 IN ENGLISH>"],
+  "coherence_details": "<MANDATORY: 150+ words detailed analysis of how the hypothesis '${message}' aligns with or contradicts the crawled intelligence data. Include specific evidence from sources, quantify alignment percentage, explain gaps between claimed message and digital reality, IN ENGLISH>",
   "advanced_metrics": {
     "source_quality": { "tier1_percentage": <0-100>, "tier2_percentage": <0-100>, "tier3_percentage": <0-100>, "dominant_tier": "<tier1|tier2|tier3>" },
     "information_freshness": { "recent_percentage": <0-100>, "old_percentage": <0-100>, "average_age_months": <number> },
@@ -545,6 +544,10 @@ Pure JSON without backticks`
 
         const parsed = JSON.parse(cleanedText)
 
+        console.log(
+          "[v0] Parsed coherence_details:",
+          parsed.coherence_details ? "PRESENT (" + parsed.coherence_details.length + " chars)" : "MISSING",
+        )
         console.log("[v0] Parsed advanced_metrics:", JSON.stringify(parsed.advanced_metrics, null, 2))
         console.log("[v0] Detailed analysis completed")
 
@@ -560,7 +563,7 @@ Pure JSON without backticks`
           detailed_analysis: parsed.detailed_analysis,
           presence_details: parsed.presence_details,
           tone_details: parsed.tone_details,
-          coherence_details: parsed.coherence_details,
+          coherence_details: hasMessage ? parsed.coherence_details : undefined,
           key_takeaway: !hasMessage ? parsed.key_takeaway : undefined,
           risks: !hasMessage ? parsed.risks : undefined,
           strengths: !hasMessage ? parsed.strengths : undefined,

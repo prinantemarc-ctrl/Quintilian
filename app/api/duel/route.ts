@@ -42,6 +42,7 @@ async function generateComparison(
   detailed_comparison: string
   winner: string
   summary: string
+  message_analysis?: string
 }> {
   console.log("[v0] Starting comparison generation")
 
@@ -55,8 +56,8 @@ async function generateComparison(
   const scoreDiff = Math.abs(brand1GlobalScore - brand2GlobalScore)
   let winner = brand1GlobalScore > brand2GlobalScore ? brand1 : brand2
 
-  if (scoreDiff <= 3) {
-    winner = "Match nul"
+  if (scoreDiff <= 1) {
+    winner = "Tie"
   }
 
   const responseLanguageMap: Record<string, string> = {
@@ -65,6 +66,21 @@ async function generateComparison(
     es: "español",
   }
   const responseLanguage = responseLanguageMap[presentationLanguage] || "français"
+
+  const hasMessage = message && message.trim().length > 0
+  const messageAnalysisPrompt = hasMessage
+    ? `
+
+[MESSAGE/HYPOTHESIS ANALYSIS]
+Message/Hypothesis to analyze: "${message}"
+
+Compare in detail (minimum 200 words) how each entity aligns with this message/hypothesis:
+- ${brand1}: SPECIFIC analysis of alignment with "${message}". Use coherence data (${brand1Analysis.coherence_score}/100) and details (${brand1Analysis.coherence_details}). Explain PRECISELY why this entity matches or not the message. Give concrete examples.
+- ${brand2}: SPECIFIC analysis of alignment with "${message}". Use coherence data (${brand2Analysis.coherence_score}/100) and details (${brand2Analysis.coherence_details}). Explain PRECISELY why this entity matches or not the message. Give concrete examples.
+- VERDICT: Which entity corresponds BEST to "${message}"? ${brand1} or ${brand2}? Justify with FACTS and PRECISE FIGURES. What is the relevance difference between the two (quantify it)?
+
+This analysis must be ULTRA DETAILED, FACTUAL and QUANTIFIED.`
+    : ""
 
   const prompt = `Tu es un analyste expert en réputation digitale. Compare "${brand1}" et "${brand2}" de manière TRÈS SPÉCIFIQUE et DÉTAILLÉE.
 
@@ -102,7 +118,8 @@ INSTRUCTIONS CRITIQUES :
 STRUCTURE EXACTE (texte brut en ${responseLanguage}, séparé par sauts de ligne) :
 
 [VERDICT]
-${winner === "Match nul" ? `Les deux entités sont au coude-à-coude avec seulement ${scoreDiff} points d'écart (${brand1}: ${brand1GlobalScore}/100, ${brand2}: ${brand2GlobalScore}/100).` : `${winner} domine avec ${scoreDiff} points d'avance (${brand1GlobalScore} vs ${brand2GlobalScore}).`} Explique en 2-3 phrases PRÉCISES pourquoi, avec des éléments QUANTIFIÉS des données ci-dessus.
+${winner === "Tie" ? `Les deux entités sont au coude-à-coude avec seulement ${scoreDiff} points d'écart (${brand1}: ${brand1GlobalScore}/100, ${brand2}: ${brand2GlobalScore}/100).` : `${winner} domine avec ${scoreDiff} points d'avance (${brand1GlobalScore} vs ${brand2GlobalScore}).`} Explique en 2-3 phrases PRÉCISES pourquoi, avec des éléments QUANTIFIÉS des données ci-dessus.
+${messageAnalysisPrompt}
 
 [PRÉSENCE DIGITALE]
 Compare SPÉCIFIQUEMENT les scores (${brand1}: ${brand1Analysis.presence_score}/100 vs ${brand2}: ${brand2Analysis.presence_score}/100). Mentionne les plateformes, types de médias, autorité des sources. 3-4 phrases avec DONNÉES CHIFFRÉES.
@@ -113,27 +130,27 @@ Analyse DÉTAILLÉE des sentiments (${brand1}: ${brand1Analysis.tone_label} ${br
 [COHÉRENCE]
 Compare l'alignement message/image (${brand1}: ${brand1Analysis.coherence_score}/100 vs ${brand2}: ${brand2Analysis.coherence_score}/100). Identifie PRÉCISÉMENT les écarts ou cohérences. 3 phrases minimum.
 
-[FORCES ${brand1.toUpperCase()}]
-- Force 1 : [élément précis avec chiffre ou fait]
-- Force 2 : [plateforme/canal spécifique avec impact quantifié]
-- Force 3 : [avantage concurrentiel mesurable]
-- Force 4 : [atout distinctif avec preuve]
+[STRENGTHS ${brand1.toUpperCase()}]
+- Strength 1: [élément précis avec chiffre ou fait]
+- Strength 2: [plateforme/canal spécifique avec impact quantifié]
+- Strength 3: [avantage concurrentiel mesurable]
+- Strength 4: [atout distinctif avec preuve]
 
-[FAIBLESSES ${brand1.toUpperCase()}]
-- Faiblesse 1 : [point faible identifié avec impact chiffré]
-- Faiblesse 2 : [manque spécifique sur canal/plateforme]
-- Faiblesse 3 : [risque ou lacune mesurable]
+[RISKS ${brand1.toUpperCase()}]
+- Risk 1: [point faible identifié avec impact chiffré]
+- Risk 2: [manque spécifique sur canal/plateforme]
+- Risk 3: [risque ou lacune mesurable]
 
-[FORCES ${brand2.toUpperCase()}]
-- Force 1 : [élément précis avec chiffre ou fait]
-- Force 2 : [plateforme/canal spécifique avec impact quantifié]
-- Force 3 : [avantage concurrentiel mesurable]
-- Force 4 : [atout distinctif avec preuve]
+[STRENGTHS ${brand2.toUpperCase()}]
+- Strength 1: [élément précis avec chiffre ou fait]
+- Strength 2: [plateforme/canal spécifique avec impact quantifié]
+- Strength 3: [avantage concurrentiel mesurable]
+- Strength 4: [atout distinctif avec preuve]
 
-[FAIBLESSES ${brand2.toUpperCase()}]
-- Faiblesse 1 : [point faible identifié avec impact chiffré]
-- Faiblesse 2 : [manque spécifique sur canal/plateforme]
-- Faiblesse 3 : [risque ou lacune mesurable]
+[RISKS ${brand2.toUpperCase()}]
+- Risk 1: [point faible identifié avec impact chiffré]
+- Risk 2: [manque spécifique sur canal/plateforme]
+- Risk 3: [risque ou lacune mesurable]
 
 [RECOMMANDATIONS]
 Pour ${brand1}: 2-3 actions PRÉCISES et MESURABLES (ex: "augmenter présence LinkedIn de 40%", "publier 3 articles/mois sur médias autorité").
@@ -176,16 +193,24 @@ RAPPEL : Texte brut uniquement en ${responseLanguage}, sans **, ##, ou emoji. So
 
     const cleanedText = cleanMarkdownFormatting(rawText)
 
+    let messageAnalysis: string | undefined
+    if (hasMessage) {
+      const messageAnalysisMatch = cleanedText.match(/\[MESSAGE\/HYPOTHESIS ANALYSIS\](.*?)(?=\[|$)/s)
+      if (messageAnalysisMatch) {
+        messageAnalysis = messageAnalysisMatch[1].trim()
+        console.log("[v0] Message analysis extracted:", messageAnalysis.substring(0, 100) + "...")
+      }
+    }
+
     console.log("[v0] Comparison generated successfully")
 
     return {
       detailed_comparison: cleanedText,
       winner,
       summary: `${brand1} (${brand1GlobalScore}/100) vs ${brand2} (${brand2GlobalScore}/100). ${
-        winner === "Match nul"
-          ? "Match nul - Scores très proches !"
-          : `${winner} l'emporte avec ${scoreDiff} points d'avance.`
+        winner === "Tie" ? "Tie - Very close scores!" : `${winner} wins with a ${scoreDiff} point lead.`
       }`,
+      ...(messageAnalysis && { message_analysis: messageAnalysis }),
     }
   } catch (error) {
     console.error("[v0] Comparison generation failed:", error)
@@ -202,7 +227,7 @@ export async function POST(request: NextRequest) {
   logApiRequest("DUEL", {})
 
   let body: any
-  let user: any = null // Added user variable for authentication
+  let user: any = null
 
   try {
     body = await request.json()
@@ -238,7 +263,6 @@ export async function POST(request: NextRequest) {
     }
     console.log("[v0] OpenAI API key verified for duel analysis")
 
-    // Search and analyze both brands in parallel
     const [brand1Results, brand2Results] = await Promise.all([
       searchGoogle(brand1, { language, country }),
       searchGoogle(brand2, { language, country }),
@@ -288,13 +312,11 @@ export async function POST(request: NextRequest) {
       brand1_analysis: {
         ...brand1Analysis,
         global_score: brand1GlobalScore,
-        // Supprimer coherence_score si pas de message
         ...(hasMessage ? {} : { coherence_score: null, coherence_details: null }),
       },
       brand2_analysis: {
         ...brand2Analysis,
         global_score: brand2GlobalScore,
-        // Supprimer coherence_score si pas de message
         ...(hasMessage ? {} : { coherence_score: null, coherence_details: null }),
       },
       brand1_sources: brand1Results.map((item) => ({
@@ -311,6 +333,7 @@ export async function POST(request: NextRequest) {
       score_difference: Math.abs(brand1GlobalScore - brand2GlobalScore),
       detailed_comparison: comparison.detailed_comparison,
       summary: comparison.summary,
+      ...(comparison.message_analysis && { message_analysis: comparison.message_analysis }),
     }
 
     const processingTime = Date.now() - startTime
@@ -376,18 +399,17 @@ Résultats Google: ${brand1Results.length + brand2Results.length}
           presence_score: (brand1Analysis.presence_score + brand2Analysis.presence_score) / 2,
           sentiment_score: (brand1Analysis.tone_score + brand2Analysis.tone_score) / 2,
           coherence_score: (brand1Analysis.coherence_score + brand2Analysis.coherence_score) / 2,
-          processing_time: processingTime / 1000, // Convert to seconds
+          processing_time: processingTime / 1000,
           google_results_count: brand1Results.length + brand2Results.length,
           openai_tokens_used: undefined,
         },
         user_agent: request.headers.get("user-agent") || "",
         ip_address: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || undefined,
-        full_response_text: fullResponseText, // Added full response text
-        ...(user && { user_id: user.id }), // Added user_id if authenticated
+        full_response_text: fullResponseText,
+        ...(user && { user_id: user.id }),
       })
     } catch (logError) {
       console.error("[v0] Failed to log search:", logError)
-      // Don't fail the request if logging fails
     }
 
     return createSuccessResponse(result, { processingTime })
@@ -403,7 +425,7 @@ Résultats Google: ${brand1Results.length + brand2Results.length}
         brand2: body?.brand2,
         language: body?.language || "fr",
         results: {
-          processing_time: processingTime / 1000, // Convert to seconds
+          processing_time: processingTime / 1000,
           google_results_count: 0,
         },
         user_agent: request.headers.get("user-agent") || "",
@@ -413,8 +435,8 @@ Résultats Google: ${brand1Results.length + brand2Results.length}
 
 Erreur: ${error instanceof Error ? error.message : "Unknown error"}
 Temps de traitement: ${processingTime}ms
-Date: ${new Date().toLocaleString("fr-FR")}`, // Added full response text for errors
-        ...(user && { user_id: user.id }), // Added user_id if authenticated
+Date: ${new Date().toLocaleString("fr-FR")}`,
+        ...(user && { user_id: user.id }),
       })
     } catch (logError) {
       console.error("[v0] Failed to log error:", logError)

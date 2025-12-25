@@ -367,7 +367,7 @@ export function AuthGateModal({
                 </div>
 
                 {/* Summary Preview */}
-                {previewData.gpt_summary && <BlurredTextPreview text={previewData.gpt_summary} label="KEY SUMMARY" />}
+                {previewData.rationale && <BlurredTextPreview text={previewData.rationale} label="KEY SUMMARY" />}
 
                 {/* Sources Count */}
                 {previewData.sources_count && (

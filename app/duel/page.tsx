@@ -123,23 +123,23 @@ export default function DuelPage() {
             <div className="flex items-center justify-center gap-3 mb-4">
               <Swords className="w-8 h-8 text-primary" />
               <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Brand Duel
+                Confrontation
               </h1>
             </div>
-            <p className="text-muted-foreground text-lg">Compare two brands head-to-head</p>
+            <p className="text-muted-foreground text-lg">Compare two subjects head-to-head</p>
           </div>
 
           {/* Form */}
           <Card className="border-2 border-primary/20 shadow-lg">
             <CardHeader>
-              <CardTitle className="text-center text-xl">Brand Duel - Configuration</CardTitle>
+              <CardTitle className="text-center text-xl">Confrontation - Configuration</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="brand1" className="text-sm font-medium">
-                      Brand Name 1 🥊
+                      Subject 1 🥊
                     </Label>
                     <Input
                       id="brand1"
@@ -152,7 +152,7 @@ export default function DuelPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="brand2" className="text-sm font-medium">
-                      Brand Name 2 🥊
+                      Subject 2 🥊
                     </Label>
                     <Input
                       id="brand2"
@@ -167,7 +167,7 @@ export default function DuelPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="message" className="text-sm font-medium">
-                    Message <span className="text-muted-foreground text-xs">(optional)</span>
+                    Hypothesis / Claim <span className="text-muted-foreground text-xs">(optional)</span>
                   </Label>
                   <Textarea
                     id="message"
@@ -176,6 +176,9 @@ export default function DuelPage() {
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     className="min-h-[100px] border-primary/20 focus:border-primary"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Enter a hypothesis or claim to analyze which subject better aligns with it
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -205,7 +208,7 @@ export default function DuelPage() {
                   size="lg"
                 >
                   <Swords className="w-5 h-5 mr-2" />
-                  Start Duel!
+                  Start Confrontation!
                 </Button>
               </form>
             </CardContent>
