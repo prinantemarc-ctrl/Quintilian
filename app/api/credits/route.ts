@@ -13,13 +13,13 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (error || !user) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const credits = await CreditManager.getUserCredits(user.id)
     return NextResponse.json(credits)
   } catch (error) {
-    console.error("Erreur lors de la récupération des crédits:", error)
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
+    console.error("[v0] Error fetching credits:", error)
+    return NextResponse.json({ error: "Server error" }, { status: 500 })
   }
 }

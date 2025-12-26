@@ -334,11 +334,11 @@ export function AuthGateModal({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl bg-gradient-to-br from-zinc-950 via-zinc-900 to-black border border-violet-900/30 rounded-2xl shadow-2xl shadow-violet-500/20 overflow-hidden">
-        <div className="grid md:grid-cols-2 gap-0">
+    <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-start md:items-center justify-center p-4 overflow-y-auto">
+      <div className="w-full max-w-6xl max-h-full my-auto bg-gradient-to-br from-zinc-950 via-zinc-900 to-black border border-violet-900/30 rounded-2xl shadow-2xl shadow-violet-500/20 overflow-hidden">
+        <div className="grid md:grid-cols-2 gap-0 max-h-[90vh] md:max-h-none overflow-y-auto md:overflow-visible">
           {/* Left side - Preview */}
-          <div className="p-8 border-r border-violet-900/30">
+          <div className="p-8 border-r border-violet-900/30 md:max-h-[80vh] md:overflow-y-auto">
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-2">
                 <CheckCircle2 className="w-5 h-5 text-green-400" />
@@ -387,7 +387,7 @@ export function AuthGateModal({
           </div>
 
           {/* Right side - Auth Form */}
-          <div className="p-8 bg-black/40">
+          <div className="p-8 bg-black/40 md:max-h-[80vh] md:overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
                 <Shield className="w-5 h-5 text-violet-500" />

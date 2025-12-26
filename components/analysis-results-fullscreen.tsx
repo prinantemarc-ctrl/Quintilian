@@ -1027,13 +1027,13 @@ function MetricsTab({ result, type }: any) {
           />
           <MetricCard
             label="BRIEFS"
-            percentage={Math.round(metrics.coverage_type.briefs_percentage)}
+            percentage={Math.round(metrics.coverage_type.brief_percentage)}
             description="100-500 words"
             color="yellow"
           />
           <MetricCard
             label="MENTIONS"
-            percentage={Math.round(metrics.coverage_type.mentions_percentage)}
+            percentage={Math.round(metrics.coverage_type.mention_percentage)}
             description="< 100 words"
             color="gray"
           />
@@ -1073,7 +1073,7 @@ function MetricsTab({ result, type }: any) {
         <div className="rounded-xl border border-red-900/30 bg-gradient-to-r from-red-950/20 via-black to-red-950/20 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="text-6xl font-mono font-bold text-red-400">
-              {formatMetricNumber(metrics.risk_level.score)}
+              {formatMetricNumber(metrics.risk_level.score, 1)}
             </div>
             <div
               className={cn(
@@ -1090,12 +1090,82 @@ function MetricsTab({ result, type }: any) {
               {getRiskLabel(metrics.risk_level.category)}
             </div>
           </div>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-gray-400 mb-6">
             Category: <span className="text-white font-semibold">{getRiskLabel(metrics.risk_level.category)}</span>
           </p>
-          <p className="text-sm text-gray-400 mt-2">
-            Main Threats: <span className="text-white">{metrics.risk_level.main_threats}</span>
-          </p>
+
+          {/* Detailed Threats Display */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-white/90 uppercase tracking-wide flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              Identified Threats
+            </h4>
+            <div className="space-y-2">
+              {Array.isArray(metrics.risk_level.main_threats) ? (
+                typeof metrics.risk_level.main_threats[0] === "string" ? (
+                  // Legacy format: array of strings
+                  <div className="text-sm text-gray-300">{metrics.risk_level.main_threats.join(", ")}</div>
+                ) : (
+                  // New format: array of objects with title, description, severity
+                  metrics.risk_level.main_threats.map((threat: any, index: number) => (
+                    <div
+                      key={index}
+                      className={cn(
+                        "rounded-lg border p-3 transition-all hover:scale-[1.02]",
+                        threat.severity === "critical"
+                          ? "border-red-500/30 bg-red-950/20 hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/10"
+                          : threat.severity === "high"
+                            ? "border-orange-500/30 bg-orange-950/20 hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/10"
+                            : threat.severity === "medium"
+                              ? "border-yellow-500/30 bg-yellow-950/20 hover:border-yellow-500/50 hover:shadow-lg hover:shadow-yellow-500/10"
+                              : "border-emerald-500/30 bg-emerald-950/20 hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/10",
+                      )}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={cn(
+                            "mt-0.5 rounded-full p-1.5",
+                            threat.severity === "critical"
+                              ? "bg-red-500/20 text-red-400"
+                              : threat.severity === "high"
+                                ? "bg-orange-500/20 text-orange-400"
+                                : threat.severity === "medium"
+                                  ? "bg-yellow-500/20 text-yellow-400"
+                                  : "bg-emerald-500/20 text-emerald-400",
+                          )}
+                        >
+                          <AlertTriangle className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h5 className="text-sm font-semibold text-white">{threat.title}</h5>
+                            <span
+                              className={cn(
+                                "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider",
+                                threat.severity === "critical"
+                                  ? "bg-red-500/20 text-red-400"
+                                  : threat.severity === "high"
+                                    ? "bg-orange-500/20 text-orange-400"
+                                    : threat.severity === "medium"
+                                      ? "bg-yellow-500/20 text-yellow-400"
+                                      : "bg-emerald-500/20 text-emerald-400",
+                              )}
+                            >
+                              {threat.severity}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-400 leading-relaxed">{threat.description}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )
+              ) : (
+                // Fallback for string format
+                <div className="text-sm text-gray-300">{metrics.risk_level.main_threats}</div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 

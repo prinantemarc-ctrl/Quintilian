@@ -56,20 +56,20 @@ export function CreditGuard({ children, requiredCredits = 1, onInsufficientCredi
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
             <Coins className="h-6 w-6 text-red-600" />
           </div>
-          <CardTitle>Crédits insuffisants</CardTitle>
+          <CardTitle>Insufficient Credits</CardTitle>
           <CardDescription>
-            Vous avez besoin de {requiredCredits} crédit{requiredCredits > 1 ? "s" : ""} pour effectuer cette action.
+            You need {requiredCredits} credit{requiredCredits > 1 ? "s" : ""} to perform this action.
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center space-y-4">
           <Button asChild className="w-full">
             <a href="/dashboard/credits">
               <CreditCard className="mr-2 h-4 w-4" />
-              Acheter des crédits
+              Purchase Credits
             </a>
           </Button>
           <Button variant="outline" asChild className="w-full bg-transparent">
-            <a href="/dashboard">Retour au dashboard</a>
+            <a href="/dashboard">Back to Dashboard</a>
           </Button>
         </CardContent>
       </Card>

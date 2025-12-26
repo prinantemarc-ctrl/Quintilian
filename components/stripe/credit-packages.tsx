@@ -14,8 +14,6 @@ export function CreditPackages() {
     setLoading(packageId)
 
     try {
-      console.log("[v0] Début de l'achat pour le package:", packageId)
-
       const response = await fetch("/api/stripe/create-checkout", {
         method: "POST",
         headers: {
@@ -25,22 +23,18 @@ export function CreditPackages() {
       })
 
       const data = await response.json()
-      console.log("[v0] Réponse de l'API:", data)
 
       if (data.url) {
-        console.log("[v0] Ouverture de l'URL Stripe dans un nouvel onglet:", data.url)
         window.open(data.url, "_blank", "noopener,noreferrer")
       } else if (data.sessionId) {
-        // Fallback: construire l'URL manuellement si seulement sessionId est retourné
         const checkoutUrl = `https://checkout.stripe.com/c/pay/${data.sessionId}`
-        console.log("[v0] Ouverture de l'URL construite dans un nouvel onglet:", checkoutUrl)
         window.open(checkoutUrl, "_blank", "noopener,noreferrer")
       } else {
-        throw new Error("Aucune URL de checkout reçue")
+        throw new Error("No checkout URL received")
       }
     } catch (error) {
-      console.error("[v0] Erreur lors de l'achat:", error)
-      alert("Erreur lors de la création de la session de paiement. Veuillez réessayer.")
+      console.error("Purchase error:", error)
+      alert("Error creating payment session. Please try again.")
     } finally {
       setLoading(null)
     }
@@ -49,11 +43,11 @@ export function CreditPackages() {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
       {CREDIT_PACKAGES.map((pkg) => (
-        <Card key={pkg.id} className={`relative ${pkg.popular ? "border-green-500 shadow-lg" : ""}`}>
-          {pkg.popular && <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-green-500">Populaire</Badge>}
+        <Card key={pkg.id} className={`relative ${pkg.popular ? "border-violet-500 shadow-lg" : ""}`}>
+          {pkg.popular && <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-violet-500">Popular</Badge>}
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-              <Coins className="h-6 w-6 text-green-600" />
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-violet-100">
+              <Coins className="h-6 w-6 text-violet-600" />
             </div>
             <CardTitle>{pkg.name}</CardTitle>
             <CardDescription>{pkg.description}</CardDescription>
@@ -61,26 +55,26 @@ export function CreditPackages() {
           <CardContent className="text-center space-y-4">
             <div>
               <div className="text-3xl font-bold">{pkg.credits}</div>
-              <div className="text-sm text-muted-foreground">crédits</div>
+              <div className="text-sm text-muted-foreground">credits</div>
             </div>
             <div>
               <div className="text-2xl font-bold">{(pkg.price / 100).toFixed(2)}€</div>
               <div className="text-sm text-muted-foreground">
-                {(pkg.price / 100 / pkg.credits).toFixed(3)}€ par crédit
+                {(pkg.price / 100 / pkg.credits).toFixed(3)}€ per credit
               </div>
             </div>
             <ul className="text-sm space-y-2">
               <li className="flex items-center">
-                <Check className="h-4 w-4 text-green-500 mr-2" />
-                {pkg.credits} recherches incluses
+                <Check className="h-4 w-4 text-violet-500 mr-2" />
+                {pkg.credits} searches included
               </li>
               <li className="flex items-center">
-                <Check className="h-4 w-4 text-green-500 mr-2" />
-                Accès complet à l'IA
+                <Check className="h-4 w-4 text-violet-500 mr-2" />
+                Full AI access
               </li>
               <li className="flex items-center">
-                <Check className="h-4 w-4 text-green-500 mr-2" />
-                Support prioritaire
+                <Check className="h-4 w-4 text-violet-500 mr-2" />
+                Priority support
               </li>
             </ul>
             <Button
@@ -90,11 +84,11 @@ export function CreditPackages() {
               variant={pkg.popular ? "default" : "outline"}
             >
               {loading === pkg.id ? (
-                "Ouverture..."
+                "Opening..."
               ) : (
                 <>
                   <CreditCard className="mr-2 h-4 w-4" />
-                  Acheter maintenant
+                  Buy Now
                   <ExternalLink className="ml-2 h-4 w-4" />
                 </>
               )}

@@ -18,6 +18,7 @@ import {
 import { searchCache, analysisCache, resultsCache } from "@/lib/cache"
 import { logger } from "@/lib/logger"
 import { createClient } from "@/lib/supabase/server"
+import { CreditManager } from "@/lib/credits"
 
 function generateFallbackAdvancedMetrics(
   presenceScore: number,
@@ -41,16 +42,84 @@ function generateFallbackAdvancedMetrics(
   const nationalPct = Math.floor(35 + Math.random() * 25)
   const internationalPct = 100 - localPct - nationalPct
 
-  // Coverage type based on presence
-  const inDepthPct = Math.min(70, Math.max(15, presenceScore - 20 + Math.floor(Math.random() * 20)))
-  const briefPct = Math.floor(20 + Math.random() * 20)
-  const mentionPct = 100 - inDepthPct - briefPct
+  // Coverage type based on presence - ensure all percentages are valid and sum to 100
+  const inDepthBase = Math.min(70, Math.max(15, presenceScore - 20 + Math.floor(Math.random() * 20)))
+  const briefBase = Math.floor(15 + Math.random() * 15)
+  const mentionBase = Math.floor(15 + Math.random() * 15)
+
+  // Normalize to ensure they sum to 100
+  const total = inDepthBase + briefBase + mentionBase
+  const inDepthPct = Math.round((inDepthBase / total) * 100)
+  const briefPct = Math.round((briefBase / total) * 100)
+  const mentionPct = 100 - inDepthPct - briefPct // Ensure exact sum to 100
 
   // Polarization based on tone score (neutral = 50)
   const neutralPct = Math.min(90, Math.max(20, 100 - Math.abs(toneScore - 50) * 1.5))
 
   // Risk level inversely related to tone and presence
   const riskScore = Math.max(10, Math.min(90, 100 - avgScore + Math.floor(Math.random() * 20) - 10))
+
+  // Generate detailed threats based on risk score
+  const getDetailedThreats = (score: number) => {
+    if (score > 70) {
+      return [
+        {
+          title: "Critical Reputation Damage",
+          description: "High volume of negative coverage threatening brand integrity and stakeholder confidence.",
+          severity: "critical" as const,
+        },
+        {
+          title: "Viral Controversy Risk",
+          description: "Potential for rapid spread of damaging narratives across social media platforms.",
+          severity: "high" as const,
+        },
+        {
+          title: "Stakeholder Trust Erosion",
+          description: "Declining confidence among key stakeholders including investors, partners, and customers.",
+          severity: "high" as const,
+        },
+      ]
+    } else if (score > 50) {
+      return [
+        {
+          title: "Negative Media Coverage",
+          description: "Increasing presence of unfavorable articles and commentary affecting public perception.",
+          severity: "high" as const,
+        },
+        {
+          title: "Public Sentiment Volatility",
+          description: "Fluctuating public opinion with potential for rapid negative shifts in perception.",
+          severity: "medium" as const,
+        },
+        {
+          title: "Competitive Pressure",
+          description: "Aggressive positioning by competitors in the narrative space may impact market position.",
+          severity: "medium" as const,
+        },
+      ]
+    } else if (score > 30) {
+      return [
+        {
+          title: "Minor Reputation Fluctuations",
+          description: "Occasional negative mentions that require monitoring but pose limited immediate risk.",
+          severity: "low" as const,
+        },
+        {
+          title: "Narrative Inconsistency",
+          description: "Some gaps between messaging and public perception that may need addressing.",
+          severity: "low" as const,
+        },
+      ]
+    } else {
+      return [
+        {
+          title: "Minimal Risk Exposure",
+          description: "Strong positive sentiment with very low probability of reputation challenges.",
+          severity: "low" as const,
+        },
+      ]
+    }
+  }
 
   return {
     source_quality: {
@@ -94,8 +163,7 @@ function generateFallbackAdvancedMetrics(
     risk_level: {
       score: riskScore,
       category: riskScore <= 30 ? "low" : riskScore <= 50 ? "moderate" : riskScore <= 70 ? "high" : "critical",
-      main_threats:
-        riskScore > 50 ? ["Negative media coverage", "Public sentiment volatility"] : ["Minor reputation fluctuations"],
+      main_threats: getDetailedThreats(riskScore),
     },
     reputation_index: {
       score: Math.round(avgScore),
@@ -144,10 +212,16 @@ export async function POST(request: NextRequest) {
       const {
         data: { user: authUser },
       } = await supabase.auth.getUser()
-      user = authUser
-      console.log("[v0] User authenticated:", user?.id || "anonymous")
+
+      if (authUser) {
+        user = authUser
+        console.log("[v0] User authenticated:", user.id)
+      } else {
+        console.log("[v0] User not authenticated - allowing partial analysis")
+      }
     } catch (error) {
-      console.log("[v0] User not authenticated, continuing as anonymous")
+      console.error("[v0] Authentication check error (non-blocking):", error)
+      // Continue without user - allows partial analysis
     }
 
     console.log("[v0] Parsing request body")
@@ -416,6 +490,28 @@ Résultats Google: ${searchResults.length}
       console.log("[v0] Search logged successfully for user:", user?.id || "anonymous")
     } catch (logError) {
       console.error("[v0] Failed to log search:", logError)
+    }
+
+    // Deduct credit after logging the search to ensure consistency
+    if (user) {
+      try {
+        const userCredits = await CreditManager.getUserCredits(user.id)
+        if (userCredits >= 1) {
+          const creditDeducted = await CreditManager.deductCredits(user.id, 1, `Analysis: ${brand}`)
+          if (creditDeducted) {
+            console.log("[v0] Credit deducted successfully for user:", user.id)
+          } else {
+            console.error("[v0] Failed to deduct credit for user:", user.id)
+          }
+        } else {
+          console.log("[v0] User has no credits, but analysis was performed (partial)")
+        }
+      } catch (creditError) {
+        console.error("[v0] Error checking/deducting credits (non-blocking):", creditError)
+        // Don't fail the analysis if credit deduction fails
+      }
+    } else {
+      console.log("[v0] No user authenticated - no credit deduction (partial analysis)")
     }
 
     return createSuccessResponse(response, { processingTime })

@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ArrowLeft } from "lucide-react"
 
 export default function SignUpPage() {
@@ -20,6 +20,21 @@ export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const router = useRouter()
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (user) {
+        router.push("/dashboard")
+      }
+    }
+
+    checkUser()
+  }, [router])
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()

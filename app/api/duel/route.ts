@@ -12,6 +12,7 @@ import {
 } from "@/lib/utils/api-response"
 import { logger } from "@/lib/logger" // Updated import path
 import { createClient } from "@/lib/supabase/server" // Added Supabase client for user auth
+import { CreditManager } from "@/lib/credits" // Added CreditManager import
 
 function cleanMarkdownFormatting(text: string): string {
   return (
@@ -227,7 +228,7 @@ export async function POST(request: NextRequest) {
   logApiRequest("DUEL", {})
 
   let body: any
-  let user: any = null
+  let user: any = null // Variable to store authenticated user (optional)
 
   try {
     body = await request.json()
@@ -238,10 +239,16 @@ export async function POST(request: NextRequest) {
       const {
         data: { user: authUser },
       } = await supabase.auth.getUser()
-      user = authUser
-      console.log("[v0] User authenticated:", user?.id || "anonymous")
+
+      if (authUser) {
+        user = authUser
+        console.log("[v0] User authenticated:", user.id)
+      } else {
+        console.log("[v0] User not authenticated - allowing partial duel")
+      }
     } catch (error) {
-      console.log("[v0] User not authenticated, continuing as anonymous")
+      console.error("[v0] Authentication check error (non-blocking):", error)
+      // Continue without user - allows partial duel
     }
 
     const { brand1, brand2, message, language, country } = DuelAnalysisSchema.parse(body)
@@ -410,6 +417,27 @@ Résultats Google: ${brand1Results.length + brand2Results.length}
       })
     } catch (logError) {
       console.error("[v0] Failed to log search:", logError)
+    }
+
+    if (user) {
+      try {
+        const userCredits = await CreditManager.getUserCredits(user.id)
+        if (userCredits >= 1) {
+          const creditDeducted = await CreditManager.deductCredits(user.id, 1, `Duel: ${brand1} vs ${brand2}`)
+          if (creditDeducted) {
+            console.log("[v0] Credit deducted successfully for user:", user.id)
+          } else {
+            console.error("[v0] Failed to deduct credit for user:", user.id)
+          }
+        } else {
+          console.log("[v0] User has no credits, but duel was performed (partial)")
+        }
+      } catch (creditError) {
+        console.error("[v0] Error checking/deducting credits (non-blocking):", creditError)
+        // Don't fail the duel if credit deduction fails
+      }
+    } else {
+      console.log("[v0] No user authenticated - no credit deduction (partial duel)")
     }
 
     return createSuccessResponse(result, { processingTime })

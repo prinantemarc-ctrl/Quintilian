@@ -20,11 +20,31 @@ export class CreditManager {
   static async getUserCredits(userId: string): Promise<UserCredits> {
     const supabase = await createClient()
 
-    const { data: user, error } = await supabase.from("User").select("credits").eq("id", userId).single()
+    const { data: users, error } = await supabase.from("User").select("credits").eq("id", userId)
 
-    if (error || !user) {
-      throw new Error("Utilisateur non trouvé")
+    if (!users || users.length === 0) {
+      const { error: insertError } = await supabase.from("User").insert({
+        id: userId,
+        credits: 0,
+        freeTrialUsed: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+
+      if (insertError) {
+        console.error("[v0] Error creating user record:", insertError)
+        throw new Error("Failed to create user record")
+      }
+
+      return {
+        userId,
+        totalCredits: 0,
+        usedCredits: 0,
+        remainingCredits: 0,
+      }
     }
+
+    const user = users[0]
 
     const { data: usedCreditsData } = await supabase
       .from("CreditLedger")
@@ -53,9 +73,10 @@ export class CreditManager {
   static async addCredits(userId: string, amount: number, description: string): Promise<void> {
     const supabase = await createClient()
 
-    const { data: currentUser } = await supabase.from("User").select("credits").eq("id", userId).single()
+    const { data: users } = await supabase.from("User").select("credits").eq("id", userId)
 
-    const newCredits = (currentUser?.credits || 0) + amount
+    const currentCredits = users && users.length > 0 ? users[0].credits || 0 : 0
+    const newCredits = currentCredits + amount
 
     const { error: updateError } = await supabase.rpc("add_user_credits", {
       p_user_id: userId,
@@ -75,6 +96,32 @@ export class CreditManager {
   }
 
   static async useCredits(userId: string, amount: number, description: string): Promise<boolean> {
+    const userCredits = await this.getUserCredits(userId)
+
+    if (userCredits.remainingCredits < amount) {
+      return false
+    }
+
+    const supabase = await createClient()
+
+    const newCredits = userCredits.remainingCredits - amount
+
+    const { error: updateError } = await supabase.from("User").update({ credits: newCredits }).eq("id", userId)
+
+    if (updateError) throw updateError
+
+    const { error: ledgerError } = await supabase.from("CreditLedger").insert({
+      userId,
+      delta: -amount,
+      reason: `usage: ${description}`,
+    })
+
+    if (ledgerError) throw ledgerError
+
+    return true
+  }
+
+  static async deductCredits(userId: string, amount: number, description: string): Promise<boolean> {
     const userCredits = await this.getUserCredits(userId)
 
     if (userCredits.remainingCredits < amount) {
