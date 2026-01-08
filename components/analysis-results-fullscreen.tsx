@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import { AuthGateModal } from "@/components/auth/auth-gate-modal"
 import { cn } from "@/lib/utils"
+import { PDFExportButton } from "@/components/pdf-export-button"
 
 interface AnalysisResultsFullscreenProps {
   isOpen: boolean
@@ -165,14 +166,25 @@ export function AnalysisResultsFullscreen({
                 {type === "duel" ? "Confrontation Report" : "Intelligence Report"} {/* Removed t() */}
               </h1>
             </div>
-            <Button
-              onClick={onClose}
-              variant="ghost"
-              size="icon"
-              className="text-gray-400 hover:text-white hover:bg-violet-950/30"
-            >
-              <X className="h-6 w-6" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <PDFExportButton
+                type={type === "duel" ? "duel" : "simple"}
+                brand={brand || "Unknown"}
+                brand2={brand2}
+                result={result}
+                variant="outline"
+                size="sm"
+                className="hidden sm:flex border-violet-500 text-violet-400 hover:bg-violet-950/30"
+              />
+              <Button
+                onClick={onClose}
+                variant="ghost"
+                size="icon"
+                className="text-gray-400 hover:text-white hover:bg-violet-950/30"
+              >
+                <X className="h-6 w-6" />
+              </Button>
+            </div>
           </div>
 
           {/* Tabs - hide Sources tab */}
